@@ -1,0 +1,287 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>云安全重点学习笔记 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="云安全重点学习笔记 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="基于网上收集的资源进行学习  持续学习 持续更新。
+基础概念
+常见的云计算模式
+
+IaaS         基础设施既服务
+PaaS        平台既服务
+SaaS         软件既服务
+
+云计算分类
+
+公有云
+私有云
+混合云
+
+..." />
+    <meta name="keywords" content="云安全" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              云安全重点学习笔记
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-08-24
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/jCNVUnSkC/" class="post-tag">
+                  # 云安全
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>基于网上收集的资源进行学习  持续学习 持续更新。</p>
+<h5 id="基础概念">基础概念</h5>
+<h6 id="常见的云计算模式">常见的云计算模式</h6>
+<ul>
+<li>IaaS         基础设施既服务</li>
+<li>PaaS        平台既服务</li>
+<li>SaaS         软件既服务</li>
+</ul>
+<h6 id="云计算分类">云计算分类</h6>
+<ul>
+<li>公有云</li>
+<li>私有云</li>
+<li>混合云</li>
+</ul>
+<h6 id="云渗透和传统渗透的区别">云渗透和传统渗透的区别</h6>
+<p>本质上没有什么区别，主要是应用场景的不同。传统渗透的漏洞 SQL注入 DDOS 文件上传等在云渗透中依然存在。但是在云上存在一些新的技术 从而会出现新的漏洞比如 AK泄露     OSS 配置不当  和 由于容器化 K8s 带来新的攻防技术。</p>
+<h6 id="公有云攻击">公有云攻击</h6>
+<p>可以分为 对于用户的攻击和 对于云平台的攻击。</p>
+<p>用户的就还是以前学的常规渗透中的手段 再加上 OSS存储桶配置不当    AK泄露等。</p>
+<p>对于云平台的攻击是围绕云平台的架构进行攻击</p>
+<ul>
+<li>云产品进行文件处理属性时引发漏洞’</li>
+<li>虚拟化逃逸</li>
+<li>攻击中间件服务</li>
+<li>数据库产品配置</li>
+<li>开源产品已知漏洞</li>
+</ul>
+<h6 id="私有云攻击">私有云攻击</h6>
+<p>与上面的公有云攻击类似</p>
+<p>需要注意的是<strong>私有云可横向攻击 开源组件漏洞 虚拟化逃逸 常规应用漏洞(Shiro fastjson)</strong></p>
+<h6 id="虚拟化攻击">虚拟化攻击</h6>
+<p>私有云与虚拟化有密切的关系，因为私有云是建立在虚拟化技术的基础上的。虚拟化技术可以将一台物理机器的资源，如 CPU、内存、存储等，通过软件层面划分成多个虚拟机，使得这些虚拟机可以独立运行不同的操作系统和应用程序。</p>
+<ul>
+<li>攻击Vmware虚拟化</li>
+<li>攻击OpenStack</li>
+</ul>
+<h6 id="云原生攻击">云原生攻击</h6>
+<ul>
+<li>Pod 开放到互联网</li>
+<li>Pod 对其它 Pod 或服务开放</li>
+<li>从Pod 向Node逃逸</li>
+<li>从 Pod 攻击 Master Node 组件</li>
+<li>从Pod 攻击API Server</li>
+<li>从API Server 攻击其它 Pods/Nodes</li>
+<li>从 K8s 集群攻击云内的其它服务</li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5">基础概念</a>
+<ul>
+<li><a href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E4%BA%91%E8%AE%A1%E7%AE%97%E6%A8%A1%E5%BC%8F">常见的云计算模式</a></li>
+<li><a href="#%E4%BA%91%E8%AE%A1%E7%AE%97%E5%88%86%E7%B1%BB">云计算分类</a></li>
+<li><a href="#%E4%BA%91%E6%B8%97%E9%80%8F%E5%92%8C%E4%BC%A0%E7%BB%9F%E6%B8%97%E9%80%8F%E7%9A%84%E5%8C%BA%E5%88%AB">云渗透和传统渗透的区别</a></li>
+<li><a href="#%E5%85%AC%E6%9C%89%E4%BA%91%E6%94%BB%E5%87%BB">公有云攻击</a></li>
+<li><a href="#%E7%A7%81%E6%9C%89%E4%BA%91%E6%94%BB%E5%87%BB">私有云攻击</a></li>
+<li><a href="#%E8%99%9A%E6%8B%9F%E5%8C%96%E6%94%BB%E5%87%BB">虚拟化攻击</a></li>
+<li><a href="#%E4%BA%91%E5%8E%9F%E7%94%9F%E6%94%BB%E5%87%BB">云原生攻击</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/getshell-fang-shi-xiao-jie/">
+              <h3 class="post-title">
+                GetShell方式小结
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

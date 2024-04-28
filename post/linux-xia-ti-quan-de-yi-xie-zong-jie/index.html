@@ -1,0 +1,279 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>一些可进行Linux提权的操作 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="一些可进行Linux提权的操作 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="关于Linux权限提升
+前言：最近打靶场遇到提权的地方就有点懵逼。于是就在网上搜集资料学习总结下。知识清单的形式，没有涉及到每一步操作。只是说下现在大体有哪些思路。(长期更新)。
+内核提权
+就是通过服务器本身的漏洞进行提权。
+成功得到 反弹..." />
+    <meta name="keywords" content="权限提升" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              一些可进行Linux提权的操作
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-03-07
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/AHqextDg7/" class="post-tag">
+                  # 权限提升
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="关于linux权限提升">关于Linux权限提升</h4>
+<p>前言：最近打靶场遇到提权的地方就有点懵逼。于是就在网上搜集资料学习总结下。知识清单的形式，没有涉及到每一步操作。只是说下现在大体有哪些思路。(长期更新)。</p>
+<h5 id="内核提权">内核提权</h5>
+<p>就是通过服务器本身的漏洞进行提权。</p>
+<p>成功得到 反弹 shell后，对服务器的信息进行一波信息收集。例如：发行版本 内核版本之类。然后到使用Linux-exploit-suggester和Searchsploit得到相应的EXP。</p>
+<h5 id="suid提权">SUID提权</h5>
+<p>SUID是一种特殊的文件属性，它允许用户执行的文件以该文件的拥有者的身份运行 ，简单的说就是，当我们以一个普通用户去运行一个root用户所有的SUID文件，那么运行该文件我们就可以获取到root权限</p>
+<pre><code class="language-shell">//一些POC
+find / -user root -perm -4000 -print 2&gt;/dev/null
+find / -perm -u=s -type f 2&gt;/dev/null
+find / -user root -perm -4000 -exec ls -ldb {} \;
+
+为文件附上这样的权限可以使用命令：chmod u+s 或者chmod 4755
+</code></pre>
+<h5 id="计划任务提权">计划任务提权</h5>
+<pre><code class="language-shell">大概思路就是，对于可能存在的权限配置不当的有root权限的计划任务，使我们普通用户也拥有修改权限，我们修改其中的内容，为bash、less、more等赋予SUID权限，与SUID提权结合，使之提权成功
+
+系统内可能会有一些定时执行的任务，一般这些任务由crontab来管理，具有所属用户的权限。非root权限的用户是不可以列出root用户的计划任务的。但是/etc/内系统的计划任务可以被列出。
+</code></pre>
+<h5 id="配置错误导致提权">配置错误导致提权</h5>
+<p>使用<strong>unix-privesc-check</strong>      <strong>linuxprivchecker</strong>  这两款可以查找一些错误配置。</p>
+<h5 id="sudo提权"><strong>sudo提权</strong></h5>
+<p>一般情况下，如果普通用户想要提权到<code>root</code>权限使用<code>sudo</code>命令的话，都需要输入密码，但是，如果管理员为了方便登录和管理，对配置文件<code>/etc/sudoers</code>进行更改，使其<code>sudo</code>免密登录。</p>
+<h5 id="明文root密码提权">明文root密码提权</h5>
+<p>一般来说 ，linux的用户和密码 都和<code>/etc/passwd和/etc/shadow</code>这两个文件有关。<code>/etc/passwd</code>中存储的是用户，其中X代表密码<code>hash</code>被放在/<code>etc/shadow</code>文件中，并且<code>/etc/passwd</code>全用户可读。<code>/etc/shadow</code>中存储的就是密码的<code>hash</code>，只有root用户可读。</p>
+<h5 id="第三方服务提权">第三方服务提权</h5>
+<pre><code class="language-shell">1.UDF提权
+
+2.MOF提权
+
+3.启动项提权
+
+4.CVE-2016-6663、CVE-2016-6664组合提权
+
+5.反弹端口提权 
+
+6.git提权
+
+7.exim 4提权
+
+8.screen提权
+
+9.pip提权
+
+10.zip提权
+.
+.
+.
+</code></pre>
+<h5 id="总结">总结</h5>
+<p>这些都是在网上收集的一些资料，很多我都实验过。篇幅也比较短，没有一步一步写，大概说明有这个东西就可以了。对于提权这个东西，我感觉和那些绕过 免杀是一样的，只有自己遇到了，实验了，总结了。才会有收获。但是我自己的感觉目前比较好用的还是内核提权。其次师傅们注意收集一些第三方服务提权吧。很多提权方式，我还是感觉挺鸡肋的。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%85%B3%E4%BA%8Elinux%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">关于Linux权限提升</a>
+<ul>
+<li><a href="#%E5%86%85%E6%A0%B8%E6%8F%90%E6%9D%83">内核提权</a></li>
+<li><a href="#suid%E6%8F%90%E6%9D%83">SUID提权</a></li>
+<li><a href="#%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1%E6%8F%90%E6%9D%83">计划任务提权</a></li>
+<li><a href="#%E9%85%8D%E7%BD%AE%E9%94%99%E8%AF%AF%E5%AF%BC%E8%87%B4%E6%8F%90%E6%9D%83">配置错误导致提权</a></li>
+<li><a href="#sudo%E6%8F%90%E6%9D%83"><strong>sudo提权</strong></a></li>
+<li><a href="#%E6%98%8E%E6%96%87root%E5%AF%86%E7%A0%81%E6%8F%90%E6%9D%83">明文root密码提权</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E6%96%B9%E6%9C%8D%E5%8A%A1%E6%8F%90%E6%9D%83">第三方服务提权</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/tu-shu-guan-mo-yu-wen-zhang/">
+              <h3 class="post-title">
+                图书馆摸鱼文章
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

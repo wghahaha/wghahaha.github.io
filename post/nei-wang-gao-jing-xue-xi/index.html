@@ -1,0 +1,296 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>内网告警学习 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="内网告警学习 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="内网告警分析
+前几天挖了几天src 搞了几个垃圾洞又被忽略了了 有点难受 😭😭😭😭😭 来简单学习下 内网的一些告警分析吧。HVV挺有用的。
+网站架构
+负载均衡
+在网络层通过修改请求目标地址进行负载均衡。用户请求数据包到达负载均衡服..." />
+    <meta name="keywords" content="应急响应" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              内网告警学习
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-03-21
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/XnfMUfAVO/" class="post-tag">
+                  # 应急响应
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="内网告警分析">内网告警分析</h4>
+<p>前几天挖了几天src 搞了几个垃圾洞又被忽略了了 有点难受 😭😭😭😭😭 来简单学习下 内网的一些告警分析吧。HVV挺有用的。</p>
+<h5 id="网站架构">网站架构</h5>
+<h6 id="负载均衡">负载均衡</h6>
+<pre><code>在网络层通过修改请求目标地址进行负载均衡。用户请求数据包到达负载均衡服务器114.100.80.10后，负载均衡服务器在操作系统内核进程获取网络数据包，根据负载均衡算法计算得到一台真实Web服务器10.0.0.1，然后将数据目的IP地址修改为10.0.0.1，不需要通过用户进程处理。真实Web应用服务器处理完成后，响应数据包回到负载均衡服务器，负载均衡服务器再将数据包源地址修改为自身的IP地址（114.100.80.10）发送给用户浏览器。
+</code></pre>
+<h6 id="反向代理">反向代理</h6>
+<pre><code class="language-shell">浏览器访问请求的地址是反向代理服务器的地址114.100.80.10，反向代理服务器收到请求后，根据负载均衡算法计算得到一台真实物理服务器的地址10.0.0.3，并将请求转发给服务器。10.0.0.3处理完请求后将响应返回给反向代理服务器，反向代理服务器再将该响应返回给用户。
+</code></pre>
+<h6 id="xff头">XFF头</h6>
+<pre><code>• X-Forwarded-For（XFF）是用来识别通过HTTP代理或负载均衡方式连接到Web服务器的客户端最原始的IP地址的HTTP请求头字段。
+• 正常情况下XFF中最后一个IP地址是最后一个代理服务器的IP地址，第一个是客户端的IP地址。
+• 因此如果是内网告警，首先要看攻击者IP地址，如果是内网IP，再看XFF头，判定是内网告警还是外网告警
+</code></pre>
+<h5 id="代理隧道告警分析">代理隧道告警分析</h5>
+<h6 id="frp工具流量特征">Frp工具流量特征</h6>
+<p>客户端与服务端进行认证信息时会 包含 version,hostname,os,arch,user,privil ege_key,runid,metas等信息 特点：持续告警，每分钟连接3次左 右 服务端与客户端进行认证信息时会 包含version,run_id,server_udp_port等 信息</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230321192758075.png" alt="image-20230321192758075" loading="lazy"></figure>
+<h6 id="regeorg流量特征">reGeorg流量特征</h6>
+<p>regeorg有明显的流量特征，能直观 看见的是目的IP和目的端口。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230321192838705.png" alt="image-20230321192838705" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230321192851061.png" alt="image-20230321192851061" loading="lazy"></figure>
+<h5 id="横向移动告警分析">横向移动告警分析</h5>
+<h6 id="横向移动-端口扫描与弱口令">横向移动-端口扫描与弱口令</h6>
+<pre><code class="language-shell">Nmap
+• 大量端口扫描流量
+• 默认UA信息：
+Mozilla/5.0 (compatible;
+Nmap Scripting Engine;
+https://nmap.org/book
+/nse.html)
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230321193023788.png" alt="image-20230321193023788" loading="lazy"></figure>
+<h6 id="横向移动-利用系统漏洞">横向移动-利用系统漏洞</h6>
+<pre><code>• MS17-010流量特征
+1. 攻击载荷一般会发送NT Trans Request载荷，里
+面有大量的NOP指令
+2. 在发送NT Trans Request载荷后，会发送Trans2Secondary Request载荷，相关的Trans2Secondary Request载荷会分几个数据包发送加密的攻击载荷。 在攻击载荷发送完后，如果发现数据包中存在Multiplex ID: 82数据包，说明漏洞攻击成功
+</code></pre>
+<h6 id="横向移动-利用用户凭证">横向移动-利用用户凭证</h6>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230321193345053.png" alt="image-20230321193345053" loading="lazy"></figure>
+<h5 id="溯源与反制">溯源与反制</h5>
+<pre><code>溯源：完整还原攻击链，溯源到攻击队的虚拟身份、真实身份
+反制：反控攻击方主机根据程度阶梯给分
+攻击者IP-&gt;注册人信息-&gt;信息检索聚合分析-&gt;IP定位-&gt;端口扫描-&gt;反制攻击者服务器本机信息搜集
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230321193501800.png" alt="image-20230321193501800" loading="lazy"></figure>
+<h5 id="案例">案例</h5>
+<pre><code>安全设备告警某IP存在webshell上传行为
+2. 通过微步的IP反查，不存在域名绑定记录
+3. 扫描端口，发现存在HTTP服务，且存在phpmyadmin，使用弱口令登录成功
+4. 再使用phpmyadmin写日志拿到webshell
+5. 本机信息搜集：用户名、脚本中的作者、邮箱地址、QQ等信息
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%86%85%E7%BD%91%E5%91%8A%E8%AD%A6%E5%88%86%E6%9E%90">内网告警分析</a>
+<ul>
+<li><a href="#%E7%BD%91%E7%AB%99%E6%9E%B6%E6%9E%84">网站架构</a>
+<ul>
+<li><a href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1">负载均衡</a></li>
+<li><a href="#%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86">反向代理</a></li>
+<li><a href="#xff%E5%A4%B4">XFF头</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BB%A3%E7%90%86%E9%9A%A7%E9%81%93%E5%91%8A%E8%AD%A6%E5%88%86%E6%9E%90">代理隧道告警分析</a>
+<ul>
+<li><a href="#frp%E5%B7%A5%E5%85%B7%E6%B5%81%E9%87%8F%E7%89%B9%E5%BE%81">Frp工具流量特征</a></li>
+<li><a href="#regeorg%E6%B5%81%E9%87%8F%E7%89%B9%E5%BE%81">reGeorg流量特征</a></li>
+</ul>
+</li>
+<li><a href="#%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8%E5%91%8A%E8%AD%A6%E5%88%86%E6%9E%90">横向移动告警分析</a>
+<ul>
+<li><a href="#%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8-%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F%E4%B8%8E%E5%BC%B1%E5%8F%A3%E4%BB%A4">横向移动-端口扫描与弱口令</a></li>
+<li><a href="#%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8-%E5%88%A9%E7%94%A8%E7%B3%BB%E7%BB%9F%E6%BC%8F%E6%B4%9E">横向移动-利用系统漏洞</a></li>
+<li><a href="#%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8-%E5%88%A9%E7%94%A8%E7%94%A8%E6%88%B7%E5%87%AD%E8%AF%81">横向移动-利用用户凭证</a></li>
+</ul>
+</li>
+<li><a href="#%E6%BA%AF%E6%BA%90%E4%B8%8E%E5%8F%8D%E5%88%B6">溯源与反制</a></li>
+<li><a href="#%E6%A1%88%E4%BE%8B">案例</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/vulnhub-dc-7-ba-ji/">
+              <h3 class="post-title">
+                vulnhub DC-7 靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

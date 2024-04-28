@@ -1,0 +1,266 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HackTheBox—Devvortex靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="HackTheBox—Devvortex靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="前言
+一台简单的靶机 提权那里卡了一下。 复现的时候时间仓促，写了下大概思路。不是很详细。
+信息收集
+还是直接得到IP地址后使用nmap扫描了一下
+nmap -sV 10.10.11.242
+
+得到开放端口只有 22 端口和 80端口 那么..." />
+    <meta name="keywords" content="HackTheBox" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              HackTheBox—Devvortex靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-11-29
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/4AeNKZQf4/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="前言">前言</h2>
+<p>一台简单的靶机 提权那里卡了一下。 复现的时候时间仓促，写了下大概思路。不是很详细。</p>
+<h2 id="信息收集">信息收集</h2>
+<p>还是直接得到IP地址后使用nmap扫描了一下</p>
+<pre><code>nmap -sV 10.10.11.242
+</code></pre>
+<p>得到开放端口只有 22 端口和 80端口 那么想得到shell 只有通过web端的渗透了 (SSH暴力破解 这种方式我一般不到最后不尝试)。</p>
+<p>直接访问IP无法访问。</p>
+<p>修改host文件</p>
+<p>可访问IP地址。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231129172036077.png" alt="image-20231129172036077" loading="lazy"></figure>
+<p>对其进行了目录扫描没有得到有用的信息。</p>
+<p>点了下功能点 有几个框框 简单测试了一下 没有什么返回。</p>
+<p>尝试进行fuzz操作 扫出来子域名 <strong>dev.</strong></p>
+<p>第一步就这几下 扫目录 看功能点 组件。找nday 0day之类的额。没有的话就进行fuzz操作。</p>
+<p>对子域名进行目录暴破 得到 robots.txt 和 adminstrator  README.txt目录等。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231129172833794.png" alt="image-20231129172833794" loading="lazy"></figure>
+<p>得到建站信息。指出了CMS的版本信息 。这个版本是存在一个未授权访问的。</p>
+<p>https://github.com/YusinoMy/CVE-2023-23752</p>
+<p>POC /api/index.php/v1/config/application?public=true</p>
+<p>得到一些账号信息密码</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231129173053845.png" alt="image-20231129173053845" loading="lazy"></figure>
+<p>可以直接登录系统了。</p>
+<h2 id="getshell">getshell</h2>
+<p>找那个配置文件 可以直接上传木马。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231129173230837.png" alt="image-20231129173230837" loading="lazy"></figure>
+<p>我用的是github的一个开源的木马。</p>
+<p>上传后访问 然后输入反弹shell语句 并监听可以得到网站的权限。</p>
+<p>也算是成功getshell了。但是目前还是网站的权限 还没有上升到主机的权限。</p>
+<p>/home文件下有一个logan的用户 但是我们没有权限cd进去。</p>
+<p>可以去翻数据库的配置文件 使用前面得到的密码进去。可以得到加密后的logan 的密码 使用john 或者hashcat ，可以将密码解出来。密码是  <strong>tequieromucho</strong></p>
+<p>直接ssh连接就可以了。</p>
+<h2 id="权限提升">权限提升</h2>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231129173842854.png" alt="image-20231129173842854" loading="lazy"></figure>
+<p>得到user.txt。</p>
+<p>后面需要进行权限提升。</p>
+<p>常见的提权方式有 sudo 提权 suid提权 内核提权等 这方面主要还是通过一些历史漏洞进行权限提升。</p>
+<p>这个可以实现sudo提权 有一个那个/apport-cli</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231129174247950.png" alt="image-20231129174247950" loading="lazy"></figure>
+<p>我去GTF上面找 没有对应的命令 我就以为没有了 后面绕了一圈回来 其实是可以通过sudo调用这个服务实现提取的。</p>
+<p>https://github.com/canonical/apport/commit/e5f78cc89f1f5888b6a56b785dddcb0364c48ecb</p>
+<p>这篇文章有讲到 。</p>
+<p>大概就是通过sudo执行 可以发现当前权限是root权限。</p>
+<p>然后可以通过chmod的命令 增加其他服务的权限。</p>
+<p>这里一般都是用的bash</p>
+<p>chmod u+s /bin/bash。</p>
+<p>执行后 退出去 执行命令</p>
+<pre><code>/bin/bash -p
+</code></pre>
+<p>可以实现权限提升。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231129174730149.png" alt="image-20231129174730149" loading="lazy"></figure>
+<p>靶机总体难度还好 最后的提权方式可以记录一下 下一次如果遇到这种场景可能会有点用。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a></li>
+<li><a href="#getshell">getshell</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/hackthebox-codify-ba-ji/">
+              <h3 class="post-title">
+                HackTheBox—Codify靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

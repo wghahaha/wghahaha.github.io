@@ -1,0 +1,254 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CTF hub 技能树之文件上传 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="CTF hub 技能树之文件上传 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="前言：
+今天没事，就想写一篇关于CTFhub技能树靶场的一些过关文章。今天的是关于文件上传的，内容比较简单，学习文件上传建议还是搭建一个 upload labs 那个靶场我感觉还是可以，很多博客也是根据那个靶场进行总结的。包括我的 文件上传..." />
+    <meta name="keywords" content="靶场,web安全" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              CTF hub 技能树之文件上传
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-14
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/yQKENPFNg/" class="post-tag">
+                  # 靶场
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/uaBWtnrdZ/" class="post-tag">
+                  # web安全
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>前言：<br>
+今天没事，就想写一篇关于CTFhub技能树靶场的一些过关文章。今天的是关于文件上传的，内容比较简单，学习文件上传建议还是搭建一个 upload labs 那个靶场我感觉还是可以，很多博客也是根据那个靶场进行总结的。包括我的 文件上传总结 也是通过那个靶场环境总结的。<br>
+我们就先看看 ctfhub的技能树吧，这个使用比较简单，只需要到网站然后开启环境就可以了。</p>
+<h3 id="ctf-hub-文件上传">ctf hub 文件上传</h3>
+<h4 id="无验证">无验证</h4>
+<p>直接上传php一句话木马文件，然后用中国蚁剑连接得到flag。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221124210539412.png" alt="image-20221124210539412" loading="lazy"></figure>
+<h4 id="前端验证">前端验证。</h4>
+<p>将带有一句话木马的php文件后缀名修改为<mark>jpg</mark>或者<mark>png</mark></p>
+<p>然后上传，bp抓包修改文件后缀名，转发回去。上传成功再用中国蚁剑连接得到flag</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221124211128494.png" alt="image-20221124211128494" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221124211241642.png" alt="image-20221124211241642" loading="lazy"></figure>
+<h4 id="htaccess">.htaccess</h4>
+<p>这一关需要上传两个文件，首先上传一个==.htaccess==文件</p>
+<p>在里面写入</p>
+<pre><code>&lt;FilesMatch &quot;文件名&quot;&gt;
+　　SetHandler application/x-httpd-php
+  &lt;/FilesMatch&gt;
+</code></pre>
+<p>这里是将指定的文件按照php格式解析。</p>
+<p>然后再上传带有一句话木马的<mark>png</mark>文件</p>
+<p>最后用中国蚁剑可以得到flag</p>
+<h4 id="mime绕过">MIME绕过</h4>
+<p>和前两关类似。只是这里改的是<mark>Content-Type</mark>bp抓包后再将这里的数据改为合法的就可以了。</p>
+<h4 id="00截断">00截断</h4>
+<p>上传带有一句话木马的jpg文件。在上传文件地址处加上<mark>文件名.php%00</mark>就上传成功了。</p>
+<h4 id="双写后缀">双写后缀</h4>
+<p>上传<mark>jpg</mark>格式的一句话木马文件，抓包将后缀名改为<mark>pphphp</mark>转发。最后到/upload/目录下可以找到文件</p>
+<h4 id="文件头检查">文件头检查</h4>
+<p>这一关网上的很多人都是用的<mark>winhex</mark>修改文件头信息做的，其实不用那么麻烦。只需要找一张正常的图片（一定要内存小的，内存大了会出错）然后用文本编辑器打开在最后插入一句话木马，（也可以在bp抓包时在文件内容的最末尾加入一句话木马），然后用bp抓包将文件后缀名修改为<mark>php</mark>转发回去就上传成功了。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#ctf-hub-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0">ctf hub 文件上传</a>
+<ul>
+<li><a href="#%E6%97%A0%E9%AA%8C%E8%AF%81">无验证</a></li>
+<li><a href="#%E5%89%8D%E7%AB%AF%E9%AA%8C%E8%AF%81">前端验证。</a></li>
+<li><a href="#htaccess">.htaccess</a></li>
+<li><a href="#mime%E7%BB%95%E8%BF%87">MIME绕过</a></li>
+<li><a href="#00%E6%88%AA%E6%96%AD">00截断</a></li>
+<li><a href="#%E5%8F%8C%E5%86%99%E5%90%8E%E7%BC%80">双写后缀</a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E5%A4%B4%E6%A3%80%E6%9F%A5">文件头检查</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/qian-tan-zheng-ze-biao-da-shi/">
+              <h3 class="post-title">
+                浅谈正则表达式
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

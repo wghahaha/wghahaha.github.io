@@ -1,0 +1,319 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vulnhub DC-1靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="vulnhub DC-1靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="DC-1靶机
+过关条件:需要通过入侵DC-1靶机，得到5个flag。
+攻击机:kali  192.168.56.132
+靶机:DC 1   192.168.56.140
+内网信息探测
+首先我们需要得到靶机的IP地址，在这之前我们需要将 ka..." />
+    <meta name="keywords" content="vulnhub" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              vulnhub DC-1靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-03-02
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/gd7wNOhQ5/" class="post-tag">
+                  # vulnhub
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="dc-1靶机">DC-1靶机</h4>
+<p>过关条件:需要通过入侵DC-1靶机，得到5个flag。</p>
+<p>攻击机:kali  192.168.56.132</p>
+<p>靶机:DC 1   192.168.56.140</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<p>首先我们需要得到靶机的IP地址，在这之前我们需要将 kali 和 靶机的网卡都设置为NAT模式。</p>
+<pre><code class="language-shell">arp-scan -l 
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302092230483.png" alt="image-20230302092230483" loading="lazy"></figure>
+<p>扫到了多个IP地址如何确定靶机的ip呢？</p>
+<p>这里我为了简单快速，我直接去查看了靶机的mac地址，进而确定了靶机的ip</p>
+<pre><code class="language-shell">192.168.56.140
+</code></pre>
+<p>使用nmap进行扫描端口操作</p>
+<pre><code class="language-shell">nmap -A -p1-65535 -T4 192.168.56.140
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302093449933.png" alt="image-20230302093449933" loading="lazy"></figure>
+<pre><code class="language-shell">通过nmap扫描发现开放端口为 22 80 111 44377
+</code></pre>
+<p>可通过80端口访问网页 22端口进行SSH连接。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302093513782.png" alt="image-20230302093513782" loading="lazy"></figure>
+<pre><code class="language-shell">发现搭建的cms为 Drupal 通过进一步收集得到版本为 7.x
+</code></pre>
+<h5 id="内网攻击">内网攻击</h5>
+<pre><code class="language-shell">去metasploit看下有没有nday可以打的
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302094028538.png" alt="image-20230302094028538" loading="lazy"></figure>
+<p>直接使用exp</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302094219715.png" alt="image-20230302094219715" loading="lazy"></figure>
+<pre><code class="language-shell">首先需要进行info查看配置信息，发现RHOSTS的地方没有内容，我们需要手动设置为靶机的IP
+set RHOSTS 192.168.56.140
+然后执行run或者exploit都可以。
+exp执行成功后输入shell 进入shell执行界面，但是得到的不是一个完整的shell环境，我们需要用过python的pty模块进行反弹完整的shell
+python -c 'import pty;pty.spawn(&quot;/bin/bash&quot;)'
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302094912306.png" alt="image-20230302094912306" loading="lazy"></figure>
+<pre><code class="language-shell">现在我们就相当于进入了网站的根目录下面了，现在我们需要做的是找到flag。
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302095108128.png" alt="image-20230302095108128" loading="lazy"></figure>
+<pre><code class="language-shell">首先ls一下看目录下有什么文件 发现 flag1.txt文件
+直接cat flag1.txt
+得到flag1                       Every good CMS needs a config file - and so do you.
+
+通过翻译软件得到上面的中文意思为 每个好的 CMS 都需要一个配置文件——您也一样
+</code></pre>
+<p>提示我们需要到设置文件下找到下一个flag。</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302095655160.png" alt="image-20230302095655160" loading="lazy"></figure>
+<pre><code class="language-shell">得到flag 2                        Brute force and dictionary attacks aren't the
+                                 only ways to gain access (and you WILL need access).
+                                 What can you do with these credentials?
+就是说我们需要得到访问权限。
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302095907246.png" alt="image-20230302095907246" loading="lazy"></figure>
+<pre><code class="language-shell">这段是数据库的一些内容猜测下一个flag的获取于数据库有关。
+</code></pre>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302100218387.png" alt="image-20230302100218387" loading="lazy"></figure>
+<pre><code class="language-shell">根据前一段的提示猜测是进入 deupaldb数据库
+show tables; //查看下有哪些表
+</code></pre>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302100449449.png" alt="image-20230302100449449" loading="lazy"></figure>
+<pre><code class="language-shell">用户的密码存在users表里面。
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302100601777.png" alt="image-20230302100601777" loading="lazy"></figure>
+<pre><code class="language-shell">发现是加盐密码，但是一般加盐的密码是很难破解的，所以选择修改用户密码来解决。首先生成自定密码的加盐哈希值。回到网站的目录下执行php scripts/password-hash.sh 密码命令生成。
+$S$DvoxOGg83NlqLw.PSRMYaRVxsvbCeZa6MgfentndPzsV3qDPZ2y7
+</code></pre>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302101249779.png" alt="image-20230302101249779" loading="lazy"></figure>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302101332999.png" alt="image-20230302101332999" loading="lazy"></figure>
+<pre><code class="language-shell">查询数据库文件发现已经成功修改了。
+</code></pre>
+<p>进入web页面输入我们能重新设置的账号和密码</p>
+<p>admin 666</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302101453072.png" alt="image-20230302101453072" loading="lazy"></figure>
+<p>成功进入。在content里面找到flag3</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302101631910.png" alt="image-20230302101631910" loading="lazy"></figure>
+<pre><code class="language-shell">Special PERMS will help FIND the passwd - but you'll need to -exec that command to work out how to get what's in the shadow.
+</code></pre>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302101815061.png" alt="image-20230302101815061" loading="lazy"></figure>
+<h5 id="权限提升">权限提升</h5>
+<pre><code class="language-shell">通过前前面的提示cat/etc/passwd/
+发现了flag4但是当我们想深度利用的话，发现没有权限。
+我们通过kali的暴破神器 hydra暴破ssh的密码 暴破出来为orage。
+</code></pre>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302102127675.png" alt="image-20230302102127675" loading="lazy"></figure>
+<pre><code class="language-shell">通过上面的方法成功ssh成功连接。
+探测权限。 whoami 为普通用户。
+</code></pre>
+<figure data-type="image" tabindex="19"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302102356517.png" alt="image-20230302102356517" loading="lazy"></figure>
+<p>成功提权。</p>
+<figure data-type="image" tabindex="20"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302102657787.png" alt="image-20230302102657787" loading="lazy"></figure>
+<pre><code class="language-shell">成功找到剩下的两个flag。
+</code></pre>
+<h5 id="思路总结">思路总结</h5>
+<p>首先我们通过扫描器确定了靶机的IP地址和开放端口，通过开放端口思考可以进行哪些工作。发现开放了80端口，于是想到访问web页面，然后通过信息收集确定了使用的cms和版本号。然后就用msf上的exp直接打，中间为了实现完整的shell环境需要使用到python的pty模块。进入shell环境后就开始找flag （第一个flag比较好找，剩下的flag需要根据上一个flag的提示寻找。）中间涉及到的一些问题就是关于数据库中的密码加盐加密，无法准确的解密，通过自己对密码设定加盐加密然后更新密码。得到新的账号和密码。然后就是通过暴力破解得到ssh的连接密码，但是这个密码是普通用户权限，需要进行权限提升。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#dc-1%E9%9D%B6%E6%9C%BA">DC-1靶机</a>
+<ul>
+<li><a href="#%E5%86%85%E7%BD%91%E4%BF%A1%E6%81%AF%E6%8E%A2%E6%B5%8B">内网信息探测</a></li>
+<li><a href="#%E5%86%85%E7%BD%91%E6%94%BB%E5%87%BB">内网攻击</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+<li><a href="#%E6%80%9D%E8%B7%AF%E6%80%BB%E7%BB%93">思路总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/ji-yu-golang-xue-xi-bing-fa-bian-cheng/">
+              <h3 class="post-title">
+                基于Golang学习并发编程
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

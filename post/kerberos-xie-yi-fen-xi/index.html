@@ -1,0 +1,380 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kerberos协议分析 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Kerberos协议分析 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="很久以前学过的东西 但是感觉当时学的比较零散 。找了篇文章重新学习学习
+文章学习搬运于 饼干屑小鬼师傅的文章
+前言
+Kerberos协议是一种网络认证协议，其设计目标是通过密钥系统为客户/服务器应用程序提供强大的认证服务。在令牌窃取攻击中，..." />
+    <meta name="keywords" content="Kerberos" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Kerberos协议分析
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-11-30
+              </span>
+              <span>
+                12 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/K6sVHZhVa/" class="post-tag">
+                  # Kerberos
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>很久以前学过的东西 但是感觉当时学的比较零散 。找了篇文章重新学习学习</p>
+<p>文章学习搬运于 <a href="https://xz.aliyun.com/u/24564"><strong>饼干屑小鬼</strong></a>师傅的文章</p>
+<h2 id="前言">前言</h2>
+<p>Kerberos协议是一种网络认证协议，其设计目标是通过密钥系统为客户/服务器应用程序提供强大的认证服务。在令牌窃取攻击中，该攻击的核心就是Kerberos协议。Kerberos协议要解决的实际上就是一个身份认证的问题，顾名思义，<strong>当一个客户机去访问一个服务器的某服务时，服务器如何判断该客户机是否有权限来访问本服务器上的服务，同时保证在该过程中的通讯内容即便被拦截或者被篡改也不影响整个通讯的安全性</strong>。</p>
+<h2 id="相关概念">相关概念</h2>
+<pre><code>(1)Client:访问服务的客户机
+
+(2)Server:提供服务的服务器
+
+(3)KDC(Key Distribution Center):密钥分发中心 
+
+(4)KDC中分成两个部分:Authentication Service和Ticket Granting Service
+    Authentication Service(AS):身份验证服务
+    Ticket Granting Service(TGS):票据授予服务
+
+    AS和TGS如下：
+
+    Authentication Service：AS的作用就是验证Client端的身份，验证通过之后，AS就会给TGT票据(Ticket Granting Ticket)给Client.
+    Ticket-granting cookie(TGC):存放用户身份认证凭证的cookie，在浏览器和CAS Server间通讯时使用，是CAS Server用来明确用户身份的凭证。TGT封装了TGC值以及此Cookie值对应的用户信息.
+    Ticket-granting ticket(TGT):TGT对象的ID就是TGC的值，在服务器端，通过TGC查询TGT.
+
+
+    Ticket Granting Service(TGS)：TGS的作用是通过AS发送给Client的TGT换取访问Server端的ST(Server Ticket)给Client.
+    SEerver Ticket(ST):ST服务票据，由TGS服务发布.
+
+
+(5)Active Directory(AD):活动目录
+
+(6)Domain Controller(DC):域控制器
+
+(7)Ticket-granting cookie(TGC):存放用户身份认证凭证的cookie，在浏览器和CAS Server间通讯时使用，是CAS Server用来明确用户身份的凭证。TGT封装了TGC值以及此Cookie值对应的用户信息.
+
+(8)Ticket-granting ticket(TGT):TGT对象的ID就是TGC的值，在服务器端，通过TGC查询TGT
+</code></pre>
+<p>kerberos认证的形象过程</p>
+<pre><code>疫情期间，小明去拿一个重要包裹，由于包裹是来自海外的，所以需要严格登记：
+（1）拿包裹的时候，为了证明自己是合法公民，小明先把身份证给工作人员
+（2）快递点的身份认证系统通过身份认证后，给小明一张身份认证通过证明
+（3）小明拿着身份认证通过证明，来到快递收发处等一张拿快递的号码牌
+（4）售票处给了张号码牌
+（5）小明拿着号码牌拿快递去了
+（6）在拿快递时，小明拿出自己的身份认证材料给快递点的工作人员，工作人员向快递公司的数据管理中心发了消息，问问小明是不是有包裹要拿
+（7）数据管理中心将小明的快递单号，身份信息等发了过来
+（8）工作人员将数据管理中心发来的信息与小明给的材料对比，得出小明是好公民，有一个重要包裹，于是带着小明来到仓库的金库，把装有老魔杖的包裹给了小明
+</code></pre>
+<h2 id="认证过程">认证过程</h2>
+<p><code>Kerberos认证</code>中有两个问题</p>
+<pre><code>（1）AS如何验证Client的身份？
+    AS与Client之间的认证使用AS_REQ&amp;AS_REP模块 
+（2）Client如何获取ST？
+    Client与TGS之间认证使用TGS_REQ&amp;TGS_REP模块
+</code></pre>
+<p>因为<code>kerberos</code>协议的实现，需要三方的参与，分别如下：</p>
+<pre><code>1.client 访问服务的客户机
+2.Server 提供服务的服务器
+3.KDC(Key Distribution Center) 密钥分发中心 
+    KDC服务会默认安装在一个域的域控中，所以可以直接理解为，AD与KDC均为域控制器,KDC服务框架中包含一个KRBTGT账户，它是在创建域时系统自动创建的一个账号。
+</code></pre>
+<p>其中：<code>KDC</code>中有<code>AS认证服务</code>与<code>TGS认证服务</code></p>
+<pre><code>(1)Client向KDC的AS认证服务请求TGT票据=&gt;AS_REQ
+(2)Client通过认证后，KDC将会发放TGT票据=&gt;AS_REP
+(3)Client带上TGT票据，向TGS认证服务请求ST服务票据=&gt;TGS_REQ
+(4)Client通过了TGS认证服务后，TGS将会发放ST服务票据=&gt;TGS_REP
+(5)Client使用ST服务票据向服务端请求服务=&gt;AP_REQ
+(6)Server拿到PAC询问KDC，Client是否有权限
+(7)KDC将Client的权限信息发给Server
+(8)Server根据KDC返回的权限信息对比，判断Client是否有权限访问该服务，并把结果返回给Client=&gt;AP_REP
+</code></pre>
+<p>注：（6）（7）两步不一定发生，需要将目标主机配置为验证KDC PAC验证</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124114702215.png" alt="image-20231124114702215" loading="lazy"></figure>
+<pre><code>域中每个用户的Ticket都是由krbtgt的密码Hash来计算生成的,因此只要我们拿到了krbtgt的密码Hash,就可以随意伪造Ticket,进而使用Ticket登陆域控制器,使用krbtgt用户hash生成的票据被称为Golden Ticket,此类攻击方法被称为票据传递攻击
+</code></pre>
+<p>先前提到两个问题，第一个问题</p>
+<pre><code>（1）AS如何验证Client的身份？
+    AS与Client之间的认证使用AS_REQ&amp;AS_REP模块
+</code></pre>
+<h3 id="as_reqas_rep">AS_REQ&amp;AS_REP</h3>
+<p><strong>分析AS-REQ的数据包</strong></p>
+<p><code>AS-REQ</code>：当某个域用户试图访问域中的某个服务，于是输入用户名和密码，本机<code>Kerberos</code>服务会向<code>KDC</code>的<code>AS</code>认证服务发送一个<code>AS-REQ</code>认证请求。该请求包中包含：<code>请求用户名</code>，<code>客户端主机名</code>，<code>加密类型</code>和<code>Autherticator(用户NTLM Hash加密的时间戳)</code>以及一些信息。</p>
+<p><code>Client</code>向<code>KDC</code>发起<code>AS_REQ</code>请求凭据是用户hash加密的时间戳。请求凭据放在<code>PA_DATA</code>里面</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124115820946.png" alt="image-20231124115820946" loading="lazy"></figure>
+<pre><code>Pvno  kerberos协议版本号：05（Hex）
+5MSG-TYPE 类型 AS_REQ对应（krb-as-req）0a（Hex）
+PA-DATA  预认证信息数据 一个列表，包含若干个认证消息用于认证，每个认证消息有type和value。
+AS_REQ 阶段主要用到的有两个
+　　1.ENC_TIMESTAMP
+　　这个是预认证，就是用用户hash加密时间戳，作为value 发送给AS服务器。然后AS服务器那边有用户hash，使用用户hash进行解密，获得时间戳，如果能解密，且时间戳在一定的范围内，则证明认证通过。
+　　2.PA_PAC_REQUEST
+　　这个是启用PAC支持的扩展。PAC(Privilege Attribute Certificate)并不在原生的kerberos里面，是微软引进的扩展。PAC包含在AS_REQ的响应body(AS_REP)。这里的value对应的是include=true或者include=false(KDC根据include的值来判断返回的票据中是否携带PAC)。
+REQ_BODY 
+　　1.cname
+　　PrincipalName 类型。PrincipalName包含type和value。
+　　KRB_NT_PRINCIPAL = 1 means just the name of the principal 如daizhibin
+　　KRB_NT_SRV_INST = 2 service and other unique instance (krbtgt) 如krbtgt，cifs
+　　KRB_NT_ENTERPRISE_PRINCIPAL = 10 如 user@domain.com
+　　在AS_REQ里面cname 是请求的用户,这个用户名存在和不存在，返回的包有差异，可以用于枚举域内用户名。
+　　2.sname
+　　PrincipalName 类型，在AS_REQ里面sname是krbtgt，类型是KRB_NT_SRV_INST
+　　3.realm 域名
+　　4.from 发送时间
+　　5.till 到期时间，rubeus和kekeo都是20370913024805Z，这个可以作为特征来检测工具。
+　　6.nonce
+　　随机生成的一个数kekeo/mimikatz nonce是12381973，rubeus nonce是1818848256，这个也可以用来作为特征检测工具。
+　　7.etype
+　　加密类型
+这个地方要注意的是如果在配置里面选择用hash(不是plaintext)的话，hash的加密类型，要跟etype一样。因为KDC是按照etype类型选择用户对应加密方式的hash，如果是选择明文(plaintext)，那么client 会按照etype里面的加密方式将明文加密成hash
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124120208281.png" alt="image-20231124120208281" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124120229394.png" alt="image-20231124120229394" loading="lazy"></figure>
+<p>分析AS-REP的数据包</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124120435818.png" alt="image-20231124120435818" loading="lazy"></figure>
+<p><code>AS-REP</code>：Client发送<code>AS_REQ</code>，请求凭据是用户 hash加密的时间戳。请求凭据放在PA_DATA里面。<strong>当KDC中的AS认证服务收到后，在AS服务器中有用户hash，使用用户hash进行解密，获得时间戳</strong>，如果<strong>解密成功，并且时间戳在五分钟之内</strong>，那么<strong>预认证通过</strong>。接着AS认证服务将会向Client发送响应包，响应包中包括<strong>krbtgt用户的NTML hash加密后的TGT票据</strong>以及<strong>用户NTML Hash加密的Login Session key和其他信息</strong>。</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124121356089.png" alt="image-20231124121356089" loading="lazy"></figure>
+<p><strong>ticket中的enc-part是由krbtgt的密码hash加密生成的。如果我们拥有krbtgt的hash，便可以自制ticket，发起黄金票据攻击</strong></p>
+<p><strong>Login Session Key使用用户NTML Hash加密，作用是用于是用于确保客户端和KDC下一阶段之间通信安全，作为下一阶段的认证密钥</strong></p>
+<pre><code>在这一阶段，Client与KDC之间的交互在于AS认证服务，主要是为了获得TGT认证票据，以及Login Session Key，经过该阶段后，Client将会使用自身密码的NTML hash解密Login Session Key得到原始的Login Session Key。然后它会在本地缓存TGT票据和原始Login Session Key
+</code></pre>
+<h3 id="tgs_reqtgs_rep">TGS_REQ&amp;TGS_REP</h3>
+<p>先前提到两个问题，第二个问题</p>
+<pre><code>（2）Client如何获取ST？
+    Client与TGS之间认证使用TGS_REQ&amp;TGS_REP模块
+</code></pre>
+<p>Client在拿到<code>TGT</code>和<code>Login Session Key</code>之后，下一步的认证交互在于<strong>KDC中的TGS认证服务</strong>，主要目的是为了获取**<code>ST服务票据</code><strong>，因为当Client需要访问某服务器中的某服务时，需要</strong>&quot;门票&quot;**--<strong>ST服务票据</strong></p>
+<p>这一阶段，微软引进了两个扩展<code>S4U2SELF</code>和<code>S4U2PROXY</code>。</p>
+<p><strong>TGS-REQ数据包分析</strong></p>
+<p>该数据包中的主要内容为：<code>客户端信息，Authenticator(Login Session Key加密的时间戳)、TGT认证权证(padata下ap-req下的ticket)以及访问的服务名</code>等。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130134731522.png" alt="image-20231130134731522" loading="lazy"></figure>
+<p><code>padata</code>部分：</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130134812150.png" alt="image-20231130134812150" loading="lazy"></figure>
+<p>在<code>padata</code>中有很重要的一部分叫做<code>AP-REQ</code>，这是<code>TGS-REQ</code>中必须有的数据，<strong>这部分会携带AS-REP里面获取到的TGT票据</strong>，<strong>KDC检验TGT票据，如果票据正确，返回ST票据</strong>。</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130134912262.png" alt="image-20231130134912262" loading="lazy"></figure>
+<p><code>TGS-REQ</code>请求包中的<code>authenticator</code>就是<code>AS-REP</code>响应包返回的<code>Login Session key</code>加密的时间戳</p>
+<p><code>req-body</code>部分：</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135014105.png" alt="image-20231130135014105" loading="lazy"></figure>
+<p>在<code>req-body</code>中</p>
+<pre><code>padding:0
+kdc-options:用于与KDC约定一些选项设置
+realm:域名
+sname:这里是要请求的服务
+till:到期时间
+    rebeus和kekeo都是20370913024805Z，可用于作为特征值检验用
+nonce:随机生成数 
+    kekeo/mimikatz的nonce为12381973，rubeus的nonce为1818848256,可用于作为特征值检验    用
+etype:加密类型
+</code></pre>
+<p><strong>分析TGS-REP数据包</strong></p>
+<p><code>TGS-REP</code>：当TGS收到请求后，将会检查自身是否存在客户端所请求的服务，如果服务存在，<strong>通过krbtgt用户的NTML hash解密TGT并且得到Login Session Key</strong>，通过<strong>Login Session Key解密Authenticator</strong>。</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135057074.png" alt="image-20231130135057074" loading="lazy"></figure>
+<p>这一系列解密成功的话，<strong>将会验证对方的身份，验证时间戳是否在范围内，并且检查TG中的时间戳是否过期，且原始地址是否和TGT中保存的地址相同</strong></p>
+<p>完成认证后，TGS生成<strong>ST票据（包括客户端信息和原始Server Session key，整个ST服务票据使用该服务的NTML hash加密</strong>以及一个<strong>AS-REP返回的Login-Session-Key加密的Server Session Key</strong>。这两个将在响应包中发送给Client</p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135135060.png" alt="image-20231130135135060" loading="lazy"></figure>
+<p>PS:在这一步中，不论用户是否有权限访问服务，只要TGT解密无误，都将返回ST服务票据。<strong>任何一个用户，只要hash正确，就可以请求域内任何一个服务的票据</strong></p>
+<h3 id="st票据通过认证访问服务">ST票据通过认证访问服务</h3>
+<p><strong>使用ST票据通过认证访问服务</strong></p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135213170.png" alt="image-20231130135213170" loading="lazy"></figure>
+<p>需要强调的是，这里需要使用<strong>双向验证</strong>，因为实际情况中，需要客户端和服务器互相验证</p>
+<p>（1）服务端验证客户端：防止非法用户操作</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135234315.png" alt="image-20231130135234315" loading="lazy"></figure>
+<p>（2）客户端验证服务端：防止误入恶意服务</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135250120.png" alt="image-20231130135250120" loading="lazy"></figure>
+<p>PS:<strong>PAC并不是所有服务都开启的，这需要配置验证KDC PAC 签名。没有验证PAC，可能会导致白银票据攻击。因为开启PAC后，就算攻击者拥有用户hash，能制作ST票据后，无法通过PAC验证，还是无法访问服务</strong>。</p>
+<h2 id="常见的kerberos协议攻击">常见的Kerberos协议攻击</h2>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135340591.png" alt="image-20231130135340591" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E7%9B%B8%E5%85%B3%E6%A6%82%E5%BF%B5">相关概念</a></li>
+<li><a href="#%E8%AE%A4%E8%AF%81%E8%BF%87%E7%A8%8B">认证过程</a>
+<ul>
+<li><a href="#as_reqas_rep">AS_REQ&amp;AS_REP</a></li>
+<li><a href="#tgs_reqtgs_rep">TGS_REQ&amp;TGS_REP</a></li>
+<li><a href="#st%E7%A5%A8%E6%8D%AE%E9%80%9A%E8%BF%87%E8%AE%A4%E8%AF%81%E8%AE%BF%E9%97%AE%E6%9C%8D%E5%8A%A1">ST票据通过认证访问服务</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B8%B8%E8%A7%81%E7%9A%84kerberos%E5%8D%8F%E8%AE%AE%E6%94%BB%E5%87%BB">常见的Kerberos协议攻击</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/hackthebox-devvortex-ba-ji/">
+              <h3 class="post-title">
+                HackTheBox—Devvortex靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

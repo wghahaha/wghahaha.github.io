@@ -1,0 +1,802 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Python学习笔记 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Python学习笔记 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Python的数据类型
+
+数字：a=250,b=110
+字符型  a=&quot;hello world&quot;  b='你好世界' c=&quot;'三个引号输出，多用于预定义格式'&quot;
+布尔型  a=true b=false..." />
+    <meta name="keywords" content="python,编程语言" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Python学习笔记
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-02-18
+              </span>
+              <span>
+                17 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/oyylorouP/" class="post-tag">
+                  # python
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/As8VNLUIb/" class="post-tag">
+                  # 编程语言
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="python的数据类型">Python的数据类型</h4>
+<ol>
+<li>数字：a=250,b=110</li>
+<li>字符型  a=&quot;hello world&quot;  b='你好世界' c=&quot;'三个引号输出，多用于预定义格式'&quot;</li>
+<li>布尔型  a=true b=false</li>
+<li>列表  a=[1,2,3,4,5,6],b=['KK','GGG','SSSS'],在PHP中这种被称为索引数组，在JS中被称为数组</li>
+<li>字典   a=['name':'小王','age':19,'sex':'男’,'phone number':'18796358478']Python中的字典和列表的格式与JSON中的完全一样</li>
+<li>集合   与列表类似，是不重复的列表。在集合中不允许出现重复的数据。</li>
+<li>元组   tuple，与列表是一样的，中括号变成圆括号。a=(1,2,3,4,5,6)与列表的区别是不能修改</li>
+<li>对象   用class声明对象</li>
+<li>空类型   None</li>
+</ol>
+<p>在任何一门编程语言中，都可以通过输出字符串的方式，来编写其他程序。</p>
+<h4 id="命名的一些规则">命名的一些规则</h4>
+<p>1.变量名里面可以包括数字 字母 下划线 但是数字不可以作为开头比如 <strong>name1</strong>是合法的 <strong>1name</strong>是不合法的</p>
+<p>2.系统中的一些关键字也不可以使用 比如：<strong>if class for break等等</strong></p>
+<p>3.除了下划线其他符合不可以作为变量名使用</p>
+<p>4.Python的变量名是区分大小写的</p>
+<h4 id="注释">注释</h4>
+<pre><code class="language-python"># 注释一行
+三个引号或者单引号注释多行 （有点字符串赋值的感觉，没有成功赋值的话，可以当注释使用）
+'''
+ssssssss
+'''
+</code></pre>
+<h4 id="输入和输出">输入和输出</h4>
+<pre><code class="language-python">#python中常用的格式化操作有三种方式。分别为%格式化占位符、format格式化函数、f-string方式
+string = '这是我的电话号码：'
+# phone = input(&quot;请输入电话号码：&quot;)1
+phone = 115156
+# print(string + str(phone))
+print('%s%d' % (string,phone))
+
+print(f&quot;{string}{phone}&quot;)
+print(&quot;{}{}&quot;.format(string,phone))
+</code></pre>
+<h4 id="关于进制与字符转换的运算">关于进制与字符转换的运算</h4>
+<pre><code class="language-python"> #符与ASCII码的转换
+ print(ord(&quot;A&quot;))     # 65
+ print(ord(&quot;强&quot;))    # 24378
+ print(chr(65))      # A
+ print(chr(24378))   # 强
+
+ 进制转换
+ print(bin(78))     # 0b1001110
+ print(oct(78))     # 0o116
+ print(hex(78))     # 0x4e
+
+ a = 0b00111100
+ b = 0b00001101
+ print(bin(a&amp;b))         # 0b00001100
+
+ 左移，1100 (12)  &lt;&lt; 1  11000 (24)
+ a = 0b111100
+ a = 100
+ print(a&lt;&lt;1)         # a=60，左移1位，相当于*2，左移2位，*4
+ print(a&gt;&gt;1)         # a=60，右移1位，相当于/2
+</code></pre>
+<h4 id="数值的类型转换">数值的类型转换</h4>
+<pre><code class="language-python"> print(int(123.456))
+ print(int(123.556))
+ print(int(-123.556))
+ print(round(123.556, 2))
+ print(float(12345))
+ print(float(&quot;123.45&quot;))
+ print(int(float(&quot;123.45&quot;)))
+ phone = 13812345678
+ print(&quot;电话号码是：&quot; + str(phone))
+</code></pre>
+<h4 id="随机数">随机数</h4>
+<pre><code class="language-python"> import random   # 导入一个模块
+ r1 = random.randint(1, 10)   # 生成一个闭区间的随机数
+ print(r1)
+ r2 = random.randrange(1, 10)    # 左闭右开
+ r2 = random.randrange(1, 10, 2)    # 设置步长，只从1、3、5、7、9范围内生成随机数
+ print(r2)
+ r3 = random.uniform(1.5, 3.5)   # 指定范围内的随机小数
+ print(r3)
+ r4 = random.choice(&quot;ABCDEFGHIJK&quot;)   # 序列化数据类型
+ print(r4)
+ r5 = random.choice([1,2,3,4,5,6,7,8,9])
+ print(r5)
+</code></pre>
+<h4 id="字符串切片操作">字符串切片操作</h4>
+<p>索引值以 <strong>0</strong> 为开始值，<strong>-1</strong> 为从末尾的开始位置。</p>
+<pre><code class="language-python"> source = 'HelloWoniu'
+ print(source[2])        # 取下标
+ print(source[0:5])      # 字符串切片操作，左闭右开
+ print(source[1:])       # 从第2个开始到最后
+ print(source[:5])       # 从最开始到第5个位置前
+ print(source[-1])       # 取最后一个
+ print(source[1:-2])     # 从第2个取到倒数第2个之前
+ print(source[0:5:2])    # 设置步长为2
+</code></pre>
+<h4 id="字符串内置方法">字符串内置方法</h4>
+<pre><code class="language-python">print(source.count('l'))   # 子字符串在字符串中出现的次数
+ print(len(source))         # 取字符串长度
+
+ source = &quot;zhang,li,wang,zhao,zhou&quot;
+ print(source.split(','))
+ list = ['zhang', 'li', 'wang', 'zhao', 'zhou']
+ print('#'.join(list))
+
+ source = &quot;HelloWoniu12345&quot;
+ source = &quot;Hello蜗牛学院12345&quot;
+ print(source.encode())    # encode方法将字符串按照指定的编码格式转换成字节类型，默认编码格式为UTF-8
+ source = b'\xe8\x9c\x97\xe7\x89\x9b\xe5\xad\xa6\xe9\x99\xa2'
+ print(source.decode())   # 将字节类型按照指定的编码格式转换成字符串，默认编码格式为UTF-8
+
+ source = '蜗牛学院'
+ print(source.encode('gbk'))
+ source = b'\xce\xcf\xc5\xa3\xd1\xa7\xd4\xba'
+ print(source.decode('gbk'))
+
+ source = '  \t Hello \n \t   '
+ print(source.strip())       # 清除字符串左右的不可见字符
+</code></pre>
+<h4 id="列表元组字典">列表，元组，字典</h4>
+<h5 id="列表和元组的一些操作">列表和元组的一些操作。</h5>
+<pre><code class="language-python">import random
+
+# 列表或元组
+source = ['H', 'e', 'l', 'l', 'o', 'W', 'o', 'n', 'i', 'u']
+print(''.join(source))
+list = ['张三', '李四', '王五', '赵六', True, 13245]
+print(list[2])      # 王五
+print(list[1:3])    # 从第2个开始，到第4个之前
+print(list[-1])     # 12345
+
+# 对元组的操作是完全一样的
+tup = ('张三', '李四', '王五', '赵六', True, 13245)
+print(tup[-2])
+
+print(random.choice(tup))
+
+# 遍历列表
+# list = ['张三', '李四', '王五', '赵六', True, 12345]
+# 使用下标的方式进行遍历，注意一下代码的缩进
+# for i in range(0, len(list)):     # 从0到6，左闭右开
+# for i in range(len(list)):        # 如果range的范围从0开始，则可以活力
+for i in range(1, len(list), 2):    # 此时，循环的变量的值为1、3、5
+    print(i, end='\t')
+    print(list[i])
+
+# 直接用for...in直接取值
+for item in list:
+    print(item)
+
+# 补充for或while循环的else的用法
+# for item in list:
+#     print(item)
+# else:
+#     print('循环结束')
+
+# i=0
+# while(i&lt;len(list)):
+#     print(list[i])
+#     i+=1
+# else:
+#     print('循环结束')
+
+# r = random.randint(1, 10)
+# if r &lt; 5:
+#     print(&quot;太小了&quot;)
+# elif r &gt; 5:
+#     print(&quot;太大了&quot;)
+# else:
+#     print(&quot;刚合适&quot;)
+#
+# if &quot;张三&quot; in list and r &lt; 5:
+#     print(&quot;存在&quot;)
+# else:
+#     print(&quot;不存在&quot;)
+
+
+# 列表的其他用法
+list = []   # 定义空列表
+list.append(222)
+list.append(333)
+list.append(111)
+list.append(444)
+list.append(555)
+list.append(666)
+print(list)
+
+list.remove(444)
+print(list)
+
+list.sort(reverse=True)
+print(list)
+
+list = [666, 555, 333, 222, 111]
+tup = tuple(list)
+print(tup)
+list = list(tup)    # 注意：list此时被定义成了变量，不能再用于函数
+
+list[2] = 444
+print(list)
+
+tup = (666, 555, 333, 222, 111)
+tup[2] = 444      # 元组的元素值不能修改
+print(tup)
+
+# source = &quot;HelloWoniu&quot;
+# print(source)
+# print(source[1])
+# source[1] = &quot;E&quot;
+# print(source)
+# source = &quot;你好世界&quot;
+# print(source)
+
+# del(tup)
+# print(tup)
+
+# tup2 = (111,)       # 如果元组只有一个值，则必须在后加, 否则会变成普通类型
+# print(tup2)
+</code></pre>
+<h5 id="字典">字典</h5>
+<pre><code class="language-python"># 字典的定义
+student = {'name':'张三', 'age': 25, 'sex':'男', 'phone': '13812345678', 'addr':'成都'}
+# 字典的取值
+print(student['name'])
+print(student.get('phone'))
+# 字典的更新：直接通过key修改值，如果key不存在，则会新增到字典中
+student['sex'] = '女'
+print(student)
+student['sexy'] = '不知道'
+print(student)
+student.update({'sexy':'知道', 'age':26})
+print(student)
+# 字典的删除
+student.pop('sexy')
+print(student)
+# 字典的遍历：按照Key遍历
+for k in student:
+    print(&quot;Key: %s,  Value: %s&quot; % (k, student[k]))
+for k in student.keys():
+    print(k)
+# 直接遍历值
+for v in student.values():
+    print(v)
+# 直接Key和Value一起遍历，student.items()返回元组，可以直接按顺序赋值给k和v变量
+for kv in student.items():
+    print(kv)
+for k, v in student.items():
+    print(k, v)
+</code></pre>
+<h4 id="python中的函数和参数用法">python中的函数和参数用法</h4>
+<p><strong>函数的构成：</strong></p>
+<p><strong>1、函数名（必须有，且在同一作用范围中不允许重复）</strong></p>
+<p><strong>2、参数（可以没有），遵守标准的命名规范</strong></p>
+<p><strong>3、返回值（可以没有），如果没有返回值，则返回为None</strong></p>
+<pre><code class="language-python"># Python中的函数和参数的用法
+# 函数的构成：
+# 1、函数名（必须有，且在同一作用范围中不允许重复）
+# 2、参数（可以没有），遵守标准的命名规范
+# 3、返回值（可以没有），如果没有返回值，则返回为None
+
+# 无参数，无返回值
+def test_01():
+    print(&quot;这是一个没有参数没有返回值的函数&quot;)
+
+# 有参数，无返回值
+def test_02(a, b):
+    result = a+b
+    print(result)
+
+# 有参数，有返回值
+def test_03(a, b):
+    result = a+b
+    return result
+
+# 直接将函数名进行赋值或输出
+def test_04(func):
+    func()
+    print(&quot;Hello&quot;)
+
+# test_01()
+# test_02(100,200)
+# r = test_03(100, 200)
+# print(r)
+
+# 直接将函数名进行赋值或输出
+# x = test_04
+# print(type(x))
+# x(test_01)
+# test_04(test_01)
+
+# source =&quot;hello&quot;
+# print(type(source))
+# print(hex(id(source)))
+#
+# import random
+# random.choice('ABCDEFG')
+#
+# list = [1,2,3]
+# print(list)
+# print(type(list))
+</code></pre>
+<p><strong>Python里面的参数分为以下4种：</strong></p>
+<p><strong>1、必需参数（位置参数：positional argument）</strong></p>
+<p><strong>2、默认值参数（定义形参时，可以设置一个默认值）</strong></p>
+<p><strong>3、可变长参数，可选参数，必须加 * 号说明</strong></p>
+<p>**4、字典参数，关键字参数，在可变长参数之后，还可以定义字典参数，必须加 ** <strong>声明</strong></p>
+<p><strong>参数的顺序：1、2、3、4，不能乱</strong></p>
+<pre><code class="language-python">def test_args_01(a, b, c=100):
+    result = a * b + c
+    print(result)
+
+# test_args_01(5, 10)
+# test_args_01(5, 10, 200)
+# test_args_01(c=5, a=10, b=200)      # 在传参时，直接指定参数名称，可以不用关注参数的位置（推荐该用法）
+
+def test_args_02(a, b, c=100, d=200, *args):
+    result = a * b + c * d
+    print(result)
+    print(args)     # 可变长参数，是以元组的形式存在
+    print(*args)    # 在元组或列表前加 *，表示将该数据展开
+
+# test_args_02(10, 50, 5, 6)
+# test_args_02(10, 50, 5, 6, 7, 8, 9)
+
+def test_args_03(a, b, c=100, d=200, *args, **kwargs):
+    result = a * b + c * d
+    print(result)
+    print(args)
+    print(kwargs)
+
+test_args_03(10, 50, 5, 6, 7, 8, 9, name='zhangsan', age=30)
+test_args_03(10, 50, 5, 6, 7, 8, 9, name='zhangsan', age=30)    #
+# test_args_03(10, 50, 5, 6, 7, 8, 9, name='zhangsan', age=30, a=100)     # 字典参数不能包含位置参数或默认值参数
+
+# 通常情况下，自定义函数，并且不需要交由第三方调用时，或者不考虑各类复杂场景时，位置参数和默认值参数足够。
+# 如果需要将函数交由其他用户调用，或开发的是一套框架，需要考虑各种复杂调用情况，或者参数不确定，则加可变参数和字典参数。
+</code></pre>
+<h4 id="python中包与模块的引用">python中包与模块的引用</h4>
+<p>Python 模块(Module)，是一个 Python 文件，以 .py 结尾，包含了 Python 对象定义和Python语句。</p>
+<p>模块让你能够有逻辑地组织你的 Python 代码段。</p>
+<p>把相关的代码分配到一个模块里能让你的代码更好用，更易懂。</p>
+<p>模块能定义函数，类和变量，模块里也能包含可执行的代码。</p>
+<p><strong>代码部分</strong></p>
+<pre><code class="language-python"># import moduleb
+# moduleb.test()
+
+# 定义模块级变量（直接隶属于当前模块，与函数或类同级，可以被其他函数直接引用）
+source = &quot;模块级变量&quot;
+list = [11,22,33,44,55]
+
+def test_01():
+    print(&quot;这是一个没有参数没有返回值的函数&quot;)
+    global source   # 使用global声明为全局变量后，才可以正确引用到模块级的全局变量
+    source = &quot;Hello Module - Variable&quot;
+    # global list
+    # list = [1,2,3]
+    list.append(66)
+
+
+def test_02(a, b):
+    result = a+b
+    print(result)
+
+def test_03(a, b):
+    result = a+b
+    return result
+
+def test_04(func):
+    print(func.__name__)
+
+# test_01()
+
+# 当在当前模块中打印__name__魔术变量时，其值为 __main__ (字符串）
+# 如果在其他模块中引用当前模块，则打印的__name__为当前模块的真实模块名称，而非 __main__
+# print(__name__)
+
+# 为了防止别的模块在导入时重复执行以下代码，必须添加一个判断条件：
+# 其本质就是判断当前代码是否在当前模块中直接运行，还是在其他模块中被导入时运行的
+if __name__ == '__main__':
+    test_01()
+    test_04(test_02)
+
+
+class A:
+    pass
+
+</code></pre>
+<pre><code class="language-python"># 另外在导包时，注意不要循环导入，在A中导入B，在B中导入A
+# import modulea
+# modulea.test_01()
+
+def test():
+    print(&quot;Hello Module&quot;)
+
+test()
+
+# import function     # 当导入一个模块的时候，事实上是将该模块的源代码直接执行了一遍
+
+# 导入到模块级，调用时，用 模块.函数 的方式进行调用
+# import modulea
+# modulea.test_01()
+# print(modulea.source)
+# print(modulea.list)
+#
+# import random
+# random.choice([1,2,3,4])
+
+# 通过from...import...导入到函数级，那么直接在代码中调用函数即可
+# from modulea import test_01
+# test_01()
+#
+# from random import choice
+# print(choice([1,2,3,4,5]))
+
+# 通常情况下，在同一个包下，可以不需要在 导入 时明确声明包名，但是，建议无论在何种情况下，把包名加上
+# 直接使用 import 只能到 模块级，不能到函数或类级
+# import basic.modulea
+# basic.modulea.test_01()
+#
+# from basic import modulea
+# modulea.test_01()
+
+# 如果要直接导入到函数或类级，则必须使用 from ... import ...
+# from basic.modulea import test_01
+# test_01()
+
+# from basic.second.demo import name
+</code></pre>
+<h4 id="python中的文件读写操作">python中的文件读写操作</h4>
+<p><strong>文件的读写，所有的I/O操作主要分三步：打开资源，操作资源，关闭资源</strong></p>
+<p>在执行操作后需要关闭文件以免占用资源</p>
+<h5 id="普通txt类的文件读写操作">普通txt类的文件读写操作</h5>
+<pre><code class="language-python">#  基本操作：读取文件内容并输出
+f = open('./Test.txt', mode='r')
+content = f.read()
+print(content)
+f.close()
+
+# 写入文件内容
+f = open('./Test.txt', mode='a')
+f.write(&quot;\nHello Woniu !!!&quot;)
+f.close()
+
+# 写入新文件，并使用GBK的编码
+f = open('./Temp.txt', mode='w', encoding='GBK')
+f.write(&quot;这是一个牛逼的文件\n通过事先设定某个特定场景下的特定问题\n来探求该场景下的各种可能的解决方案\n&quot;)
+f.close()
+
+# 读取的操作
+f = open('./Temp.txt', encoding='GBK')
+content = f.read(20)      # 指定读取文件的内容长度
+content = f.readline()    # 按行读取文件内容，默认读取第1行
+content = f.readlines()     # 按行全部读取并且将每一行保存到列表中
+print(content)
+# 也可以使用f.read()读取所有内容，使用 \n 作为分隔符，调用split进行列表处理
+content = f.read()
+list = content.split('\n')
+print(list)
+f.close()
+</code></pre>
+<h5 id="csv文件的读写">Csv文件的读写</h5>
+<pre><code class="language-python"> CSV文件的读写：逗号分隔符，用于表示二维表的数据结构
+# 将CSV文件变成Python的列表+字典的格式 [{},{},{}]
+f = open('./userpass.csv')
+line_list = f.readlines()
+
+user_list = []
+# username, password, expect   # 如何动态读取第一行数据，并且变成列名
+for i in range(1, len(line_list)):
+    line = line_list[i].strip()
+
+    username = line.split(',')[0]
+    password = line.split(',')[1]
+    expect = line.split(',')[2]
+
+    user_dict = {}
+    user_dict['username'] = username
+    user_dict['password'] = password
+    user_dict['expect'] = expect
+
+    user_list.append(user_dict)
+
+print(user_list)
+</code></pre>
+<h5 id="一些小tips">一些小tips</h5>
+<pre><code class="language-python"># 使用 with 自动处理资源关闭的问题
+with open('./Temp.txt') as f:
+    content = f.read()
+print(content)
+
+# 读取二进制文件时，需要使用 rb
+with open('D:/emergency.jpg', mode='rb') as f:
+    content = f.read()
+print(content)
+
+</code></pre>
+<h4 id="python中读写csv文件操作">python中读写csv文件操作</h4>
+<h5 id="源代码编写">源代码编写</h5>
+<pre><code class="language-python"># 读取CSV，并动态将第一行处理为字典的Key，返回[{},{}]的格式
+def read_csv(csvfile, has_column=True):
+    with open(csvfile) as f:
+        line_list = f.readlines()
+
+    if not has_column:
+        raise Exception('CSV文件必须要使用第一行作为列名')
+        # return None
+
+    key_list = line_list[0].strip().split(',')
+
+    list = []
+    for i in range(1, len(line_list)):
+        # 如果当前行以#开头，则直接绕过，到下一行进行处理
+        if line_list[i].startswith(&quot;#&quot;):
+            continue
+
+        temp_list = line_list[i].strip().split(',')
+
+        dict = {}
+        for j in range(len(temp_list)):
+            dict[key_list[j]] = temp_list[j]
+
+        list.append(dict)
+
+    return list
+</code></pre>
+<h5 id="使用python的csv模块进行读写">使用Python的csv模块进行读写</h5>
+<pre><code class="language-python">import csv
+
+with open('./user-2.csv') as f:
+    # 读取并遍历每一行
+    csv_list = csv.reader(f)
+    for item in csv_list:
+        print(item)
+
+    # 读取并将结果强制转换成 list
+    csv_list = csv.reader(f)
+    print(list(csv_list))
+
+    # 以字典的格式读取数据
+    csv_result = csv.DictReader(f)
+    for user in csv_result:
+        print(dict(user))
+
+    csv.writer()
+
+
+    # f.tell()    # 文件当前的指针位置
+    # f.seek()    # 将文件指针指向哪个位置
+
+
+result = read_csv('./user-2.csv')
+print(result)
+
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#python%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B">Python的数据类型</a></li>
+<li><a href="#%E5%91%BD%E5%90%8D%E7%9A%84%E4%B8%80%E4%BA%9B%E8%A7%84%E5%88%99">命名的一些规则</a></li>
+<li><a href="#%E6%B3%A8%E9%87%8A">注释</a></li>
+<li><a href="#%E8%BE%93%E5%85%A5%E5%92%8C%E8%BE%93%E5%87%BA">输入和输出</a></li>
+<li><a href="#%E5%85%B3%E4%BA%8E%E8%BF%9B%E5%88%B6%E4%B8%8E%E5%AD%97%E7%AC%A6%E8%BD%AC%E6%8D%A2%E7%9A%84%E8%BF%90%E7%AE%97">关于进制与字符转换的运算</a></li>
+<li><a href="#%E6%95%B0%E5%80%BC%E7%9A%84%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2">数值的类型转换</a></li>
+<li><a href="#%E9%9A%8F%E6%9C%BA%E6%95%B0">随机数</a></li>
+<li><a href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%88%87%E7%89%87%E6%93%8D%E4%BD%9C">字符串切片操作</a></li>
+<li><a href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%86%85%E7%BD%AE%E6%96%B9%E6%B3%95">字符串内置方法</a></li>
+<li><a href="#%E5%88%97%E8%A1%A8%E5%85%83%E7%BB%84%E5%AD%97%E5%85%B8">列表，元组，字典</a>
+<ul>
+<li><a href="#%E5%88%97%E8%A1%A8%E5%92%8C%E5%85%83%E7%BB%84%E7%9A%84%E4%B8%80%E4%BA%9B%E6%93%8D%E4%BD%9C">列表和元组的一些操作。</a></li>
+<li><a href="#%E5%AD%97%E5%85%B8">字典</a></li>
+</ul>
+</li>
+<li><a href="#python%E4%B8%AD%E7%9A%84%E5%87%BD%E6%95%B0%E5%92%8C%E5%8F%82%E6%95%B0%E7%94%A8%E6%B3%95">python中的函数和参数用法</a></li>
+<li><a href="#python%E4%B8%AD%E5%8C%85%E4%B8%8E%E6%A8%A1%E5%9D%97%E7%9A%84%E5%BC%95%E7%94%A8">python中包与模块的引用</a></li>
+<li><a href="#python%E4%B8%AD%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C">python中的文件读写操作</a>
+<ul>
+<li><a href="#%E6%99%AE%E9%80%9Atxt%E7%B1%BB%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C">普通txt类的文件读写操作</a></li>
+<li><a href="#csv%E6%96%87%E4%BB%B6%E7%9A%84%E8%AF%BB%E5%86%99">Csv文件的读写</a></li>
+<li><a href="#%E4%B8%80%E4%BA%9B%E5%B0%8Ftips">一些小tips</a></li>
+</ul>
+</li>
+<li><a href="#python%E4%B8%AD%E8%AF%BB%E5%86%99csv%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C">python中读写csv文件操作</a>
+<ul>
+<li><a href="#%E6%BA%90%E4%BB%A3%E7%A0%81%E7%BC%96%E5%86%99">源代码编写</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8python%E7%9A%84csv%E6%A8%A1%E5%9D%97%E8%BF%9B%E8%A1%8C%E8%AF%BB%E5%86%99">使用Python的csv模块进行读写</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/yun-fu-wu-qi-da-jian-ji-shi-yong/">
+              <h3 class="post-title">
+                阿里云服务器食用指北
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

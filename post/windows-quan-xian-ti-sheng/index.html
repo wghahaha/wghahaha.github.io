@@ -1,0 +1,354 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Windows权限提升 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Windows权限提升 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="由于最近一直感觉自己一些基础还不太扎实 所以重新看了下一些基础课程 做了一些笔记。视频是看到B站的小迪安全。现在看来可能有一点；老了 但是用来补下基础还是不错的，然后我也做了一些简单的笔记(不太详细)
+一些基础命令
+
+针对环境
+web
+拿到..." />
+    <meta name="keywords" content="权限提升" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Windows权限提升
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-09-03
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/AHqextDg7/" class="post-tag">
+                  # 权限提升
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>由于最近一直感觉自己一些基础还不太扎实 所以重新看了下一些基础课程 做了一些笔记。视频是看到B站的小迪安全。现在看来可能有一点；老了 但是用来补下基础还是不错的，然后我也做了一些简单的笔记(不太详细)</p>
+<h4 id="一些基础命令">一些基础命令</h4>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230831192356586.png" alt="image-20230831192356586" loading="lazy"></figure>
+<h4 id="针对环境">针对环境</h4>
+<h5 id="web">web</h5>
+<p>拿到一些webshell权限后 在这上面进行一些权限提升的操作</p>
+<h5 id="本地">本地</h5>
+<p>在本地提权 比如从普通用户到管理员用户权限</p>
+<h4 id="提权方法">提权方法</h4>
+<h5 id="溢出漏洞">溢出漏洞</h5>
+<pre><code>信息用到的一些简单命令
+ipconfig  //查看IP地址
+whoami   //查看当前权限
+whoami -prv //当前用户可以做的事情
+systeminfo  //打印系统信息      systeminfo &gt;x.txt 打印到x.txt里面   //查看操作系统版本 对补丁进行筛选
+
+补丁筛选优秀项目
+vulmap(脚本用ps直接执行 但是在后门环境中有可能没有ps这个环境。利用环境受限)    
+wesng  (对比systeminfo 中的补丁信息进行筛选 输出结果 在自己的本地执行就可以)
+windowsvulnscan  (要在ps环境下运行 但是可以直接systeminfo运行一下 然后将文件修改为指定的格式)
+
+利用MSF或特定EXP
+有漏洞编号放到网上的普通搜取。
+
+信息收集 -&gt;  补丁筛选 -&gt; 利用MSF或特定EXP -执行 -&gt;西瓜到手
+</code></pre>
+<h5 id="数据库">数据库</h5>
+<pre><code>在系统溢出漏洞无果的情况下，可以采用数据库进行提权，但需要知道数据库提权的前提条件:服务器开启数据库服务及获取到最高权限用户密码。除access数据库外，其他数据库基本都存在数据库提权的可能。
+很多新师傅容易搞混的是 这里是指通过数据库获取主机权限而不是提升数据库权限。
+</code></pre>
+<pre><code>数据库提权步骤
+服务探针-&gt;信息收集-&gt;提权利用
+</code></pre>
+<pre><code>Mysql
+     UDF （基于MYSQL调用命令执行函数）
+           1.读取网站上的配置文件 (sql config database include...)需要root账号密码
+           2.读取数据库存储或备份文件 （了解其数据库存储格式及对于内容）@@basedir/data/数据库名/表名.myd
+           3.利用脚本暴力破解（了解数据库是否支持外联及如何开启外联）
+           4.远程本地暴力破解
+           5.利用自定义执行函数导出dll文件进行命令执行
+           6.手工创建plugin目录或利用ntfs流创建
+           MySQL&lt;5.1 导出目录 c:/windows或system32
+           mysql=&gt;5.1 导出安装目录/lib/plugin
+     MOF（基于mysql的特性安全问题 成功率最低的）
+     启动项 （基于配合操作系统自启动）
+           导出自定义可执行文件到启动目录配合重启(可以使用DDOS)执行 可以配合msf执行 但是必须开启外联
+     反弹shell
+           本机监听端口 反弹函数
+sqlserver(只在windows上)
+     xp_cmdshell
+           默认在2000开启 在2005默认关闭。
+           调用xp_cmdshell执行命令 
+     sp_oacreate
+          主要调用OLE对象 利用OLE对象的run方法来执行命令
+     利用sqlserver沙盒提权
+Oracle(jsp搭建的网站不需要提权，自带system权限)
+     普通用户
+           前提是拥有一个普通的Oracle连接账号，不需要DBA权限 可提权至DBA权限并以Oracle实例运行的权限执行操作系统命令。
+     DBA用户 (自动化工具)
+           拥有DBA账号密码，可以省去自己手动创建存储过程的繁琐流程，一键执行测试。
+     注入模式(sqlmap)
+           拥有一个SQL注入点，可以通过注入点直接执行系统命令，此种模式没有回显，需要自己验证。
+            
+Redis
+     利用计划任务执行命令执行反弹shell
+     学ssh-keygen公钥使用私钥登录
+     低权限写webshell
+Postgresql
+      CVE-2019-9193 CVE-2018-1058
+</code></pre>
+<h5 id="令牌窃取">令牌窃取</h5>
+<pre><code>原理:进行远程过程调用时请求提升权限，然后调用它从而生成特权安全令牌执行特权操作，当操作系统允许令牌不仅用户进程本身，还用于原始请求进程时，漏洞就会出现。
+主要用于windows 2008之前
+
+操作流程 使用msf执行即可
+
+单独的时候可以在Web权限和本地权限提权
+使用烂土豆时是在web权限和数据库权限下提权
+</code></pre>
+<h5 id="atscps">AT&amp;SC&amp;PS</h5>
+<pre><code>概念讲解
+
+AT 2003 计划命令  设计计划命令 存在逻辑缺陷导导致达到system权限。
+SC 创建服务 绑带DIN 启动服务都一样 执行服务可以道道system权限。
+PS 配合PSTOOLS使用  执行一串命令可以达到system权限。
+</code></pre>
+<h5 id="烂土豆">烂土豆</h5>
+<pre><code>配合令牌窃取提权过程
+上传烂土豆-&gt;执行烂土豆-&gt;利用窃取模块-&gt;窃取systeam-&gt;成功
+</code></pre>
+<h5 id="dll劫持">DLL劫持</h5>
+<pre><code>原理windwos程序启动的时候需要DLL，如果运行DLL不存在，则可以通过在应用程序要查找的位置放恶意DLL来提权。通常 windos应用程序有其预定义好的搜索DLL的路径。它会根据下面的顺序进行搜索
+1.应用程序加载的目录
+2.c:\Windows\Systeam32
+3.c:\Windows\Systeam
+4.c:\Windows
+5.当前工作目录Current Working Directory CWD
+6.在PATH环境变量的目录(先系统后用户)
+
+过程: 信息收集-&gt;进程调试-&gt;制作DLL并上传-&gt;替换DLL-&gt;启动应用后成功
+
+DLL劫持进行提权需要特定软件应用的控制权和启用配合，复杂鸡肋。
+</code></pre>
+<h5 id="引号路径">引号路径</h5>
+<pre><code>当Windows服务运行时，会发生以下两种情况。如果给出了可执行文件，并且引用了完整路径，则系统会按字面解释它并执行，但是，如果服务的二进制路径未包含在引号中，则则造作系统将会执行找到的空格分隔的服务路径的第一个实例。
+
+过程：检测引号服务路径-&gt;利用路径制作文件并上传-启用服务或重启-&gt;调用后成功
+</code></pre>
+<h5 id="服务权限">服务权限</h5>
+<pre><code>原理：即使正确的引用了服务路径，也可能存在其他漏洞。由于管理配置错误，用户可能对服务拥有过多的权限。例如:直接修改它导致重定向执行文件。
+过程：检测服务权限配置-&gt;制作文件并上传-&gt;更改服务路劲指向-&gt;调用后成功。
+</code></pre>
+<h4 id="思路总结">思路总结</h4>
+<pre><code>提权漏洞部分适用在不同的环境 当然也有一些通用知识
+提权漏洞也有系统版本区别 特性决定了利用面
+提权漏洞部分需要第三方环境，如数据库 第三方提权等。
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80%E4%BA%9B%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4">一些基础命令</a></li>
+<li><a href="#%E9%92%88%E5%AF%B9%E7%8E%AF%E5%A2%83">针对环境</a>
+<ul>
+<li><a href="#web">web</a></li>
+<li><a href="#%E6%9C%AC%E5%9C%B0">本地</a></li>
+</ul>
+</li>
+<li><a href="#%E6%8F%90%E6%9D%83%E6%96%B9%E6%B3%95">提权方法</a>
+<ul>
+<li><a href="#%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E">溢出漏洞</a></li>
+<li><a href="#%E6%95%B0%E6%8D%AE%E5%BA%93">数据库</a></li>
+<li><a href="#%E4%BB%A4%E7%89%8C%E7%AA%83%E5%8F%96">令牌窃取</a></li>
+<li><a href="#atscps">AT&amp;SC&amp;PS</a></li>
+<li><a href="#%E7%83%82%E5%9C%9F%E8%B1%86">烂土豆</a></li>
+<li><a href="#dll%E5%8A%AB%E6%8C%81">DLL劫持</a></li>
+<li><a href="#%E5%BC%95%E5%8F%B7%E8%B7%AF%E5%BE%84">引号路径</a></li>
+<li><a href="#%E6%9C%8D%E5%8A%A1%E6%9D%83%E9%99%90">服务权限</a></li>
+</ul>
+</li>
+<li><a href="#%E6%80%9D%E8%B7%AF%E6%80%BB%E7%BB%93">思路总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/yun-an-quan-chong-dian-xue-xi-bi-ji/">
+              <h3 class="post-title">
+                云安全重点学习笔记
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

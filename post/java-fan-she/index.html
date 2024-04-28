@@ -1,0 +1,387 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Java反射 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Java反射 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Java反射学习
+前言
+反射（Reflection）是 Java 的特性之一，它可以让运行中的 Java 程序获取自身的信息，并且可以操作类或者对象的内部属性。
+通过反射，我们可以在程序运行时获得程序集中每一个类型的成员和成员信息。我们平时..." />
+    <meta name="keywords" content="java" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Java反射
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-04-07
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/AOl4tt3Gs/" class="post-tag">
+                  # java
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="java反射学习">Java反射学习</h4>
+<h5 id="前言">前言</h5>
+<p><strong>反射</strong>（Reflection）是 Java 的特性之一，它可以让运行中的 Java 程序获取自身的信息，并且可以操作类或者对象的内部属性。</p>
+<pre><code>通过反射，我们可以在程序运行时获得程序集中每一个类型的成员和成员信息。我们平时所用的 new 去创建的对象的类型，是在编译期就确定下来了。而 Java 反射可以动态地创建对象并调用其属性，这样的对象的类型在编译期是未知的。所以我们可以通过反射机制创建对象，即使这个对象的类型在编译期是未知的。
+
+反射的核心是 JVM 在运行时才会动态加载类、调用方法和访问属性，它不需要在编译期知道运行的对象是谁。
+</code></pre>
+<pre><code>Java 反射主要提供以下的功能：
+
+在运行时判断任意一个对象所属的类
+在运行时构造任意一个类的对象
+在运行时判断任意一个类所具有的成员变量和方法
+在运行时调用任意一个对象的方法
+我们可以在运行时取到「任意」你想要的类、对象、变量、方法等。
+
+注：反射是在运行时操作的，而不是编译时。
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230407212744428.png" alt="image-20230407212744428" loading="lazy"></figure>
+<p><strong>反射使用的前提条件：必须先得到代表的字节码的Class，Class类用于表示.class文件（字节码</strong></p>
+<h5 id="获取-目标类型的class对象"><strong>获取 目标类型的<code>Class</code>对象</strong></h5>
+<pre><code class="language-java">// 获取 目标类型的`Class`对象的方式主要有4种
+
+&lt;-- 方式1：Object.getClass() --&gt;
+    // Object类中的getClass()返回一个Class类型的实例 
+    Boolean carson = true; 
+    Class&lt;?&gt; classType = carson.getClass(); 
+    System.out.println(classType);
+    // 输出结果：class java.lang.Boolean  
+
+&lt;-- 方式2：T.class 语法    --&gt;
+    // T = 任意Java类型
+    Class&lt;?&gt; classType = Boolean.class; 
+    System.out.println(classType);
+    // 输出结果：class java.lang.Boolean  
+    // 注：Class对象表示的是一个类型，而这个类型未必一定是类
+    // 如，int不是类，但int.class是一个Class类型的对象
+
+&lt;-- 方式3：static method Class.forName   --&gt;
+    Class&lt;?&gt; classType = Class.forName(&quot;java.lang.Boolean&quot;); 
+    // 使用时应提供异常处理器
+    System.out.println(classType);
+    // 输出结果：class java.lang.Boolean  
+
+&lt;-- 方式4：TYPE语法  --&gt;
+
+    Class&lt;?&gt; classType = Boolean.TYPE; 
+    System.out.println(classType);
+    // 输出结果：boolean  
+
+</code></pre>
+<h5 id="通过-class-对象分别获取constructor类对象-method类对象-field-类对象"><strong>通过 <code>Class</code> 对象分别获取<code>Constructor</code>类对象、<code>Method</code>类对象 &amp; <code>Field</code> 类对象</strong></h5>
+<pre><code class="language-java">// 即以下方法都属于`Class` 类的方法。
+
+&lt;-- 1. 获取类的构造函数（传入构造函数的参数类型）-&gt;&gt;
+  // a. 获取指定的构造函数 （公共 / 继承）
+  Constructor&lt;T&gt; getConstructor(Class&lt;?&gt;... parameterTypes)
+  // b. 获取所有的构造函数（公共 / 继承） 
+  Constructor&lt;?&gt;[] getConstructors(); 
+  // c. 获取指定的构造函数 （ 不包括继承）
+  Constructor&lt;T&gt; getDeclaredConstructor(Class&lt;?&gt;... parameterTypes) 
+  // d. 获取所有的构造函数（ 不包括继承）
+  Constructor&lt;?&gt;[] getDeclaredConstructors(); 
+// 最终都是获得一个Constructor类对象
+
+// 特别注意：
+  // 1. 不带 &quot;Declared&quot;的方法支持取出包括继承、公有（Public） &amp; 不包括有（Private）的构造函数
+  // 2. 带 &quot;Declared&quot;的方法是支持取出包括公共（Public）、保护（Protected）、默认（包）访问和私有（Private）的构造方法，但不包括继承的构造函数
+  // 下面同理
+
+&lt;--  2. 获取类的属性（传入属性名） --&gt;
+  // a. 获取指定的属性（公共 / 继承）
+   Field getField(String name) ;
+  // b. 获取所有的属性（公共 / 继承）
+   Field[] getFields() ;
+  // c. 获取指定的所有属性 （不包括继承）
+   Field getDeclaredField(String name) ；
+  // d. 获取所有的所有属性 （不包括继承）
+   Field[] getDeclaredFields() ；
+// 最终都是获得一个Field类对象
+
+&lt;-- 3. 获取类的方法（传入方法名 &amp; 参数类型）--&gt;
+  // a. 获取指定的方法（公共 / 继承）
+    Method getMethod(String name, Class&lt;?&gt;... parameterTypes) ；
+  // b. 获取所有的方法（公共 / 继承）
+   Method[] getMethods() ；
+  // c. 获取指定的方法 （ 不包括继承）
+   Method getDeclaredMethod(String name, Class&lt;?&gt;... parameterTypes) ；
+  // d. 获取所有的方法（ 不包括继承）
+   Method[] getDeclaredMethods() ；
+// 最终都是获得一个Method类对象
+
+&lt;-- 4. Class类的其他常用方法 --&gt;
+getSuperclass(); 
+// 返回父类
+
+String getName(); 
+// 作用：返回完整的类名（含包名，如java.lang.String ） 
+ 
+Object newInstance(); 
+// 作用：快速地创建一个类的实例
+// 具体过程：调用默认构造器（若该类无默认构造器，则抛出异常 
+// 注：若需要为构造器提供参数需使用java.lang.reflect.Constructor中的newInstance（）
+
+
+</code></pre>
+<h5 id="通过-constructor类对象-method类对象-field类对象分别获取类的构造函数-方法-属性的具体信息-进行操作"><strong>通过 <code>Constructor</code>类对象、<code>Method</code>类对象 &amp; <code>Field</code>类对象分别获取类的构造函数、方法 &amp; 属性的具体信息 &amp; 进行操作</strong></h5>
+<pre><code class="language-java">// 即以下方法都分别属于`Constructor`类、`Method`类 &amp; `Field`类的方法。
+
+&lt;-- 1. 通过Constructor 类对象获取类构造函数信息 --&gt;
+  String getName()；// 获取构造器名
+  Class getDeclaringClass()；// 获取一个用于描述类中定义的构造器的Class对象
+  int getModifiers()；// 返回整型数值，用不同的位开关描述访问修饰符的使用状况
+  Class[] getExceptionTypes()；// 获取描述方法抛出的异常类型的Class对象数组
+  Class[] getParameterTypes()；// 获取一个用于描述参数类型的Class对象数组
+
+&lt;-- 2. 通过Field类对象获取类属性信息 --&gt;
+  String getName()；// 返回属性的名称
+  Class getDeclaringClass()； // 获取属性类型的Class类型对象
+  Class getType()；// 获取属性类型的Class类型对象
+  int getModifiers()； // 返回整型数值，用不同的位开关描述访问修饰符的使用状况
+  Object get(Object obj) ；// 返回指定对象上 此属性的值
+  void set(Object obj, Object value) // 设置 指定对象上此属性的值为value
+ 
+&lt;-- 3. 通过Method 类对象获取类方法信息 --&gt;
+  String getName()；// 获取方法名
+  Class getDeclaringClass()；// 获取方法的Class对象	
+  int getModifiers()；// 返回整型数值，用不同的位开关描述访问修饰符的使用状况
+  Class[] getExceptionTypes()；// 获取用于描述方法抛出的异常类型的Class对象数组
+  Class[] getParameterTypes()；// 获取一个用于描述参数类型的Class对象数组
+
+&lt;--额外：java.lang.reflect.Modifier类 --&gt;
+// 作用：获取访问修饰符
+
+static String toString(int modifiers)	
+// 获取对应modifiers位设置的修饰符的字符串表示
+
+static boolean isXXX(int modifiers)	
+// 检测方法名中对应的修饰符在modifiers中的值
+
+</code></pre>
+<p><strong>注意</strong></p>
+<pre><code>背景
+反射机制的默认行为受限于Java的访问控制
+如，无法访问（ private ）私有的方法、字段
+
+冲突
+Java安全机制只允许查看任意对象有哪些域，而不允许读它们的值
+若强制读取，将抛出异常
+
+解决方案
+脱离Java程序中安全管理器的控制、屏蔽Java语言的访问检查，从而脱离访问控制
+
+具体实现手段：使用Field类、Method类 &amp; Constructor类对象的setAccessible()
+
+void setAccessible(boolean flag)	
+// 作用：为反射对象设置可访问标志
+// 规则：flag = true时 ，表示已屏蔽Java语言的访问检查，使得可以访问 &amp; 修改对象的私有属性
+
+boolean isAccessible()	
+// 返回反射对象的可访问标志的值
+
+static void setAccessible(AccessibleObject[] array, boolean flag)	
+// 设置对象数组可访问标志
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#java%E5%8F%8D%E5%B0%84%E5%AD%A6%E4%B9%A0">Java反射学习</a>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E8%8E%B7%E5%8F%96-%E7%9B%AE%E6%A0%87%E7%B1%BB%E5%9E%8B%E7%9A%84class%E5%AF%B9%E8%B1%A1"><strong>获取 目标类型的<code>Class</code>对象</strong></a></li>
+<li><a href="#%E9%80%9A%E8%BF%87-class-%E5%AF%B9%E8%B1%A1%E5%88%86%E5%88%AB%E8%8E%B7%E5%8F%96constructor%E7%B1%BB%E5%AF%B9%E8%B1%A1-method%E7%B1%BB%E5%AF%B9%E8%B1%A1-field-%E7%B1%BB%E5%AF%B9%E8%B1%A1"><strong>通过 <code>Class</code> 对象分别获取<code>Constructor</code>类对象、<code>Method</code>类对象 &amp; <code>Field</code> 类对象</strong></a></li>
+<li><a href="#%E9%80%9A%E8%BF%87-constructor%E7%B1%BB%E5%AF%B9%E8%B1%A1-method%E7%B1%BB%E5%AF%B9%E8%B1%A1-field%E7%B1%BB%E5%AF%B9%E8%B1%A1%E5%88%86%E5%88%AB%E8%8E%B7%E5%8F%96%E7%B1%BB%E7%9A%84%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0-%E6%96%B9%E6%B3%95-%E5%B1%9E%E6%80%A7%E7%9A%84%E5%85%B7%E4%BD%93%E4%BF%A1%E6%81%AF-%E8%BF%9B%E8%A1%8C%E6%93%8D%E4%BD%9C"><strong>通过 <code>Constructor</code>类对象、<code>Method</code>类对象 &amp; <code>Field</code>类对象分别获取类的构造函数、方法 &amp; 属性的具体信息 &amp; 进行操作</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/java-dong-tai-dai-li-xue-xi/">
+              <h3 class="post-title">
+                Java动态代理学习
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

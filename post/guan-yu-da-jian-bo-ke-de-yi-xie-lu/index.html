@@ -1,0 +1,237 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>关于搭建博客的一些坑。 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="关于搭建博客的一些坑。 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="
+以前的路
+这已经不知道是我的第几个博客了，最开始自己搞了个虚拟主机，用wordpress搭建了一个博客，但是那个价格有点小贵，加上虚拟主机有时候会崩溃。。。。后来又用了一些开源的社区，比如CSDN 博客园之类的。。虽然很方便，但是总感觉少..." />
+    <meta name="keywords" content="踩过的坑" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              关于搭建博客的一些坑。
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-03
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/ocgclKYq5/" class="post-tag">
+                  # 踩过的坑
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <!-- more -->
+<h3 id="以前的路">以前的路</h3>
+<p>这已经不知道是我的第几个博客了，最开始自己搞了个虚拟主机，用wordpress搭建了一个博客，但是那个价格有点小贵，加上虚拟主机有时候会崩溃。。。。后来又用了一些开源的社区，比如CSDN 博客园之类的。。虽然很方便，但是总感觉少了点什么，后来听说可以用 github的github pages搭建。（是我孤陋寡闻了）。最开始是搭配 hexo搭建，那个过程相对来说有点复杂。。需要用到git 但是我的git不知道为什么一直在出问题。所以花了一天加一个晚上的时间都没有搭建好。</p>
+<h3 id="gridea">Gridea</h3>
+<p>直到昨天看到了Gridea 这款软件，看了下搭建步骤。。感觉很简单。然后就下载下来，开始搭建。发现搭建的步骤确实很简单，而且主题也是我最喜欢的极简主题，没有那么多的花里胡哨的地方，可以专注于博客的创作。正当我感叹这个软件的方便之处的时候，我还不知道问题正在慢慢到来。。。。。。</p>
+<h5 id="问题">问题</h5>
+<p>我开始在这里导入一些我写过的笔记的时候，发现一个特别恼火的事情就是，这款软件的内容始终无法与仓库同步，我就开始慌了，到处去找方法。</p>
+<h5 id="网上的解决方法">网上的解决方法。</h5>
+<p>网上的大部分方法都是说用github的桌面版实现上传。具体的实现思路就是通过Gridea生成一份html文件然后push上去，我这样操作了但是问题一直得不到解决。。<br>
+有些说用Proxifier但是那个不知道为什么我也不可以。<br>
+到这里网上的解决方法基本上试完了。我就在继续不停的查找文档以及不停的重复操作。昨晚上搞到一点多才睡。。。</p>
+<h6 id="解决方法">解决方法</h6>
+<p>今天中午吃了饭想的是一定要把这个问题解决了。我就又开始了查找资料，最后发现根本原因就是 天朝的网络问题。Gridea走的不是系统代理，所以我们的系统代理就不可以了。最后在油管发现，如果将clash设置为tun模式，将会创建一个虚拟网卡，那么就可以直接全平台走代理了。重要的是这个方法特别简单。。（我以前一直用的是那种机场自研的平台，所以就没有太接触过这个平台，但是一直知道这个很牛逼）。<br>
+最终不负我的期望终于成功同步了，大家也可以在这里看到我这篇文章。。。</p>
+<p>那个clash的tun模式的话，油管上面有教程，时长大概只有1分钟。很简单</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%BB%A5%E5%89%8D%E7%9A%84%E8%B7%AF">以前的路</a></li>
+<li><a href="#gridea">Gridea</a><br>
+*
+<ul>
+<li><a href="#%E9%97%AE%E9%A2%98">问题</a></li>
+<li><a href="#%E7%BD%91%E4%B8%8A%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95">网上的解决方法。</a>
+<ul>
+<li><a href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95">解决方法</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/cao-zuo-xi-tong-qi-mo-fu-xi-2/">
+              <h3 class="post-title">
+                操作系统期末复习2
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

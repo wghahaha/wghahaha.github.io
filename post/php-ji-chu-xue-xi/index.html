@@ -1,0 +1,1496 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PHP基础学习 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="PHP基础学习 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="前言
+最近又在复习反序列化漏洞，随便将PHP的一些简单语法也复习了下，这是我很久以前在蜗牛学院学PHP的笔记了，感觉目前学到这个程度也基本够用了，（代码审计的话，肯定还是不够的），还有一些在打靶场的知识点没有写上。后面有机会的再系统的写一篇..." />
+    <meta name="keywords" content="编程语言" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              PHP基础学习
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-13
+              </span>
+              <span>
+                43 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/As8VNLUIb/" class="post-tag">
+                  # 编程语言
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>前言<br>
+最近又在复习反序列化漏洞，随便将PHP的一些简单语法也复习了下，这是我很久以前在蜗牛学院学PHP的笔记了，感觉目前学到这个程度也基本够用了，（代码审计的话，肯定还是不够的），还有一些在打靶场的知识点没有写上。后面有机会的再系统的写一篇博客吧</p>
+<h4 id="在php中-表示字符串连接符">在php中 ,  . 表示字符串连接符</h4>
+<pre><code class="language-php">    echo &quot;1111111111&quot; . &quot;2222222222&quot; . &quot;333333333&lt;br/&gt;&quot;;
+    print &quot;1111111111&quot; . &quot;2222222222&quot; . &quot;333333333&lt;br/&gt;&quot;;
+
+    echo &quot;你好，你的余额为：&quot; . 20000 . &quot;元&lt;br/&gt;&quot;;
+</code></pre>
+<h4 id="引号的问题">引号的问题：</h4>
+<ol>
+<li>
+<p>双引号：里面可以包裹字符串和变量。</p>
+</li>
+<li>
+<p>单引号：单引号只能表示字符串，不能引用变量。</p>
+</li>
+<li>
+<p>反引号： 用于执行操作系统命令并返回结果</p>
+</li>
+</ol>
+<pre><code class="language-php">    $addr = &quot;四川成都&quot;;
+    echo &quot;你当前所在城市为：$addr &lt;br/&gt;&quot;;
+    echo '你当前所在城市为：$addr &lt;br/&gt;';
+    echo `date /T`;  
+</code></pre>
+<h4 id="代码理解部分">代码理解部分</h4>
+<pre><code>  $i = date(&quot;s&quot;);
+    while ($i &lt;= 30) {
+        ob_flush();     // 清空缓冲区，直接输出
+        flush();
+        echo date(&quot;Y-m-d H:i:s&quot;) . &quot;&lt;br/&gt;&quot;;
+        $i = date(&quot;s&quot;);
+        sleep(1);
+    }
+</code></pre>
+<h4 id="数组部分">数组部分</h4>
+<h6 id="php中数组的定义方式">php中数组的定义方式</h6>
+<pre><code class="language-php">$students = array(&quot;李源远&quot;,&quot;王佳乐&quot;,&quot;李园翔&quot;,&quot;刘俊&quot;,&quot;冉攀&quot;,&quot;邹松鹤&quot;,&quot;陈凯&quot;,&quot;王一清&quot;,&quot;胡涛&quot;,&quot;李云颢&quot;,&quot;张先发&quot;,&quot;王淼&quot;, &quot;徐志豪&quot;,&quot;张霖&quot;,&quot;崇青平&quot;,&quot;范金辉&quot;,&quot;李浩民&quot;,&quot;王昀东&quot;,&quot;张亚飞&quot;,&quot;何思成&quot;,&quot;王亮&quot;,&quot;张良&quot;,&quot;翁通达&quot;,&quot;廖志凌&quot;);
+</code></pre>
+<h6 id="取数组的长度">取数组的长度</h6>
+<pre><code class="language-php">$len = count($students);
+echo $len . &quot;&lt;br/&gt;&quot;;
+</code></pre>
+<h6 id="删除最后一个值">删除最后一个值</h6>
+<pre><code class="language-php">array_pop($students);
+print_r($students);
+echo '&lt;p/&gt;';
+</code></pre>
+<h6 id="数组的遍历">数组的遍历</h6>
+<p>用循环生成下标的方式</p>
+<pre><code class="language-php">for ($i=0; $i&lt;count($students); $i++) {
+     echo $students[$i] . &quot;&lt;br/&gt;&quot;;
+ }
+</code></pre>
+<p>foreach遍历</p>
+<pre><code class="language-php">foreach ($students as $stu) {
+    echo $stu . &quot;&lt;br/&gt;&quot;;
+}
+</code></pre>
+<p><strong>注意：这两种遍历方式，输出的结果一致！</strong></p>
+<h6 id="数组去重">数组去重</h6>
+<pre><code class="language-php">$grade = array(87, 95, 38, 59, 67, 49, 99, 82, 59, 99, 67, 73);
+$new = array_unique($grade);
+print_r($new);
+echo '&lt;p/&gt;';
+</code></pre>
+<h6 id="数组排序">数组排序</h6>
+<pre><code class="language-php">$grade = array(87, 95, 38, 59, 67, 49, 99, 82, 59, 98, 67, 73);
+rsort($grade);
+foreach ($grade as $g) {
+    echo $g . &quot;&lt;br/&gt;&quot;;
+}
+</code></pre>
+<p>关联数组：以key=&gt;value组成的键值对，取值的时候用key来取值，而不是下标 索引数组的key就是0、1、2、3这种数字</p>
+<pre><code class="language-php">$student01 = array('name'=&gt;'张三', 'age'=&gt;30, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18812345678');
+$student02 = array('name'=&gt;'李中', 'age'=&gt;30, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18912345676');
+$student03 = array('name'=&gt;'王九', 'age'=&gt;25, 'addr'=&gt;'成都高新区', 'phone'=&gt;'19812345678');
+$student04 = array('name'=&gt;'赵六', 'age'=&gt;30, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18112345679');
+$student05 = array('name'=&gt;'周七', 'age'=&gt;27, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18812345978');
+
+print_r($student01);
+echo &quot;&lt;br/&gt;&quot;;
+
+echo $student01['name']. &quot;&lt;br/&gt;&quot;;
+$student01['addr'] = '成都天府新区';
+</code></pre>
+<h6 id="补充4个重要的数组相关函数">补充4个重要的数组相关函数</h6>
+<p>直接取最后一个值，无所谓是哪种数组</p>
+<pre><code class="language-php">echo end($student05) . &quot;&lt;br/&gt;&quot;;     
+if (in_array('周八', $student05)) {
+    echo &quot;在&lt;br/&gt;&quot;;
+}
+</code></pre>
+<p>把字符串打散为数组。</p>
+<pre><code class="language-php">$source = &quot;Typora.exe#9284#Console#1#92680K&quot;;
+$myarray = explode(&quot;#&quot;, $source);
+print_r($myarray);
+echo '&lt;br/&gt;';
+</code></pre>
+<p>把数组合并成字符串</p>
+<pre><code class="language-php">$grade = array(87, 95, 38, 59, 67, 49, 99, 82, 59, 98, 67, 73);
+$result = implode(&quot;,&quot;, $grade);
+echo $result . &quot;&lt;br/&gt;&quot;;
+</code></pre>
+<pre><code class="language-php">$student01 = array('name'=&gt;'张三', 'age'=&gt;30, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18812345678');
+$student02 = array('name'=&gt;'李四', 'age'=&gt;30, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18912345676');
+$student03 = array('name'=&gt;'王九', 'age'=&gt;25, 'addr'=&gt;'成都高新区', 'phone'=&gt;'19812345678');
+$student04 = array('name'=&gt;'赵六', 'age'=&gt;30, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18112345679');
+$student05 = array('name'=&gt;'周七', 'age'=&gt;27, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18812345978');
+</code></pre>
+<p>二维数组</p>
+<pre><code class="language-php">$class01 = array($student01, $student02, $student03, $student04, $student05);
+echo $class01[1]['name'];   // 李四
+</code></pre>
+<h4 id="设置使用中国北京时间作为系统时区">设置使用中国北京时间作为系统时区</h4>
+<pre><code class="language-php">date_default_timezone_set(&quot;PRC&quot;);
+</code></pre>
+<h4 id="后端与数据库端连接">后端与数据库端连接</h4>
+<pre><code class="language-php"> 定义一个方法，用于建立与数据库的连接
+    private function create_connection() {
+         $conn = mysqli_connect($this-&gt;host, $this-&gt;username, $this-&gt;password, $this-&gt;database) 
+                 or die(&quot;数据库连接不成功.&quot;);
+         mysqli_query($conn, &quot;set names utf8&quot;);
+         return $conn;
+     }
+</code></pre>
+<h6 id="设置编码格式的两种方式">设置编码格式的两种方式</h6>
+<pre><code class="language-php">mysqli_query($conn, &quot;set names utf8&quot;);  
+mysqli_set_charset($conn, 'utf8')
+</code></pre>
+<h6 id="拼接sql语句并执行它">拼接SQL语句并执行它</h6>
+<pre><code class="language-php">$sql = &quot;select * from user where username='$username' and password='$password'&quot;;
+$result = mysqli_query($conn, $sql);    // $result获取到的查询结果，称结果集
+</code></pre>
+<h4 id="函数">函数</h4>
+<pre><code class="language-php">function calc($a, $b) {
+    $result = $a + $b;
+    echo &quot;运算结果为：$result &lt;br/&gt;&quot;;
+    return $result;
+}
+function checkPhone_01($phone) {
+
+    $len = strlen($phone);
+    if ($len != 11) {
+        echo &quot;长度必须为11位.&lt;br/&gt;&quot;;
+        return false;   // 代码运行到此，就会返回到调用的地方，不再往下运行
+    }
+
+    if ($phone[0] != 1) {
+        echo &quot;第1位必须为1.&lt;br/&gt;&quot;;
+        return false;
+    }
+
+    if ($phone[1] &lt; &quot;3&quot; || $phone[1] &gt; &quot;9&quot;) {
+        echo &quot;第2位必须为3-9.&lt;br/&gt;&quot;;
+        return false;
+    }
+
+    for ($i=2; $i&lt;11; $i++) {
+        if ($phone[$i] &lt; &quot;0&quot; || $phone[$i] &gt; &quot;9&quot;) {
+            echo &quot;后9位必须是数字.&lt;br/&gt;&quot;;
+            return false;
+        }
+    }
+    
+    return true;    // 如果前面的代码块均没有return，则认为电话号码是有效的
+}
+
+</code></pre>
+<h4 id="使用正则表达式判断手机号码">使用正则表达式判断手机号码</h4>
+<pre><code class="language-php">function checkPhone($phone) {
+    $result = preg_match(&quot;/^1[3-9]\d{9}$/&quot;, $phone);
+    return $result;
+}
+</code></pre>
+<h4 id="获取请求数据的方式">获取请求数据的方式：</h4>
+<pre><code class="language-php">// 前端用GET请求发，后台用$_GET函数取，前端用POST请求发，后台用$_POST函数取
+
+// $username = $_GET['username'];
+// $password = $_GET['password'];
+// $vcode = $_GET['vcode'];
+
+$username = $_POST['username'];
+$password = $_POST['password'];
+$vcode = $_POST['vcode'];
+</code></pre>
+<h4 id="session部分">Session部分</h4>
+<h6 id="session的声明与使用"><strong>Session的声明与使用</strong></h6>
+<p>Session的设置不同于Cookie，必须先启动，在PHP中必须调用session_start()。session_start()函数的语法格式如下：</p>
+<p>Bool session_start(void) //创建Session，开始一个会话，进行Session初始化</p>
+<p>注意：session_start()函数之前不能有任何输出</p>
+<h6 id="代码理解部分-2"><strong>代码理解部分</strong></h6>
+<pre><code class="language-php">session_start();
+
+if ($_SESSION['islogin'] != 'true' || $_SESSION['role'] != 'editor') {
+    die(&quot;你无权新增文章&quot;);
+}
+</code></pre>
+<pre><code class="language-php">session_start();
+
+    if ($_SESSION['islogin'] != 'true') {
+         die (&quot;请先登录.&quot;);
+</code></pre>
+<p>当第一次访问网站时，Seesion_start()函数就会创建一个唯一的Session ID，并自动通过HTTP的响应头，将这个Session ID保存到客户端Cookie中。同时，也在服务器端创建一个以Session ID命名的文件，用于保存这个用户的会话信息。当同一个用户再次访问这个网站时，也会自动通过HTTP的请求头将Cookie中保存的Seesion ID再携带过来，这时Session_start()函数就不会再去分配一个新的Session ID，而是在服务器的硬盘中去寻找和这个Session ID同名的Session文件，将这之前为这个用户保存的会话信息读出，在当前脚本中应用，达到跟踪这个用户的目的。 Session以数组的形式使用，如：$_SESSION['session名']</p>
+<h6 id="代码理解部分-3">代码理解部分</h6>
+<pre><code class="language-php">&lt;?php
+//启动session的初始化
+session_start();
+//注册session变量，赋值为一个用户的名称
+$_SESSION[&quot;username&quot;]=&quot;skygao&quot;;
+//注册session变量，赋值为一个用户的ID
+$_SESSION[&quot;uid&quot;]=1;
+?&gt;
+</code></pre>
+<p>执行该脚本后，两个Session变量就会被保存在服务器端的某个文件中，该文件的位置是通过php.ini文件，在session.save_path属性指定的目录下。</p>
+<h6 id="代码理解部分-4"><strong>代码理解部分</strong></h6>
+<pre><code class="language-php">&lt;?php
+//第一步：开启Session并初始化
+session_start();
+ 
+//第二部：删除所有Session的变量，也可以用unset($_SESSION[XXX])逐个删除
+$_SESSION = array();
+ 
+//第三部：如果使用基于Cookie的session，使用setCookkie()删除包含Session ID的cookie
+if(isset($_COOKIE[session_name()])) {
+    setCookie(session_name(), &quot;&quot;, time()-42000, &quot;/&quot;);
+}
+ 
+//第四部：最后彻底销毁session
+session_destroy();
+ 
+?&gt;
+</code></pre>
+<pre><code class="language-php">session.cookie_path = / ; cookie的有效路径
+session.cookie_domain = ; cookie的有效域
+session.name = PHPSESSID; 用在cookie里的session的名字
+session.save_handler = files ; 用于保存/取回数据的控制方式
+session.save_path = /tmp ; 在 save_handler 设为文件时传给控制器的参数， 这是数据文件将保存的路径.
+session.use_cookies = 1 ; 是否使用cookies
+</code></pre>
+<pre><code class="language-php">&lt;?php
+//开启session
+session_start();
+ 
+//在每个URL后面附加上参数，变量名为session_name()获取名称，值通过session_id()获取
+echo '&lt;a href=&quot;demo.php?'.session_name().'='.session_id().'&quot;&gt;连接演示&lt;/a&gt;';
+?&gt;
+在使用Linux系统做服务器时，则在编辑PHP时如果使用了–enable-trans-sid配置选项，和运行时选项session.use_trans_sid都被激活，在客户端禁用Cookie时，相对URL将被自动修改为包含会话ID。如果没有这么配置，或者使用Windows系统作为服务器时，可以使用常量SID。该常量在会话启动时被定义，如果客户端没有发送适当的会话Cookie，则SID的格式为session_name=session_id,否则就为一个空字符串。因此可以无条件地将其嵌入到URL中去。在下例中使用两个脚本程序，演示了Session ID的传送方法。
+&lt;?php
+session_start();
+ 
+$_SESSION[&quot;username&quot;]=&quot;admin&quot;;
+ 
+echo &quot;session ID:&quot;.session_id().&quot;&lt;br&gt;&quot;;
+ 
+?&gt;
+</code></pre>
+<h4 id="文件读写操作">文件读写操作</h4>
+<h6 id="代码理解部分-5"><strong>代码理解部分</strong></h6>
+<pre><code class="language-php">&lt;?php
+ 
+// 创建文件
+$touch = ('./a.php');
+var_dump($touch);
+ 
+// 移动文件 重命名
+$touch = rename('./a.php','./b.txt');
+var_dump($touch);
+ 
+//删除文件
+$touch = unlink('./a.php');
+ 
+ 
+// 获取文件大小
+$filesize = filesize('./fa.jpg');
+var_dump($filesize);
+ 
+//判断是否是文件 判断文件为true 判断目录为false
+$is_file = is_file('./test.php');
+var_dump($is_file);
+$is_file = is_file('./PHP');
+var_dump($is_file);
+ 
+// 判断文件是否存在，存在则删除
+if(file_exists('./b.txt')){
+    echo &quot;文件存在&quot;;
+    unlink('./b.txt');
+    echo &quot;文件已删除&quot;;
+}
+else{
+    echo '文件不存在';
+}
+ 
+// 文件是否可执行
+$is_executable = is_executable('./../xray_windows_amd64.exe');
+var_dump($is_executable);
+ 
+// 文件是否可写可读
+$is_write = is_writeable('./test.php');
+$is_read = is_readable('./test.php');
+var_dump($is_write);
+var_dump($is_read);
+ 
+// 获取文件的创建时间
+$time = filectime('./test.php');
+var_dump(date('Y-m-d H:i:s',$time));
+ 
+// 获取文件的修改时间
+$time = filemtime('./test.php');
+var_dump(date('Y-m-d H:i:s',$time));
+ 
+// 获取文件上次访问时间
+$time = fileatime('./ ');
+var_dump(date('Y-m-d H:i:s',$time));
+ 
+// 打开文件 读取文件 关闭文件 写入文件
+$content = ''; // 声明一个空字符串
+$file_open = fopen('./test.php','r'); // 只读文件
+$file_write = fopen('./test.txt','w'); // w 是写入文件，如果文件不存在则会创建，如果文件有内容则会清空后再次写入
+fwrite($file_write,'&lt;?php phpinfo(); ?&gt;');
+fclose($file_write);
+while(!feof($file_open)){ // feof 判断指针是否到文件末尾
+    //$content .= fread($file_open,1); // 一个字节一个字节读
+    $content = fgets($file_open); // 读取一行的内容
+}
+echo $content;
+fclose($file_open);
+ 
+// 读取文件 ：打开、读取、关闭一步到位
+$res = file_get_contents('./test.php');
+echo $res;
+ 
+// 写入文件
+$file_write = file_put_contents('./test.txt','&lt;?php phpinfo(); ?&gt;'); // 以w方式写入文件
+$file_write = file_put_contents('./test.txt','&lt;?php phpinfo(); ?&gt;',FILE_APPEND); // 在文本后追加语句
+var_dump($file_write);
+ 
+</code></pre>
+<h6 id="文件读写的步骤"><strong>文件读写的步骤</strong></h6>
+<p>1、打开文件：fopen</p>
+<p>2、读写文件：fgets，fwrite</p>
+<p>3、关闭文件：fclose</p>
+<h6 id="附加函数"><strong>附加函数：</strong></h6>
+<ul>
+<li>1、判断文件是否已经到达末尾：feof($fp)</li>
+<li>2、一次性将文件所有内容读出：file_get_contents($filename)</li>
+<li>3、使用file_get_contents还可以发送GET请求</li>
+<li>4、使用file_put_contents一次性写入文件</li>
+<li>5、获取当前文件指针所在位置：ftell</li>
+<li>6、直接将文件指针指向某个位置：fseek</li>
+</ul>
+<h6 id="最基本的按行循环读取整份文件"><strong>最基本的按行循环读取整份文件</strong></h6>
+<pre><code class="language-php">$fp = fopen(&quot;E:/userpass.csv&quot;, &quot;r&quot;);
+ while (!feof($fp)) {
+     $line = fgets($fp);
+     $line = str_replace(&quot;\n&quot;, &quot;&lt;br/&gt;&quot;, $line);
+     echo $line;
+ }
+ fclose($fp);
+</code></pre>
+<h6 id="往文件中写入内容"><strong>往文件中写入内容</strong></h6>
+<pre><code class="language-php">$fp = fopen(&quot;E:/userpass.csv&quot;, &quot;a&quot;);
+fwrite($fp, &quot;\ntest,test123,login-fail&quot;);
+ fclose($fp);
+</code></pre>
+<h6 id="使用file_get_contents直接读取文件内容"><strong>使用file_get_contents直接读取文件内容</strong></h6>
+<pre><code class="language-php">使用file_get_contents直接读取文件内容
+ header(&quot;content-type:text/html; charset='gbk'&quot;);
+ $content = file_get_contents(&quot;E:/Test.txt&quot;);
+ $content = iconv(&quot;GBK&quot;, &quot;UTF-8&quot;, $content);
+ $content = str_replace(&quot;\n&quot;, &quot;&lt;br/&gt;&quot;, $content);
+ echo $content;
+ $list = explode(&quot;\n&quot;, $content);
+ print_r($list);
+</code></pre>
+<h6 id="使用file_get_contents发送get请求访问网页"><strong>使用file_get_contents发送GET请求访问网页</strong></h6>
+<pre><code class="language-php">content = file_get_contents(&quot;http://www.woniunote.com/&quot;);
+echo $content;
+//是否可以用于下载一个文件、一张图片呢？ 小任务，完成它，进而思考网页爬虫的设计思路。
+ $content = file_get_contents(&quot;http://www.woniunote.com/img/banner-1.jpg&quot;);
+ file_put_contents(&quot;E:\\test.jpg&quot;, $content);
+</code></pre>
+<h6 id="使用file_put_contents一次性写入文件"><strong>使用file_put_contents一次性写入文件</strong></h6>
+<p>拓展部分：</p>
+<pre><code class="language-php">/*
+ * UTF-8处理中文时使用的是3字节，而GBK处理中文时是2个字节
+ * 11001011 01011011 01011110 10100101 01011110 10100101
+ */
+</code></pre>
+<pre><code class="language-php">content = iconv(&quot;UTF-8&quot;, &quot;GBK&quot;, &quot;\nHello蜗牛哦&quot;);
+// file_put_contents(&quot;E:\\Test.txt&quot;, $content, FILE_APPEND);
+</code></pre>
+<h6 id="读取一个csv文件逗号分隔符并且解析为二维数组"><strong>读取一个CSV文件（逗号分隔符），并且解析为二维数组</strong></h6>
+<pre><code class="language-php">$content = file_get_contents(&quot;E:/userpass.csv&quot;);
+$rows = explode(&quot;\n&quot;, $content);
+</code></pre>
+<h6 id="代码理解部分-6"><strong>代码理解部分</strong></h6>
+<pre><code class="language-php"> $list = array();
+ for ($i=1; $i&lt;count($rows); $i++) {
+     $temp = explode(&quot;,&quot;, $rows[$i]);
+     array_push($list, $temp);
+ }
+ print_r($list);
+</code></pre>
+<h6 id="使用php模拟tail-f实时查看文件内容"><strong>使用PHP模拟tail -f实时查看文件内容</strong></h6>
+<pre><code class="language-php">$fp = fopen(&quot;E:\\userpass.csv&quot;, &quot;r&quot;);
+ fseek($fp, 32);
+ while ($line = fgets($fp)) {
+    echo $line . &quot;&lt;br/&gt;&quot;;
+ }
+ fclose($fp);
+
+ @error_reporting(0);
+ set_time_limit(0);
+
+$pos = 0;
+ while (true) {
+     $fp = fopen(&quot;./test.txt&quot;, &quot;r&quot;);
+    fseek($fp, $pos);
+   while ($line = fgets($fp)) {
+        $line = iconv(&quot;GBK&quot;, &quot;UTF-8&quot;, $line);
+         echo $line . &quot;&lt;br/&gt;&quot;; 
+    }
+    $pos = ftell($fp);
+     fclose($fp);
+
+     ob_flush();
+     flush();
+     sleep(2);
+}
+</code></pre>
+<h4 id="php操作json数据">PHP操作JSON数据</h4>
+<h6 id="代码理解部分-7"><strong>代码理解部分</strong></h6>
+<pre><code class="language-php">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;JSON&lt;/title&gt;
+    &lt;script&gt;
+        function json() {
+            // var users = [&quot;张三&quot;,  &quot;李四&quot;,  &quot;王五&quot;,  &quot;赵六&quot;,  &quot;田七&quot;];
+            // for (var i=0; i&lt;users.length; i++) {
+            //     document.write(users[i] + &quot;&lt;br/&gt;&quot;);
+            // }
+            
+            // var user1 = {&quot;name&quot;:&quot;张三&quot;, sex:&quot;男&quot;, age:30, phone:&quot;18012345678&quot;, addr:&quot;成都&quot;}; 
+            // document.write(user1.name);
+
+            // var user1 = {&quot;name&quot;:&quot;张三&quot;, sex:&quot;男&quot;, age:30, phone:&quot;18012345678&quot;, addr:&quot;成都&quot;}; 
+            // var user2 =  {name:&quot;李四&quot;,  sex:&quot;女&quot;,  age:25, phone:&quot;13012365659&quot;,addr:&quot;重庆&quot;}; 
+            // var users = [user1, user2];
+
+            // var users = [{&quot;name&quot;:&quot;张三&quot;, sex:&quot;男&quot;, age:30, phone:&quot;18012345678&quot;, addr:&quot;成都&quot;},
+            //             {name:&quot;李四&quot;,  sex:&quot;女&quot;,  age:25, phone:&quot;13012365659&quot;,addr:&quot;重庆&quot;}];
+            // document.write(users[1]['name']);
+
+            var users =  {user1:[&quot;张三&quot;,&quot;男&quot;,30,&quot;18012345678&quot;,&quot;成都&quot;, {province:'四川'}],
+			              user2:[&quot;李四&quot;,&quot;女&quot;,25,&quot;13012365659&quot;,&quot;重庆&quot;, {province:'重庆'}]};
+            // document.write(users.user2[3]);
+            document.write(users.user1[5].province);
+            
+        }
+    &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;?php
+        // 引用common.php，如果之前已经引用则不再引用
+        // require_once('common.php');
+        // include_once('common.php');
+        // $conn = create_connection();
+        // $sql = &quot;select articleid, viewcount, createtime from article where articleid &lt; 10&quot;;
+        // $result = mysqli_query($conn, $sql);
+        // $data = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+        // echo json_encode($data);
+
+        $student01 = array('name'=&gt;'张三', 'age'=&gt;30, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18812345678');
+        $student02 = array('name'=&gt;'李中', 'age'=&gt;30, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18912345676');
+        $student03 = array('name'=&gt;'王九', 'age'=&gt;25, 'addr'=&gt;'成都高新区', 'phone'=&gt;'19812345678');
+        $student04 = array('name'=&gt;'赵六', 'age'=&gt;30, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18112345679');
+        $student05 = array('name'=&gt;'周七', 'age'=&gt;27, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18812345978');
+        $class01 = array($student01, $student02, $student03, $student04, $student05);
+
+        print_r($class01);
+        echo json_encode($class01);     // JSON序列化：将对象转换成字符串
+
+        // JSON反序列化：把一个字符串再转换成对象
+        $string = '[{&quot;name&quot;:&quot;\u5f20\u4e09&quot;,&quot;age&quot;:30,&quot;addr&quot;:&quot;\u6210\u90fd\u9ad8\u65b0\u533a&quot;,&quot;phone&quot;:&quot;18812345678&quot;},{&quot;name&quot;:&quot;\u674e\u4e2d&quot;,&quot;age&quot;:30,&quot;addr&quot;:&quot;\u6210\u90fd\u9ad8\u65b0\u533a&quot;,&quot;phone&quot;:&quot;18912345676&quot;},{&quot;name&quot;:&quot;\u738b\u4e5d&quot;,&quot;age&quot;:25,&quot;addr&quot;:&quot;\u6210\u90fd\u9ad8\u65b0\u533a&quot;,&quot;phone&quot;:&quot;19812345678&quot;},{&quot;name&quot;:&quot;\u8d75\u516d&quot;,&quot;age&quot;:30,&quot;addr&quot;:&quot;\u6210\u90fd\u9ad8\u65b0\u533a&quot;,&quot;phone&quot;:&quot;18112345679&quot;},{&quot;name&quot;:&quot;\u5468\u4e03&quot;,&quot;age&quot;:27,&quot;addr&quot;:&quot;\u6210\u90fd\u9ad8\u65b0\u533a&quot;,&quot;phone&quot;:&quot;18812345978&quot;}]';
+        $array = json_decode($string);
+        print_r($array);
+    ?&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;script type=&quot;text/javascript&quot; src=&quot;jquery-3.4.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;title&gt;通过JS动态渲染JSON数据&lt;/title&gt;
+    &lt;style&gt;
+        table {
+            width: 800px;
+            margin: auto;
+            border: solid 1px green;
+            border-spacing: 0px;
+        }
+        td {
+            border: solid 1px gray;
+            height: 30px;
+        }
+    &lt;/style&gt;
+    &lt;script&gt;
+        // window.onload = function() {
+        function list() {
+            $.get('list-json.php', function(data){
+                // 后台响应给前端的JSON数据，其content-type有可能是:
+                // 1、text/plain或text/html，此时必须用eval执行将其转成JS对象
+                // 2、application/json，则不需要eval，直接使用即可
+                var data = eval(data); 
+                var content = &quot;&quot;;
+                // data.forEach(function(article) {
+                data.forEach(article =&gt; {
+                    content += &quot;&lt;tr&gt;&quot;;
+                    content += &quot;&lt;td&gt;&quot; + article['articleid'] + &quot;&lt;/td&gt;&quot;;
+                    content += &quot;&lt;td&gt;&quot; + article['author'] + &quot;&lt;/td&gt;&quot;;
+                    content += &quot;&lt;td&gt;&quot; + article['headline'] + &quot;&lt;/td&gt;&quot;;
+                    content += &quot;&lt;td&gt;&quot; + article['viewcount'] + &quot;&lt;/td&gt;&quot;;
+                    content += &quot;&lt;td&gt;&quot; + article['createtime'] + &quot;&lt;/td&gt;&quot;;
+                    content += &quot;&lt;td&gt;&lt;button&gt;删除&lt;/button&gt;&lt;/td&gt;&quot;;
+                    content += &quot;&lt;/tr&gt;&quot;;
+                });
+                $(&quot;#articleTable&quot;).append(content);
+                $(&quot;#articleTable&quot;).css('display', '');
+            });
+        }
+    &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;button onclick=&quot;list()&quot;&gt;加载&lt;/button&gt;
+
+    &lt;table id=&quot;articleTable&quot; style=&quot;display: none;&quot;&gt;
+        &lt;tr&gt;
+            &lt;td&gt;编号&lt;/td&gt;
+            &lt;td&gt;作者&lt;/td&gt;
+            &lt;td&gt;标题&lt;/td&gt;
+            &lt;td&gt;次数&lt;/td&gt;
+            &lt;td&gt;时间&lt;/td&gt;
+            &lt;td&gt;操作&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<pre><code class="language-php">&lt;?php
+
+    include_once('common.php');
+    $conn = create_connection();
+    $sql = &quot;select articleid, author, headline, viewcount, createtime from article where articleid &lt; 20&quot;;
+    $result = mysqli_query($conn, $sql);
+    $data = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+    echo json_encode($data);
+
+?&gt;
+</code></pre>
+<h4 id="php读取xml数据">PHP读取XML数据</h4>
+<h6 id="xml代码">XML代码</h6>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf8&quot;?&gt;
+&lt;class id=&quot;WNCDC085&quot;&gt;
+  &lt;student sequence=&quot;1&quot;&gt;
+    &lt;id&gt;WNCD201703015&lt;/id&gt;
+    &lt;name&gt;敬小越&lt;/name&gt;
+    &lt;sex&gt;男&lt;/sex&gt;
+    &lt;age&gt;24&lt;/age&gt;
+    &lt;degree&gt;本科&lt;/degree&gt;
+    &lt;school&gt;电子科技大学成都学院&lt;/school&gt;
+  &lt;/student&gt;
+  &lt;student sequence=&quot;2&quot;&gt;
+    &lt;id&gt;WNCD201703020&lt;/id&gt;
+    &lt;name&gt;何小学&lt;/name&gt;
+    &lt;sex&gt;男&lt;/sex&gt;
+    &lt;age&gt;29&lt;/age&gt;
+    &lt;degree&gt;本科&lt;/degree&gt;
+    &lt;school&gt;成都理工大学&lt;/school&gt;
+  &lt;/student&gt;
+  &lt;student sequence=&quot;3&quot;&gt;
+    &lt;id&gt;WNCD201703025&lt;/id&gt;
+    &lt;name&gt;杨小言&lt;/name&gt;
+    &lt;sex&gt;女&lt;/sex&gt;
+    &lt;age&gt;22&lt;/age&gt;
+    &lt;degree&gt;大专&lt;/degree&gt;
+    &lt;school&gt;四川华新现代职业学院&lt;/school&gt;
+  &lt;/student&gt;
+&lt;/class&gt;
+</code></pre>
+<h6 id="读取class节点的属性id和对应的值">读取class节点的属性id和对应的值</h6>
+<pre><code class="language-php">$nodes = $doc-&gt;getElementsByTagName('class');
+    echo $nodes-&gt;item(0)-&gt;nodeName;
+     echo $nodes-&gt;item(0)-&gt;attributes-&gt;item(0)-&gt;nodeName;
+   echo $nodes-&gt;item(0)-&gt;attributes-&gt;item(0)-&gt;nodeValue;
+</code></pre>
+<h6 id="读取第二个学生的所有信息">读取第二个学生的所有信息</h6>
+<pre><code class="language-php">$nodes = $doc-&gt;getElementsByTagName('student');
+     $childNodes = $nodes-&gt;item(1)-&gt;childNodes;
+  foreach ($childNodes as $node) {
+         echo $node-&gt;nodeValue . &quot;&lt;br/&gt;&quot;;
+  }
+</code></pre>
+<h6 id="读取所有学生的姓名">读取所有学生的姓名</h6>
+<pre><code class="language-php">$nodes = $doc-&gt;getElementsByTagName(&quot;name&quot;);
+foreach ($nodes as $node) {
+    echo $node-&gt;nodeValue . &quot;&lt;br/&gt;&quot;;
+ }
+</code></pre>
+<h6 id="将xml文件读取为php的二维数组">将XML文件读取为PHP的二维数组</h6>
+<pre><code class="language-php"> $nodes = $doc-&gt;getElementsByTagName(&quot;student&quot;);
+$students = array();
+  foreach ($nodes as $k=&gt;$v) {
+      $students[$k]['id'] = $v-&gt;getElementsByTagName('id')-&gt;item(0)-&gt;nodeValue;
+        $students[$k]['name'] = $v-&gt;getElementsByTagName('name')-&gt;item(0)-&gt;nodeValue;
+       $students[$k]['sex'] = $v-&gt;getElementsByTagName('sex')-&gt;item(0)-&gt;nodeValue;
+         $students[$k]['age'] = $v-&gt;getElementsByTagName('age')-&gt;item(0)-&gt;nodeValue;
+        $students[$k]['degree'] = $v-&gt;getElementsByTagName('degree')-&gt;item(0)-&gt;nodeValue;
+      $students[$k]['school'] = $v-&gt;getElementsByTagName('school')-&gt;item(0)-&gt;nodeValue;
+   }
+    print_r($students);
+
+    //适当优化，简化代码
+
+    $nodes = $doc-&gt;getElementsByTagName(&quot;student&quot;);
+   $students = array();
+    $tag = array('id', 'name', 'sex', 'age', 'degree', 'school');
+   foreach ($nodes as $k=&gt;$v) {
+       foreach ($tag as $t) {
+             $students[$k][$t] = $v-&gt;getElementsByTagName($t)-&gt;item(0)-&gt;nodeValue;
+         }
+   }
+     print_r($students);
+</code></pre>
+<h6 id="读取firewallxml的所有端口信息">读取firewall.xml的所有端口信息</h6>
+<pre><code class="language-php"> $doc-&gt;load('../demo/firewall.xml');
+     $nodes = $doc-&gt;getElementsByTagName('port');
+    foreach ($nodes as $node) {
+       $attr = $node-&gt;attributes;
+       echo $attr-&gt;item(1)-&gt;nodeValue . &quot;&lt;br/&gt;&quot;;
+   }
+
+</code></pre>
+<h4 id="xml更新与xpath">XML更新与XPATH</h4>
+<h6 id="修改节点的属性或值">修改节点的属性或值</h6>
+<pre><code class="language-php">$doc = new DOMDocument();
+     $doc-&gt;preserveWhiteSpace = false;   // 不保留空白节点
+     $doc-&gt;formatOutput = true;          // 格式化输出
+     $doc-&gt;load('./student.xml');
+    $nodes = $doc-&gt;getElementsByTagName('student');
+</code></pre>
+<h6 id="修改节点的属性值">修改节点的属性值</h6>
+<pre><code class="language-php">$nodes-&gt;item(2)-&gt;attributes-&gt;item(0)-&gt;nodeValue = '5';
+    修改节点的值
+    $nodes-&gt;item(2)-&gt;childNodes-&gt;item(1)-&gt;nodeValue = '杨大言';
+    foreach($nodes-&gt;item(2)-&gt;childNodes as $node) {
+        echo $node-&gt;nodeValue . &quot;&lt;br/&gt;&quot;;
+     }
+</code></pre>
+<h6 id="删除节点操作">删除节点操作</h6>
+<pre><code class="language-php">// 删除一个节点：先找到父节点，再找到子节点，调用父节点的removeChild方法删除
+    $parent = $nodes-&gt;item(2);
+     $child = $parent-&gt;childNodes-&gt;item(4);
+    $parent-&gt;removeChild($child);
+
+    // // 直接找到要删除的节点自身，再向上一层找到父节点，再调用removeChild进行删除
+    $child = $doc-&gt;getElementsByTagName('degree')-&gt;item(2);
+     $child-&gt;parentNode-&gt;removeChild($child);
+    //
+    $doc-&gt;save('./student.xml');
+</code></pre>
+<h6 id="将数组写入xml">将数组写入XML</h6>
+<pre><code class="language-php"> // 先定义数组，也可以直接从数据库读取
+    $student01=array(&quot;id&quot;=&gt;&quot;WNCD201703015&quot;, &quot;name&quot;=&gt;&quot;敬小越&quot;, &quot;sex&quot;=&gt;&quot;男&quot;, &quot;age&quot;=&gt;&quot;24&quot;, &quot;degree&quot;=&gt;&quot;本科&quot;, &quot;school&quot;=&gt;&quot;电子科技大学成都学院&quot;);
+     $student02=array(&quot;id&quot;=&gt;&quot;WNCD201703020&quot;, &quot;name&quot;=&gt;&quot;何小学&quot;, &quot;sex&quot;=&gt;&quot;男&quot;, &quot;age&quot;=&gt;&quot;29&quot;, &quot;degree&quot;=&gt;&quot;本科&quot;, &quot;school&quot;=&gt;&quot;成都理工大学&quot;);
+     $student03=array(&quot;id&quot;=&gt;&quot;WNCD201703025&quot;, &quot;name&quot;=&gt;&quot;杨小言&quot;, &quot;sex&quot;=&gt;&quot;女&quot;, &quot;age&quot;=&gt;&quot;22&quot;, &quot;degree&quot;=&gt;&quot;大专&quot;, &quot;school&quot;=&gt;&quot;四川华新现代职业学院&quot;);
+     $students = array($student01, $student02, $student03);
+
+     $doc = new DOMDocument('1.0', 'utf8');
+     $doc-&gt;preserveWhiteSpace = false;
+     $doc-&gt;formatOutput = true;
+    
+     // 创建根节点 class 并设置 id 属性
+     $class = $doc-&gt;createElement('class');
+     $class-&gt;setAttribute('id', 'WNCDC085');
+     $doc-&gt;appendChild($class);
+
+     foreach ($students as $index =&gt; $student) {
+         // 为class节点添加student子节点
+         $nodeStudent = $doc-&gt;createElement('student');
+        $nodeStudent-&gt;setAttribute('sequence', $index+1);
+         $class-&gt;appendChild($nodeStudent);
+         // 为student节点添加id, name, sex等子节点
+        foreach ($student as $key =&gt; $value) {
+            $node = $doc-&gt;createElement($key);
+            $nodeStudent-&gt;appendChild($node);
+             // 为各子节点赋值
+            $nodeValue = $doc-&gt;createTextNode($value);
+             $node-&gt;appendChild($nodeValue);
+       }
+     }
+
+     $doc-&gt;save('./write.xml');
+</code></pre>
+<h6 id="xpath定位元素">XPATH定位元素</h6>
+<pre><code class="language-php"> $doc = new DOMDocument();
+    $doc-&gt;preserveWhiteSpace = false;
+    $doc-&gt;load('./student.xml');
+    $xpath = new DOMXPath($doc);    // 实例化XPATH对象
+    // $expression = &quot;/class/student[@sequence='1']/school&quot;;
+    // $expression = &quot;/class/student[@sequence='2']/school&quot;;
+    // $expression = &quot;//student[@sequence='3']/name&quot;;
+    // $expression = &quot;//student[2]/name&quot;;      // 找第2个学生的姓名
+    $expression = &quot;//student/school[contains(text(), '科技')]&quot;;
+    $nodes = $xpath-&gt;query($expression);    // 返回的是找到的所有节点
+    echo $nodes-&gt;item(0)-&gt;nodeValue;
+</code></pre>
+<h4 id="网页爬虫原理与实现">网页爬虫原理与实现</h4>
+<h6 id="理论部分">理论部分：</h6>
+<p>（1）XML与HTML本质上是相同的结构：DOMDocument可以处理XML，原则上来说也可以处理HTML</p>
+<p>（2）爬虫主要是爬取网页的内容（基于HTTP和HTML的内容），可以爬取一个网站上的图片，文件，页面内容等。</p>
+<p>（3）搜索引擎的工作原理；爬取网页内容，对内容进行分词，分词后建议索引（倒排索引），进行排序后提高服务。</p>
+<p>（4）爬取的基本过程；给定一个网址，然后解析响应的HTML页面内容，并下载保存（HTML文件），然后解析其中的超链接或其他资源（比如 图片等），超链接就进行继续的访问和存储，图片就进行下载存档，基于新找到的超链接，又继续解析更多的超链接。</p>
+<p>（5）技术层面的实现要点：</p>
+<p>1.发送GET请求并获取响应的内容：file_get_contents</p>
+<p>2.解析页面中的URL地址或资源地址：DOMDocument</p>
+<p>3.继续访问解析出来的地址或资源：根据地址的特点分类和拼接，构建一个完成的URL地址库，继续访问，继续前两步。（广度优先 ， 深度优先）</p>
+<h6 id="代码理解部分-8">代码理解部分：</h6>
+<p><strong>DOMDocumen</strong></p>
+<pre><code class="language-php">$content = file_get_contents(&quot;http://www.woniunote.com/&quot;);
+ $html = new DOMDocument();
+ $html-&gt;preserveWhiteSpace = false;
+ @$html-&gt;loadHTML($content);
+
+ $links = $html-&gt;getElementsByTagName('a');
+
+ $linkList = array();
+
+ foreach ($links as $link) {
+    // echo $link-&gt;nodeValue . &quot;&lt;br/&gt;&quot;;
+   // echo $link-&gt;attributes-&gt;item(0)-&gt;nodeValue . &quot;&lt;br/&gt;&quot;;
+     foreach ($link-&gt;attributes as $attr) {
+        if ($attr-&gt;nodeName == &quot;href&quot;) {
+            // echo $attr-&gt;nodeValue . &quot;&lt;br/&gt;&quot;;
+            // 利用 / 、 #、 http 三个特征来判断URL地址类型，并完成完整的地址拼接
+             if (strpos($attr-&gt;nodeValue, '/') == 0) {
+                 array_push($linkList, 'http://www.woniunote.com' . $attr-&gt;nodeValue);
+             }
+             else if (strpos($attr-&gt;nodeValue, 'http://') == 0) {
+                 array_push($linkList, $attr-&gt;nodeValue);
+             }
+        }
+     }
+ }
+
+ set_time_limit(0);
+
+ foreach ($linkList as $link) {
+     $filename = str_replace(&quot;http://www.woniunote.com/&quot;, &quot;&quot;, $link);
+     $filename = str_replace(&quot;/&quot;, &quot;-&quot;, $filename);
+     $content = file_get_contents($link);
+     file_put_contents(&quot;./download/html/$filename.html&quot;, $content);
+    echo &quot;成功下载：$filename &lt;br/&gt;&quot;; 
+   ob_flush();
+     flush();
+    sleep(0.5);
+ }
+
+</code></pre>
+<p><strong>使用Simple HTML Dom库</strong></p>
+<pre><code class="language-php">// 使用Simple HTML Dom库
+include_once &quot;simple_html_dom.php&quot;;
+$html = file_get_html('http://www.woniunote.com/');
+
+// 查找所有的超链接
+$links = $html-&gt;find('a');
+foreach ($links as $link) {
+    echo $link-&gt;href . &quot;&lt;br/&gt;&quot;;
+}
+
+// 查找所有图片地址
+$images = $html-&gt;find('img');
+foreach ($images as $image) {
+    $src = $image-&gt;src;
+    if (strpos($src, '/') == 0) {
+        $url = 'http://www.woniunote.com' . $src;
+    }
+    else if (strpos($src, 'http') == 0) {
+        $url = $src;
+    }
+    $filename = end(explode(&quot;/&quot;, $url));
+    $content = file_get_contents($url);
+    file_put_contents(&quot;./download/image/$filename&quot;, $content);
+
+    echo &quot;图片 $filename 下载完成. &lt;br/&gt;&quot;;
+    ob_flush();
+    flush();
+    sleep(0.5);
+}
+
+// 使用其他的定位方式
+
+// 使用类似于Xpath的方式来定位元素
+$titles = $html-&gt;find(&quot;div[@class='title']&quot;);
+$titles = $html-&gt;find(&quot;div[class='title']&quot;);
+$titles = $html-&gt;find(&quot;div.title&quot;);
+foreach ($titles as $title) {
+    // echo $title-&gt;innertext . &quot;&lt;br/&gt;&quot;;
+    echo $title-&gt;plaintext . &quot;&lt;br/&gt;&quot;;
+    // echo $title-&gt;outertext . &quot;&lt;br/&gt;&quot;;
+}
+
+// 使用ID属性定位元素
+$nodes = $html-&gt;find(&quot;input[@id='keyword']&quot;);
+$nodes = $html-&gt;find(&quot;input#keyword&quot;);
+$nodes = $html-&gt;find(&quot;#keyword&quot;);
+foreach ($nodes as $node) {
+    echo $node-&gt;placeholder;
+}
+
+// 直接给定元素下标找对应某一个元素
+$html = file_get_html('http://www.woniunote.com/article/609');
+$node = $html-&gt;find(&quot;#content&quot;, 0);
+echo $node-&gt;plaintext;
+
+// 元素之间的层次关系
+$titles = $html-&gt;find(&quot;div.title&quot;);
+foreach ($titles as $title) {
+    echo $title-&gt;first_child()-&gt;innertext . &quot;&lt;br/&gt;&quot;;
+}
+
+// 用完整个页面的DOM结构后，清空内存
+$html-&gt;clear(); 
+
+</code></pre>
+<p><strong>使用正则表达式</strong></p>
+<pre><code class="language-php">// 使用正则表达式如何解析页面元素
+// 正则表达式是将一份HTML源码理解为一个长长的字符串，进而使用正则表达式进行字符串解析和匹配
+// 设定左右边界来查找超链接或者其他元素
+$content = file_get_contents('http://www.woniunote.com/');
+// $pattern = '/&lt;a href=&quot;(.*)&quot;/';      // 贪婪模式 ：匹配到最后一个
+$pattern = '/&lt;a href=&quot;(.+?)&quot;/';        // 非贪婪模式 ；匹配到最靠前的一个
+preg_match_all($pattern, $content, $result);
+print_r($result[1]);
+
+?&gt;
+</code></pre>
+<h4 id="面向对象基础">面向对象基础</h4>
+<pre><code class="language-php">$name = '张三';
+
+function test() {
+    // PHP中默认的变量是有作用域的，如果要在函数内部使用函数外的变量，则必须声明为全局变量
+    global $name;
+    echo &quot;你好 $name&quot;;  
+ }
+
+test();
+</code></pre>
+<h6 id="面向对象编程基础用法">面向对象编程基础用法</h6>
+<pre><code class="language-php">// 定义类：People，单纯定义一个类，本身并不会真正解决问题
+class People {
+    var $name = '';     // 不再称为变量，而是叫类属性
+    var $age = 0;
+    var $addr = '';
+    var $nation = '';
+
+    // 定义People类所具备的方法，默认情况下，方法的定义与函数完全一致
+    function talk() {
+        // 在类的定义中, $this 指类的具体实例
+        echo &quot;$this-&gt;name 正在说话. &lt;br/&gt;&quot;;
+    }
+
+    function work() {
+        echo &quot;$this-&gt;name 正在工作. &lt;br/&gt;&quot;;
+    }
+}
+
+// 实例化类People并进行属性和方法的调用
+$p1 = new People();
+$p1-&gt;name = &quot;张三&quot;;
+$p1-&gt;age = 30;
+$p1-&gt;addr = &quot;成都高新区&quot;;
+$p1-&gt;nation = &quot;汉族&quot;;
+
+echo $p1-&gt;name . &quot;&lt;br/&gt;&quot;;
+$p1-&gt;talk();
+
+// 一旦完成类的实例化，实例与实例之间并无关系，分布于不同的内存中
+$p2 = new People();
+$p2-&gt;name = &quot;李四&quot;;
+$p2-&gt;age = 25;
+$p2-&gt;addr = &quot;成都金牛区&quot;;
+$p2-&gt;nation = &quot;藏族&quot;;
+
+echo $p2-&gt;addr . &quot;&lt;br/&gt;&quot;;
+$p2-&gt;work();
+
+?&gt;
+</code></pre>
+<h6 id="利用面向对象的特性改造数据库操作">利用面向对象的特性改造数据库操作</h6>
+<pre><code class="language-php">// class DB {
+//     // 为DB类定义数据库连接的必要属性
+//     var $host = '127.0.0.1';
+//     var $username = 'root';
+//     var $password = '123456';
+//     var $database = 'learn';
+
+//     // 定义一个方法，用于建立与数据库的连接
+//     private function create_connection() {
+//         $conn = mysqli_connect($this-&gt;host, $this-&gt;username, $this-&gt;password, $this-&gt;database) 
+//                 or die(&quot;数据库连接不成功.&quot;);
+//         mysqli_query($conn, &quot;set names utf8&quot;);
+//         return $conn;
+//     }
+
+//     // 封装两个操作方法，一个用于查询，一个用于更新
+//     function query($sql) {
+//         $conn = $this-&gt;create_connection();
+//         $result = mysqli_query($conn, $sql);
+//         $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
+//         return $rows;
+//     }
+
+//     function modify($sql) {
+//         $conn = $this-&gt;create_connection();
+//         $result = mysqli_query($conn, $sql);
+//         if (! $result) {
+//             die(&quot;数据库更新操作不成功.&quot;);
+//         }
+//     }
+
+//     // 类的析构方法：当类的实例使用完并从内存中释放时，将会触发调用该方法
+//     function __destruct() {
+//         $conn = $this-&gt;create_connection();
+//         mysqli_close($conn);
+//     }
+// }
+
+
+
+
+class DB {
+    // 为DB类定义数据库连接的必要属性
+    // private $host = '127.0.0.1';
+    // private $username = 'root';
+    // private $password = '123456';
+    // private $database = 'learn';
+
+    var $host = '127.0.0.1';
+    var $username = 'root';
+    var $password = '123456';
+    var $database = 'learn';
+
+    // 将数据库连接对象定义为类属性
+    private $conn = null;
+
+    // 定义一个方法，用于建立与数据库的连接
+    private function create_connection() {
+        $this-&gt;conn = mysqli_connect($this-&gt;host, $this-&gt;username, $this-&gt;password, $this-&gt;database) 
+                or die(&quot;数据库连接不成功.&quot;);
+        mysqli_query($this-&gt;conn, &quot;set names utf8&quot;);
+        return $this-&gt;conn;
+    }
+
+    // 封装两个操作方法，一个用于查询，一个用于更新
+    function query($sql) {
+        $result = mysqli_query($this-&gt;conn, $sql);
+        $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        return $rows;
+    }
+
+    function modify($sql) {
+        $result = mysqli_query($this-&gt;conn, $sql);
+        if (! $result) {
+            die(&quot;数据库更新操作不成功.&quot;);
+        }
+    }
+
+    // 类的构造方法：当类在进行实例化时会触发执行该方法
+    function __construct($host='127.0.0.1', $username='root', $password='123456', $database='learn') {
+        $this-&gt;host = $host;
+        $this-&gt;username = $username;
+        $this-&gt;password = $password;
+        $this-&gt;database = $database;
+        echo &quot;调用构造方法，并建立数据库的连接 &lt;br/&gt;&quot;;
+        $this-&gt;create_connection();     // 每一个实例化的过程，就会执行一次
+    }
+
+    // 类的析构方法：当类的实例使用完并从内存中释放时，将会触发调用该方法
+    function __destruct() {
+        echo &quot;调用析构方法，并关闭数据库的连接 &lt;br/&gt;&quot;;
+        mysqli_close($this-&gt;conn);
+    }
+
+    // 当类进行序列化时自动调用，并且返回一个数组，包含要实例化的类属性
+    function __sleep() {
+        echo &quot;DB类正在进行序列化. &lt;br/&gt;&quot;;
+        return array('host', 'username', 'password', 'database');
+    }
+
+    // 在类进行反序列时调用，并且可以在该方法中定义恢复类状态的代码，以便于让反序列化的实例可以正常调用方法。
+    function __wakeup() {
+        echo &quot;DB类正在被反序列化. &lt;br/&gt;&quot;;
+        $this-&gt;create_connection();     // 恢复数据库的连接状态
+    }
+}
+</code></pre>
+<h6 id="封装继承多态">封装，继承，多态</h6>
+<p><strong>封装</strong></p>
+<pre><code class="language-php">/**
+ * 封装：public, private, protected
+ * 1. 默认情况下，所有属性和方法，在没有明确设置访问修饰符时，均为public
+ * 2. private 表示类私有，在类的定义中可以使用，而在实例和子类中均无法使用
+ * 3. protected 表示受类的保护，实例中不能直接使用，但是在子类中可以使用
+ */
+class People {
+    private $name = '王五';     // 定义类时，可以给属性一个初始值，使用了访问修饰符后，不再需要var
+    var $age = 0;
+    var $addr = '';
+    var $nation = '';
+
+    // 定义People类所具备的方法，默认情况下，方法的定义与函数完全一致
+    public function talk() {
+        // 在类的定义中, $this 指类的具体实例
+        echo &quot;$this-&gt;name 正在说话. &lt;br/&gt;&quot;;
+    }
+
+    private function work() {
+        echo &quot;$this-&gt;name 正在工作. &lt;br/&gt;&quot;;
+    }
+
+    // 公有方法调用私有方法
+    protected function eat($type='米饭') {
+        echo &quot;$this-&gt;name 正在吃 $type &lt;br/&gt;&quot;;
+        $this-&gt;work();
+    }
+
+    // 针对私有属性，如何在实例中对其进行修改？设置一个公有方法，对类的私有属性进行修改或取值
+    // 以下两个方法是封装这个特性最经典的演示：公有方法操作私有属性。
+    public function setName($name) {
+        $this-&gt;name = $name;
+    }
+
+    public function getName() {
+        return $this-&gt;name;
+    }
+}
+
+ $p = new People();
+// $p-&gt;name = &quot;张三&quot;;   // 实例无法使用类的私有属性
+ //echo $p-&gt; . &quot;&lt;br/&gt;&quot;;
+ $p-&gt;talk();
+ $p-&gt;setName('张三');
+ echo $p-&gt;getName() . &quot;&lt;br/&gt;&quot;;
+ //$p-&gt;eat();
+</code></pre>
+<p><strong>继承</strong></p>
+<pre><code class="language-php">// /**
+//  * 继承：子承父业、继承传统、发扬光大父类的属性和方法（非
+//  * 定义类：Man，让其继承父类People，则Man这个类就称为子类，可以继承私有）
+//  * 子类继承父类时，可以在子类调用protected修改的属性和方法，同时也可以覆盖或重写父类方法
+//  * 子类也可以在自己类的扩展或创建新的方法和属性
+//  * 关键字：final，如果一个类被final修饰，则该类不能被继承
+//  */
+
+class Man extends People {
+    // Man这个类，什么都不做，People的所有非私有属性和方法均可以使用
+
+    // 父类中有的方法，在子类中可以进行覆盖，也称为“重写”，override
+    function work() {
+        // $this-&gt;eat();
+        parent::eat(); 
+           // 更加正统的做法，在子类中使用parent::调用父类的方法
+        echo &quot;$this-&gt;name 正在工作 &lt;br/&gt;&quot;;
+    }
+
+    public function talk() {
+        echo &quot;$this-&gt;name 正在说话. &lt;br/&gt;&quot;;
+    }
+
+    // 父类中不存在的方法，子类新建的方法（扩展）
+    public function drive() {
+        echo &quot;$this-&gt;name 正在开车. &lt;br/&gt;&quot;;
+    }
+}
+
+ $m = new Man();
+// // echo $m-&gt;name;      // 子类无法直接使用父类的私有属性
+// // $m-&gt;work();            // 子类无法直接使用父类的私有方法
+// // $m-&gt;talk();
+
+// // 子类直接定义一个父类拥有的相同的属性，是可以正常工作的
+ $m-&gt;name = &quot;子姓名&quot;;
+echo $m-&gt;name;
+$m-&gt;work();
+ $m-&gt;talk();
+
+//$m-&gt;eat();  // 在子类的实例中，一样无法调用父类的protected方法
+ $m-&gt;drive();
+</code></pre>
+<p><strong>多态</strong></p>
+<pre><code class="language-php">// 多态：多种形态
+// 抽象类：只有类的方法中有一个方法使用abstract关键字定义，则该类就是抽象类，该方法就是抽象方法
+// 抽象类的特点：不能被实例化，只能被继承，抽象方法不能有实现代码
+// 接口：极端的抽象，只能有方法的定义，不能有方法的实现，通常用于定义一些规则
+abstract class animal{
+    // function can(){
+    //     echo &quot;this function weill be re-write in the children. &lt;br/&gt;&quot;;
+    // }
+    abstract function can();    // 抽象方法不能实现代码，只能定义方法名和参数
+    // abstract function work();
+    function dosth() {
+        echo &quot;做一些事情&quot;;
+    }
+}
+class cat extends animal{
+    function can(){
+        echo &quot;I can climb. &lt;br/&gt;&quot;;
+    }
+}
+class dog extends animal{
+    function can(){
+        echo &quot;I can swim. &lt;br/&gt;&quot;;
+    }
+}
+function test($obj){
+    $obj-&gt;can();
+}
+test(new cat());    // 传递cat的实例时，运行的就是cat的can的方法
+test(new dog());    // 传递dog的实例时，运行的就是dog的can的方法
+
+
+// $a = new animal();  // 抽象类不能被实例化
+</code></pre>
+<h4 id="序列化和反序列化">序列化和反序列化</h4>
+<h6 id="序列化"><strong>序列化：</strong></h6>
+<p>将对象转换成字符串: 便于储存，便于运输。</p>
+<pre><code class="language-php"> $student = array('name'=&gt;'张三', 'age'=&gt;30, 'addr'=&gt;'成都高新区', 'phone'=&gt;'18812345678');
+ echo serialize($student);
+
+输出:a:4:{s:4:&quot;name&quot;;s:6:&quot;张三&quot;;s:3:&quot;age&quot;;i:30;s:4:&quot;addr&quot;;s:15:&quot;成都高新区&quot;;s:5:&quot;phone&quot;;s:11:&quot;18812345678&quot;;}
+</code></pre>
+<p>只要符合序列化规则的字符串，无论是否由serialize函数生成，均可以被反序列化。</p>
+<p>如果要序列化一个类，则最好在_sleep魔术方法明确指定类属性，序列化的过程。只包含类的属性，不包含类的方法。</p>
+<h6 id="反序列化"><strong>反序列化</strong></h6>
+<p>将一个字符串转换成对象 比如：</p>
+<pre><code class="language-php">$source = 'a:4:{s:4:&quot;name&quot;;s:9:&quot;张三娃&quot;;s:3:&quot;age&quot;;i:30;s:4:&quot;addr&quot;;s:15:&quot;成都高新区&quot;;s:5:&quot;phone&quot;;s:11:&quot;18812345679&quot;;}';
+ $student = unserialize($source);    // 将字符串反序列化为数组
+ print_r($student);
+</code></pre>
+<p>反序列化类的构造当中，会调用类的析构方法，但是不会调用类的构造方法。</p>
+<h6 id="魔术方法"><strong>魔术方法</strong></h6>
+<p>_sleep：在类进行序列化时调用，并用在里面需要明确定义序列化哪些类属性，以数组方式定义和返回。</p>
+<p>_wakeuop()：在类进行反序列化时调用，并且可以在该方法中定义恢复类状态的的代码，以便于让反序列化的实例可以正常调用方法。</p>
+<pre><code class="language-php">// 当类进行序列化时自动调用，并且返回一个数组，包含要实例化的类属性
+    function __sleep() {
+        echo &quot;DB类正在进行序列化. &lt;br/&gt;&quot;;
+        return array('host', 'username', 'password', 'database');
+    }
+
+    // 在类进行反序列时调用，并且可以在该方法中定义恢复类状态的代码，以便于让反序列化的实例可以正常调用方法。
+    function __wakeup() {
+        echo &quot;DB类正在被反序列化. &lt;br/&gt;&quot;;
+        $this-&gt;create_connection();     // 恢复数据库的连接状态
+    }
+}
+
+</code></pre>
+<h6 id="反序列化漏洞">反序列化漏洞</h6>
+<p>1.字符串变对象过程中，如果没有对字符串输入进行检查，很有可能注入恶意代码。</p>
+<p>2.通常情况下，反序列化漏洞并非通过黑盒测试或者盲注的方式进行探测，而是通过代码评审的方式进行漏洞验证。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%9C%A8php%E4%B8%AD-%E8%A1%A8%E7%A4%BA%E5%AD%97%E7%AC%A6%E4%B8%B2%E8%BF%9E%E6%8E%A5%E7%AC%A6">在php中 ,  . 表示字符串连接符</a></li>
+<li><a href="#%E5%BC%95%E5%8F%B7%E7%9A%84%E9%97%AE%E9%A2%98">引号的问题：</a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%90%86%E8%A7%A3%E9%83%A8%E5%88%86">代码理解部分</a></li>
+<li><a href="#%E6%95%B0%E7%BB%84%E9%83%A8%E5%88%86">数组部分</a><br>
+*
+<ul>
+<li><a href="#php%E4%B8%AD%E6%95%B0%E7%BB%84%E7%9A%84%E5%AE%9A%E4%B9%89%E6%96%B9%E5%BC%8F">php中数组的定义方式</a></li>
+<li><a href="#%E5%8F%96%E6%95%B0%E7%BB%84%E7%9A%84%E9%95%BF%E5%BA%A6">取数组的长度</a></li>
+<li><a href="#%E5%88%A0%E9%99%A4%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E5%80%BC">删除最后一个值</a></li>
+<li><a href="#%E6%95%B0%E7%BB%84%E7%9A%84%E9%81%8D%E5%8E%86">数组的遍历</a></li>
+<li><a href="#%E6%95%B0%E7%BB%84%E5%8E%BB%E9%87%8D">数组去重</a></li>
+<li><a href="#%E6%95%B0%E7%BB%84%E6%8E%92%E5%BA%8F">数组排序</a></li>
+<li><a href="#%E8%A1%A5%E5%85%854%E4%B8%AA%E9%87%8D%E8%A6%81%E7%9A%84%E6%95%B0%E7%BB%84%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0">补充4个重要的数组相关函数</a></li>
+</ul>
+</li>
+<li><a href="#%E8%AE%BE%E7%BD%AE%E4%BD%BF%E7%94%A8%E4%B8%AD%E5%9B%BD%E5%8C%97%E4%BA%AC%E6%97%B6%E9%97%B4%E4%BD%9C%E4%B8%BA%E7%B3%BB%E7%BB%9F%E6%97%B6%E5%8C%BA">设置使用中国北京时间作为系统时区</a></li>
+<li><a href="#%E5%90%8E%E7%AB%AF%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AB%AF%E8%BF%9E%E6%8E%A5">后端与数据库端连接</a><br>
+*
+<ul>
+<li><a href="#%E8%AE%BE%E7%BD%AE%E7%BC%96%E7%A0%81%E6%A0%BC%E5%BC%8F%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%96%B9%E5%BC%8F">设置编码格式的两种方式</a></li>
+<li><a href="#%E6%8B%BC%E6%8E%A5sql%E8%AF%AD%E5%8F%A5%E5%B9%B6%E6%89%A7%E8%A1%8C%E5%AE%83">拼接SQL语句并执行它</a></li>
+</ul>
+</li>
+<li><a href="#%E5%87%BD%E6%95%B0">函数</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%88%A4%E6%96%AD%E6%89%8B%E6%9C%BA%E5%8F%B7%E7%A0%81">使用正则表达式判断手机号码</a></li>
+<li><a href="#%E8%8E%B7%E5%8F%96%E8%AF%B7%E6%B1%82%E6%95%B0%E6%8D%AE%E7%9A%84%E6%96%B9%E5%BC%8F">获取请求数据的方式：</a></li>
+<li><a href="#session%E9%83%A8%E5%88%86">Session部分</a><br>
+*
+<ul>
+<li><a href="#session%E7%9A%84%E5%A3%B0%E6%98%8E%E4%B8%8E%E4%BD%BF%E7%94%A8"><strong>Session的声明与使用</strong></a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%90%86%E8%A7%A3%E9%83%A8%E5%88%86-2"><strong>代码理解部分</strong></a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%90%86%E8%A7%A3%E9%83%A8%E5%88%86-3">代码理解部分</a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%90%86%E8%A7%A3%E9%83%A8%E5%88%86-4"><strong>代码理解部分</strong></a></li>
+</ul>
+</li>
+<li><a href="#%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C">文件读写操作</a><br>
+*
+<ul>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%90%86%E8%A7%A3%E9%83%A8%E5%88%86-5"><strong>代码理解部分</strong></a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99%E7%9A%84%E6%AD%A5%E9%AA%A4"><strong>文件读写的步骤</strong></a></li>
+<li><a href="#%E9%99%84%E5%8A%A0%E5%87%BD%E6%95%B0"><strong>附加函数：</strong></a></li>
+<li><a href="#%E6%9C%80%E5%9F%BA%E6%9C%AC%E7%9A%84%E6%8C%89%E8%A1%8C%E5%BE%AA%E7%8E%AF%E8%AF%BB%E5%8F%96%E6%95%B4%E4%BB%BD%E6%96%87%E4%BB%B6"><strong>最基本的按行循环读取整份文件</strong></a></li>
+<li><a href="#%E5%BE%80%E6%96%87%E4%BB%B6%E4%B8%AD%E5%86%99%E5%85%A5%E5%86%85%E5%AE%B9"><strong>往文件中写入内容</strong></a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8file_get_contents%E7%9B%B4%E6%8E%A5%E8%AF%BB%E5%8F%96%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9"><strong>使用file_get_contents直接读取文件内容</strong></a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8file_get_contents%E5%8F%91%E9%80%81get%E8%AF%B7%E6%B1%82%E8%AE%BF%E9%97%AE%E7%BD%91%E9%A1%B5"><strong>使用file_get_contents发送GET请求访问网页</strong></a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8file_put_contents%E4%B8%80%E6%AC%A1%E6%80%A7%E5%86%99%E5%85%A5%E6%96%87%E4%BB%B6"><strong>使用file_put_contents一次性写入文件</strong></a></li>
+<li><a href="#%E8%AF%BB%E5%8F%96%E4%B8%80%E4%B8%AAcsv%E6%96%87%E4%BB%B6%E9%80%97%E5%8F%B7%E5%88%86%E9%9A%94%E7%AC%A6%E5%B9%B6%E4%B8%94%E8%A7%A3%E6%9E%90%E4%B8%BA%E4%BA%8C%E7%BB%B4%E6%95%B0%E7%BB%84"><strong>读取一个CSV文件（逗号分隔符），并且解析为二维数组</strong></a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%90%86%E8%A7%A3%E9%83%A8%E5%88%86-6"><strong>代码理解部分</strong></a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8php%E6%A8%A1%E6%8B%9Ftail-f%E5%AE%9E%E6%97%B6%E6%9F%A5%E7%9C%8B%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9"><strong>使用PHP模拟tail -f实时查看文件内容</strong></a></li>
+</ul>
+</li>
+<li><a href="#php%E6%93%8D%E4%BD%9Cjson%E6%95%B0%E6%8D%AE">PHP操作JSON数据</a><br>
+*
+<ul>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%90%86%E8%A7%A3%E9%83%A8%E5%88%86-7"><strong>代码理解部分</strong></a></li>
+</ul>
+</li>
+<li><a href="#php%E8%AF%BB%E5%8F%96xml%E6%95%B0%E6%8D%AE">PHP读取XML数据</a><br>
+*
+<ul>
+<li><a href="#xml%E4%BB%A3%E7%A0%81">XML代码</a></li>
+<li><a href="#%E8%AF%BB%E5%8F%96class%E8%8A%82%E7%82%B9%E7%9A%84%E5%B1%9E%E6%80%A7id%E5%92%8C%E5%AF%B9%E5%BA%94%E7%9A%84%E5%80%BC">读取class节点的属性id和对应的值</a></li>
+<li><a href="#%E8%AF%BB%E5%8F%96%E7%AC%AC%E4%BA%8C%E4%B8%AA%E5%AD%A6%E7%94%9F%E7%9A%84%E6%89%80%E6%9C%89%E4%BF%A1%E6%81%AF">读取第二个学生的所有信息</a></li>
+<li><a href="#%E8%AF%BB%E5%8F%96%E6%89%80%E6%9C%89%E5%AD%A6%E7%94%9F%E7%9A%84%E5%A7%93%E5%90%8D">读取所有学生的姓名</a></li>
+<li><a href="#%E5%B0%86xml%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E4%B8%BAphp%E7%9A%84%E4%BA%8C%E7%BB%B4%E6%95%B0%E7%BB%84">将XML文件读取为PHP的二维数组</a></li>
+<li><a href="#%E8%AF%BB%E5%8F%96firewallxml%E7%9A%84%E6%89%80%E6%9C%89%E7%AB%AF%E5%8F%A3%E4%BF%A1%E6%81%AF">读取firewall.xml的所有端口信息</a></li>
+</ul>
+</li>
+<li><a href="#xml%E6%9B%B4%E6%96%B0%E4%B8%8Expath">XML更新与XPATH</a><br>
+*
+<ul>
+<li><a href="#%E4%BF%AE%E6%94%B9%E8%8A%82%E7%82%B9%E7%9A%84%E5%B1%9E%E6%80%A7%E6%88%96%E5%80%BC">修改节点的属性或值</a></li>
+<li><a href="#%E4%BF%AE%E6%94%B9%E8%8A%82%E7%82%B9%E7%9A%84%E5%B1%9E%E6%80%A7%E5%80%BC">修改节点的属性值</a></li>
+<li><a href="#%E5%88%A0%E9%99%A4%E8%8A%82%E7%82%B9%E6%93%8D%E4%BD%9C">删除节点操作</a></li>
+<li><a href="#%E5%B0%86%E6%95%B0%E7%BB%84%E5%86%99%E5%85%A5xml">将数组写入XML</a></li>
+<li><a href="#xpath%E5%AE%9A%E4%BD%8D%E5%85%83%E7%B4%A0">XPATH定位元素</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BD%91%E9%A1%B5%E7%88%AC%E8%99%AB%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E7%8E%B0">网页爬虫原理与实现</a><br>
+*
+<ul>
+<li><a href="#%E7%90%86%E8%AE%BA%E9%83%A8%E5%88%86">理论部分：</a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%90%86%E8%A7%A3%E9%83%A8%E5%88%86-8">代码理解部分：</a></li>
+</ul>
+</li>
+<li><a href="#%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E5%9F%BA%E7%A1%80">面向对象基础</a><br>
+*
+<ul>
+<li><a href="#%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80%E7%94%A8%E6%B3%95">面向对象编程基础用法</a></li>
+<li><a href="#%E5%88%A9%E7%94%A8%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%89%B9%E6%80%A7%E6%94%B9%E9%80%A0%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C">利用面向对象的特性改造数据库操作</a></li>
+<li><a href="#%E5%B0%81%E8%A3%85%E7%BB%A7%E6%89%BF%E5%A4%9A%E6%80%81">封装，继承，多态</a></li>
+</ul>
+</li>
+<li><a href="#%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8C%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96">序列化和反序列化</a><br>
+*
+<ul>
+<li><a href="#%E5%BA%8F%E5%88%97%E5%8C%96"><strong>序列化：</strong></a></li>
+<li><a href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><strong>反序列化</strong></a></li>
+<li><a href="#%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95"><strong>魔术方法</strong></a></li>
+<li><a href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E">反序列化漏洞</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/han-jia-gui-hua/">
+              <h3 class="post-title">
+                寒假规划
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

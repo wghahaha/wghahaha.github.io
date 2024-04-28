@@ -1,0 +1,1336 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Golang学习笔记 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Golang学习笔记 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Golang study
+语言结构
+Go 语言的基础组成有以下几个部分：
+
+包声明
+引入包
+函数
+变量
+语句 &amp; 表达式
+注释
+
+// 以下copy于菜鸟教程
+
+package main
+
+import &quot;fmt&quot..." />
+    <meta name="keywords" content="Golang,编程语言" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Golang学习笔记
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-02-18
+              </span>
+              <span>
+                24 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/Fv4wT2OkW/" class="post-tag">
+                  # Golang
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/As8VNLUIb/" class="post-tag">
+                  # 编程语言
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h3 id="golang-study">Golang study</h3>
+<h4 id="语言结构">语言结构</h4>
+<p>Go 语言的基础组成有以下几个部分：</p>
+<ul>
+<li>包声明</li>
+<li>引入包</li>
+<li>函数</li>
+<li>变量</li>
+<li>语句 &amp; 表达式</li>
+<li>注释</li>
+</ul>
+<pre><code class="language-go">// 以下copy于菜鸟教程
+
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+   /* 这是我的第一个简单的程序 */
+   fmt.Println(&quot;Hello, World!&quot;)
+}
+
+让我们来看下以上程序的各个部分：
+
+第一行代码 package main 定义了包名。你必须在源文件中非注释的第一行指明这个文件属于哪个包，如：package main。package main表示一个可独立执行的程序，每个 Go 应用程序都包含一个名为 main 的包。
+
+下一行 import &quot;fmt&quot; 告诉 Go 编译器这个程序需要使用 fmt 包（的函数，或其他元素），fmt 包实现了格式化 IO（输入/输出）的函数。
+
+下一行 func main() 是程序开始执行的函数。main 函数是每一个可执行程序所必须包含的，一般来说都是在启动后第一个执行的函数（如果有 init() 函数则会先执行该函数）。
+
+下一行 /*...*/ 是注释，在程序执行时将被忽略。单行注释是最常见的注释形式，你可以在任何地方使用以 // 开头的单行注释。多行注释也叫块注释，均已以 /* 开头，并以 */ 结尾，且不可以嵌套使用，多行注释一般用于包的文档描述或注释成块的代码片段。
+
+下一行 fmt.Println(...) 可以将字符串输出到控制台，并在最后自动增加换行字符 \n。
+使用 fmt.Print(&quot;hello, world\n&quot;) 可以得到相同的结果。
+Print 和 Println 这两个函数也支持使用变量，如：fmt.Println(arr)。如果没有特别指定，它们会以默认的打印格式将变量 arr 输出到控制台。
+
+当标识符（包括常量、变量、类型、函数名、结构字段等等）以一个大写字母开头，如：Group1，那么使用这种形式的标识符的对象就可以被外部包的代码所使用（客户端程序需要先导入这个包），这被称为导出（像面向对象语言中的 public）；标识符如果以小写字母开头，则对包外是不可见的，但是他们在整个包的内部是可见并且可用的（像面向对象语言中的 protected ）。
+</code></pre>
+<p><strong>需要注意的是 { 不能单独放在一行，所以以下代码在运行时会产生错误</strong> （我就犯过这个错误，在那里debug半天）</p>
+<h4 id="变量">变量</h4>
+<p>规则 ：GO语言变量由字母 数字 下划线组成 首个字符不能为数字</p>
+<h6 id="布尔数字字符串">布尔&amp;数字&amp;字符串</h6>
+<pre><code class="language-go">布尔:即bool
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+	var a = true
+	var b = false
+	var c bool //声明 默认false
+	c = true   //赋值
+
+	fmt.Println(a, b, c)
+}
+
+数字：int 和 float
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+	var a = 12244
+	var b = 1245
+	var c int //声明 默认0
+	c = 14524 //赋值
+
+	fmt.Println(a, b, c)
+}
+
+字符串：
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+	var a = &quot;小王学安全&quot;
+
+	var b = &quot;Nigr-W&quot;
+
+	var c string   //声明 默认0
+	c = &quot;Nige-W 2&quot; //赋值
+	fmt.Println(a, b, c)
+}
+
+//简写都可以写作
+a: = XX
+</code></pre>
+<h6 id="数组">数组</h6>
+<pre><code class="language-go">数组:和其他语言的差不多
+
+var a = [9]bool{}
+	var b = [...]int{1, 2, 3}
+	var c = [...]int{1, 5, 3}
+	c[0] = 6 //通过下标修改
+	fmt.Println(a, b, c)
+
+///输出结果 [false false false false false false false false false] [1 2 3] [6 5 3]
+
+</code></pre>
+<h6 id="切片">切片</h6>
+<pre><code class="language-go">切片：
+//Go 语言切片是对数组的抽象。
+/*Go 数组的长度不可改变，在特定场景中这样的集合就不太适用，Go 中提供了一种灵活，功能强悍的内置类型切片(&quot;动态数组&quot;)，与数组相比切片的长度是不固定的，可以追加元素，在追加时可能使切片的容量增大。*/
+
+var a = make([]string, 0) //切片定义
+	a = append(a, &quot;小王学安全&quot;)
+	a = append(a, &quot;Nige-W&quot;)
+	var b = []int{1, 2, 3, 4, 5, 6}
+	b = append(b, 7) //切片追加
+	var c = make([]int, 6)
+	copy(c, b)   //切片复制
+	var d = make([]string, len(a))
+	copy(d, a)
+	fmt.Println(len(a), b, c, d)  // len代表 获取当前切片长度 
+	fmt.Println(b[4:6])  //切片截取    规律：左包含又不包含
+
+//输出结果 2 [1 2 3 4 5 6 7] [1 2 3 4 5 6] [小王学安全 Nige-W]
+//[5 6]
+
+//推荐讲解博客 https://cloud.tencent.com/developer/article/1627244
+</code></pre>
+<h6 id="指针">指针</h6>
+<pre><code class="language-go">指针:c语言简化版
+var a = &quot;小王学安全&quot;
+	var b *string //声明一个字符串指针
+	b = &amp;a        //指针进行赋值 &amp;代表地址
+	fmt.Println(b)
+
+//输出结果 0xc000050050
+
+var a = &quot;小王学安全&quot;
+	var b *string //声明一个字符串指针
+	b = &amp;a        //指针进行赋值 &amp;代表地址
+	*b = &quot;Nige-W&quot;  //通过指针进行覆盖
+	fmt.Println(a)
+
+//输出结果 Nige-W
+
+//通过这两段代码相信大家都理解了 在go语言中的指针 还是不清楚的可以看下 这段博客 http://c.biancheng.net/view/21.html
+</code></pre>
+<h6 id="结构体">结构体</h6>
+<pre><code class="language-GO">结构体:和C语言类似
+
+type pepople struct {
+		name     string  
+		age      int
+		birthday string
+		gender   string
+	}
+	//在进行定义的同时直接进行赋值
+	var a = pepople{
+		name:     &quot;小王学安全&quot;,
+		age:      20,
+		birthday: &quot;1245/4545&quot;,
+		gender:   &quot;男&quot;,
+	}
+	//先进行定义再进行赋值
+	var b = pepople{}
+	b.name = &quot;Nige-W&quot;
+	b.age = 20
+	b.birthday = &quot;125/545&quot;
+	b.gender = &quot;男&quot;
+	
+	
+	fmt.Println(a)
+	fmt.Println(b)
+}
+
+//输出结果:  {小王学安全 20 1245/4545 男}
+//          {Nige-W 20 125/545 男}
+
+var a = pepople{
+		name:     &quot;小王学安全&quot;,
+		age:      20,
+		birthday: &quot;1245/4545&quot;,
+		gender:   &quot;男&quot;,
+	}
+	//先进行定义再进行赋值
+	var b = pepople{}
+	b.name = &quot;Nige-W&quot;
+	b.age = 20
+	b.birthday = &quot;125/545&quot;
+	b.gender = &quot;男&quot;
+
+	a.name = &quot;Nige-W&quot;
+	fmt.Println(a)
+	fmt.Println(b)
+
+//输出结果:  {Nige-W 20 1245/4545 男}
+//          {Nige-W 20 125/545 男}
+
+</code></pre>
+<h6 id="map">map</h6>
+<pre><code class="language-go">var a map[string]string     //声明map集合变量
+	a = make(map[string]string) //创建集合
+
+	//对集合进行赋值
+	a[&quot;name&quot;] = &quot;小王学安全&quot;
+	a[&quot;birthday&quot;] = &quot;124/1224&quot;
+	a[&quot;gender&quot;] = &quot;男&quot;
+
+	//声明变量并进行赋值
+	var b = map[string]string{
+		&quot;name&quot;:     &quot;Nige-W&quot;,
+		&quot;birthday&quot;: &quot;1015/5545&quot;,
+		&quot;gender&quot;:   &quot;男&quot;,
+	}
+
+	fmt.Println(a)
+	fmt.Println(b)
+//输出结果：map[birthday:124/1224 gender:男 name:小王学安全]
+//        map[birthday:1015/5545 gender:男 name:Nige-W]
+
+//输出的结果与json类似
+</code></pre>
+<h6 id=""></h6>
+<h4 id="常量">常量</h4>
+<ul>
+<li>常量名称与变量遵循相同的命名规则</li>
+<li>常量名称通常用大写字母进行书写</li>
+<li>常量可以在函数内部和外部进行声明</li>
+</ul>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+const aaa = 123456
+
+func main() {
+	fmt.Println(aaa)
+
+}
+
+//输出结果 123456 
+//常量也可以定义在函数内部
+</code></pre>
+<h6 id="枚举">枚举</h6>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+const (
+	aaa = 1
+	ccc = 2
+	ddd = 3
+	eee = 4
+)
+
+func main() {
+
+	fmt.Println(eee)
+}
+
+//输出结果：4
+</code></pre>
+<h6 id="iota">iota</h6>
+<p>修改编译器里面的常量</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+const (
+	aaa = iota
+	ccc
+	ddd
+	eee
+)
+
+func main() {
+
+	fmt.Println(eee)
+}
+
+</code></pre>
+<h4 id="条件分支">条件分支</h4>
+<p>语法格式和其他类语差不多，比较特殊的是 go 语言没有 while</p>
+<h6 id="if">if</h6>
+<pre><code class="language-go">if:和其他语言的一样 书写的时候需要注意go的方式
+
+	var a, b = 11, 52
+	if a &gt; b {
+
+		fmt.Println(a)
+	} else {
+		fmt.Println(b)
+	}
+
+}
+
+//输出结果:52
+</code></pre>
+<h6 id="switch">switch</h6>
+<pre><code class="language-go">switch:和其他编程语言的差不多，注意go的一些格式写法
+today := 3
+
+	switch today {
+	case 1:
+		fmt.Println(&quot;周一&quot;)
+	case 2:
+		fmt.Println(&quot;周二&quot;)
+	case 3:
+		fmt.Println(&quot;周三&quot;)
+	case 4:
+		fmt.Println(&quot;周四&quot;)
+	case 5:
+		fmt.Println(&quot;周五&quot;)
+	case 6:
+		fmt.Println(&quot;周六&quot;)
+
+		//fallthrough //这个意思是前面执行完了后 执行下面的语句。
+
+	default:
+		fmt.Println(&quot;周日&quot;)
+	}
+
+//输出结果:周三
+
+</code></pre>
+<h6 id="for">for</h6>
+<pre><code class="language-go">for：循环判断
+
+//一个简单的for循环
+
+	for i := 1; i &lt; 10; i++ {
+		fmt.Println(i)
+	}
+
+//输出结果: 从 1 到 9
+
+var i = 1
+	for i &lt; 10 {
+		i++
+		fmt.Println(i)
+	}
+
+//输出结果：2到10
+
+
+
+//map 格式
+// key and value
+userpasmap := map[string]string{
+		&quot;uername&quot;:      &quot;admin&quot;,
+		&quot;password&quot;:     &quot;123456&quot;,
+		&quot;mobile_phone&quot;: &quot;1258749&quot;,
+	}
+	fmt.Println(&quot;数据段1\t数据段2&quot;)
+
+	for user, pass := range userpasmap {         //key, value := range userpasmap
+		fmt.Printf(&quot;%s\t%s\n&quot;, user, pass)
+	}
+
+//only key
+userpasmap := map[string]string{
+		&quot;uername&quot;:      &quot;admin&quot;,
+		&quot;password&quot;:     &quot;123456&quot;,
+		&quot;mobile_phone&quot;: &quot;1258749&quot;,
+	}
+	fmt.Println(&quot;数据段1\t数据段2&quot;)
+
+	//for user, pass := range userpasmap {
+	//	fmt.Printf(&quot;%s\t%s\n&quot;, user, pass)
+	//}
+	for user := range userpasmap {
+		fmt.Printf(&quot;%s\t%s\n&quot;, user, userpasmap[user]) // map可以使用key 取出 value的值 value = map[key]
+	}
+
+//这两段代码输出结果一致
+
+for _, pass := range userpasmap {
+		fmt.Printf(&quot;%s\n&quot;, pass)
+	}for _, pass := range userpasmap {
+		fmt.Printf(&quot;%s\n&quot;, pass)
+	}
+//在不想要前段数据的时候，通过 _ 舍去，程序只会输出后半段数据。
+
+//嵌套
+和其他语言一样 go的for也可以进行嵌套
+
+//一段爆破代码
+users := []string{
+		&quot;admin&quot;,
+		&quot;root&quot;,
+		&quot;test&quot;,
+		&quot;ubuntu&quot;,
+	}
+
+	passwords := []string{
+		&quot;admin&quot;,
+		&quot;root&quot;,
+		&quot;password&quot;,
+		&quot;123456&quot;,
+	}
+	fmt.Println(&quot;用户\t密码&quot;)
+	for i, _ := range users {
+		for x, _ := range passwords {
+			fmt.Printf(&quot;%s\t%s\n&quot;, users[i], passwords[x])
+		}
+
+	}
+
+输出结果就是 每段数据都进行整合 有点暴破脚本的感觉了。
+
+</code></pre>
+<h6 id="循环控制">循环控制</h6>
+<pre><code class="language-go">break : 强制退出for循环
+
+users := []string{
+		&quot;admin&quot;,
+		&quot;root&quot;,
+		&quot;test&quot;,
+		&quot;ubuntu&quot;,
+	}
+
+	passwords := []string{
+		&quot;admin&quot;,
+		&quot;root&quot;,
+		&quot;password&quot;,
+		&quot;123456&quot;,
+	}
+	fmt.Println(&quot;用户\t密码&quot;)
+	for i, _ := range users {
+		if users[i] == &quot;test&quot; {
+			break //退出 for 循环
+		}
+		for x, _ := range passwords {
+			fmt.Printf(&quot;%s\t%s\n&quot;, users[i], passwords[x])
+		}
+
+	}
+
+// 这段代码造成的后果就是 test及其以后的字段都不会进行暴破
+
+
+
+users := []string{
+		&quot;admin&quot;,
+		&quot;root&quot;,
+		&quot;test&quot;,
+		&quot;ubuntu&quot;,
+	}
+
+	passwords := []string{
+		&quot;admin&quot;,
+		&quot;root&quot;,
+		&quot;password&quot;,
+		&quot;123456&quot;,
+	}
+	fmt.Println(&quot;用户\t密码&quot;)
+	for i, _ := range users {
+		
+		for x, _ := range passwords {
+			if users[i] == &quot;test&quot; {
+				break //退出 for 循环
+			}
+			fmt.Printf(&quot;%s\t%s\n&quot;, users[i], passwords[x])
+		}
+
+	}
+// 这段代码造成的后果就是只有 test字段不进行暴破。
+
+break 被哪个循环包围了 就退出哪个循环
+
+注意 在go语言的 switch  case 语句 当中虽然可以加入 break使用，但是go语言的 switch 只要执行成功了就不会向下执行，所以没有很大的实际意义。
+
+
+contiue: 如果为真 强制重新循环 
+
+users := []string{
+		&quot;admin&quot;,
+		&quot;root&quot;,
+		&quot;test&quot;,
+		&quot;ubuntu&quot;,
+	}
+
+	passwords := []string{
+		&quot;admin&quot;,
+		&quot;root&quot;,
+		&quot;password&quot;,
+		&quot;123456&quot;,
+	}
+	fmt.Println(&quot;用户\t密码&quot;)
+	for i, _ := range users {
+		if users[i] == &quot;test&quot; {
+			continue //强制重新循环
+		}
+		for x, _ := range passwords {
+
+			fmt.Printf(&quot;%s\t%s\n&quot;, users[i], passwords[x])
+		}
+
+	}
+
+//这段代码造成的后果就是只有 test字段不进行暴破。
+
+
+
+goto : 无条件转移到指定的代码片段中。
+
+//一个简单的例子
+
+fmt.Println(&quot;代码片段1&quot;)
+	goto JUMP
+	fmt.Println(&quot;代码片段2&quot;)
+JUMP:
+	{
+		fmt.Println(&quot;代码片段3&quot;)
+	}
+
+//输出结果：
+代码片段1
+代码片段3
+
+
+注意 goto 如果对程序判断失误，容易造成死循环 导致程序崩溃，所以需要慎用。
+</code></pre>
+<h4 id="作用域">作用域</h4>
+<pre><code class="language-go">局部变量：定义在函数体里面只可以在当前函数里面进行调用
+全局变量：定义在函数体外。可以在整段程序中调用
+形式参数:和局部变量类似
+
+//一个形式参数的简单例子
+
+func test (a int){    //这里的a就是形式参数
+    fmt.Println(a)
+}
+
+访问权限:首字母大写的函数默认可以跨包调用 即 xx.xx
+         首字母小写的只能在当前包里面调用 即 xx
+</code></pre>
+<h4 id="函数">函数</h4>
+<pre><code class="language-go">func : 函数使用func声明
+sub  : 函数名称
+(x,y int) :  参数列表 函数也可以不包括参数
+返回类型 : 函数返回一列值 函数可以没有返回值
+函数体 : 函数的代码集合
+</code></pre>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+
+	d := sub(&quot;3&quot;, &quot;5&quot;)
+	fmt.Println(d)
+}
+func sub(x string, y string) string {
+	c := x + y
+	return c
+	//不会再继续向下执行了
+}
+输出结果 ：35
+</code></pre>
+<pre><code class="language-go">//在C语言中学习过的一个小坑
+
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+
+   x := 15
+   fmt.Println(x)
+   c := sub(&amp;x)
+   fmt.Println(x, c)
+}
+func sub(x *int) int {
+   *x = 2
+   return *x
+   //不会再继续向下执行了
+}
+
+//在这里通过修改地址将x的值修改为了2
+
+
+package main
+
+import &quot;fmt&quot;
+
+func main() {
+
+   x := 15
+   fmt.Println(x)
+   c := sub(x)
+   fmt.Println(x, c)
+}
+func sub(x int) int {
+   x = 2
+   return x
+   //不会再继续向下执行了
+}
+
+//如果是第二段代码这样的 x的值仍然为15
+</code></pre>
+<h4 id="方法">方法</h4>
+<pre><code class="language-go">// 一个简单的例子
+package main
+
+import (
+    &quot;fmt&quot;
+)
+
+type Employee struct {
+    name     string
+    salary   int
+    currency string
+}
+
+/*
+  displaySalary() 方法将 Employee 做为接收器类型
+*/
+func (e Employee) displaySalary() {
+    fmt.Printf(&quot;Salary of %s is %s%d&quot;, e.name, e.currency, e.salary)
+}
+
+func main() {
+    emp1 := Employee {
+        name:     &quot;Sam Adolf&quot;,
+        salary:   5000,
+        currency: &quot;$&quot;,
+    }
+    emp1.displaySalary() // 调用 Employee 类型的 displaySalary() 方法
+}
+
+//输出结果 Salary of Sam Adolf is $5000
+</code></pre>
+<pre><code class="language-go">//不使用方法 只使用函数的一个例子 
+package main
+
+import (
+    &quot;fmt&quot;
+)
+
+type Employee struct {
+    name     string
+    salary   int
+    currency string
+}
+
+/*
+displaySalary()方法被转化为一个函数，把 Employee 当做参数传入。
+*/
+func displaySalary(e Employee) {
+    fmt.Printf(&quot;Salary of %s is %s%d&quot;, e.name, e.currency, e.salary)
+}
+
+func main() {
+    emp1 := Employee{
+        name:     &quot;Sam Adolf&quot;,
+        salary:   5000,
+        currency: &quot;$&quot;,
+    }
+    displaySalary(emp1)
+}
+
+//输出结果一样。
+</code></pre>
+<p>这里将来的方法转换为函数，将结构体中的值作为参数传入函数当中。得到的结果一致</p>
+<p>思考： 为什么有了函数，我们还需要使用方法呢。</p>
+<pre><code class="language-go">//原因 （中文社区给出的答案)
+/*Go 不是纯粹的面向对象编程语言，而且Go不支持类。因此，基于类型的方法是一种实现和类相似行为的途径。
+
+相同的名字的方法可以定义在不同的类型上，而相同名字的函数是不被允许的。假设我们有一个 Square 和 Circle 结构体。可以在 Square 和 Circle 上分别定义一个 Area 方法。见下面的程序。*/
+
+package main
+
+import (
+    &quot;fmt&quot;
+    &quot;math&quot;
+)
+
+type Rectangle struct {
+    length int
+    width  int
+}
+
+type Circle struct {
+    radius float64
+}
+
+func (r Rectangle) Area() int {
+    return r.length * r.width
+}
+
+func (c Circle) Area() float64 {
+    return math.Pi * c.radius * c.radius
+}
+
+func main() {
+    r := Rectangle{
+        length: 10,
+        width:  5,
+    }
+    fmt.Printf(&quot;Area of rectangle %d\n&quot;, r.Area())
+    c := Circle{
+        radius: 12,
+    }
+    fmt.Printf(&quot;Area of circle %f&quot;, c.Area())
+}
+
+//输出结果
+/*Area of rectangle 50
+Area of circle 452.389342*/
+//上述代码中方法的属性在接口中会有用到。
+</code></pre>
+<h4 id="接口">接口</h4>
+<p>很惭愧，第一次看这个知识点的时候没有认真看代码，那个文档里的代码，翻来覆去看了几遍才看懂。demo是一个印度程序员写的。</p>
+<pre><code class="language-go">//一个小 demo 感受下接口
+package main
+
+import (  
+    &quot;fmt&quot;
+)
+
+//interface definition
+type VowelsFinder interface {  
+    FindVowels() []rune
+}
+
+type MyString string
+
+//MyString implements VowelsFinder
+func (ms MyString) FindVowels() []rune {  
+    var vowels []rune
+    for _, rune := range ms {
+        if rune == 'a' || rune == 'e' || rune == 'i' || rune == 'o' || rune == 'u' {
+            vowels = append(vowels, rune)
+        }
+    }
+    return vowels
+}
+
+func main() {  
+    name := MyString(&quot;Sam Anderson&quot;)
+    var v VowelsFinder
+    v = name // possible since MyString implements VowelsFinder
+    fmt.Printf(&quot;Vowels are %c&quot;, v.FindVowels())
+
+}
+
+//输出结果 Vowels are [a e o]
+</code></pre>
+<pre><code class="language-go">//实际项目中会用到的技术
+//比如 一家公司需要根据公司员工的个人薪资，计算公司的总支出。为了简单起见，我们假定支出的单位都是美元
+
+package main
+
+import (  
+    &quot;fmt&quot;
+)
+
+type SalaryCalculator interface {  
+    CalculateSalary() int
+}
+
+type Permanent struct {  
+    empId    int
+    basicpay int
+    pf       int
+}
+
+type Contract struct {  
+    empId  int
+    basicpay int
+}
+
+//salary of permanent employee is sum of basic pay and pf
+func (p Permanent) CalculateSalary() int {  
+    return p.basicpay + p.pf
+}
+
+//salary of contract employee is the basic pay alone
+func (c Contract) CalculateSalary() int {  
+    return c.basicpay
+}
+
+/*
+total expense is calculated by iterating though the SalaryCalculator slice and summing  
+the salaries of the individual employees  
+*/
+func totalExpense(s []SalaryCalculator) {  
+    expense := 0
+    for _, v := range s {
+        expense = expense + v.CalculateSalary()
+    }
+    fmt.Printf(&quot;Total Expense Per Month $%d&quot;, expense)
+}
+
+func main() {  
+    pemp1 := Permanent{1, 5000, 20}
+    pemp2 := Permanent{2, 6000, 30}
+    cemp1 := Contract{3, 3000}
+    employees := []SalaryCalculator{pemp1, pemp2, cemp1}
+    totalExpense(employees)
+
+}
+
+/* demo 作者的代码讲解 
+上面程序的第 7 行声明了一个 SalaryCalculator 接口类型，它只有一个方法 CalculateSalary() int。
+
+在公司里，我们有两类员工，即第 11 行和第 17 行定义的结构体：Permanent 和 Contract。长期员工（Permanent）的薪资是 basicpay 与 pf 相加之和，而合同员工（Contract）只有基本工资 basicpay。在第 23 行和第 28 行中，方法 CalculateSalary 分别实现了以上关系。由于 Permanent 和 Contract 都声明了该方法，因此它们都实现了 SalaryCalculator 接口。
+
+第 36 行声明的 totalExpense 方法体现出了接口的妙用。该方法接收一个 SalaryCalculator 接口的切片（[]SalaryCalculator）作为参数。在第 49 行，我们向 totalExpense 方法传递了一个包含 Permanent 和 Contact 类型的切片。在第 39 行中，通过调用不同类型对应的 CalculateSalary 方法，totalExpense 可以计算得到支出。
+
+这样做最大的优点是：totalExpense 可以扩展新的员工类型，而不需要修改任何代码。假如公司增加了一种新的员工类型 Freelancer，它有着不同的薪资结构。Freelancer只需传递到 totalExpense 的切片参数中，无需 totalExpense 方法本身进行修改。只要 Freelancer 也实现了 SalaryCalculator 接口，totalExpense 就能够实现其功能。
+
+该程序输出 Total Expense Per Month $14050。*/
+</code></pre>
+<pre><code class="language-java">//内部表示
+//我们可以把接口看作内部的一个元组 (type, value)。 type 是接口底层的具体类型（Concrete Type），而 value 是具体类型的值。
+package main
+
+import (
+	&quot;fmt&quot;
+)
+
+type Test interface {
+	Tester()
+}
+
+type MyFloat float64
+
+func (m MyFloat) Tester() {
+	fmt.Println(m)
+}
+
+func describe(t Test) {
+	fmt.Printf(&quot;Interface type %T value %v\n&quot;, t, t)
+}
+
+func main() {
+	var t Test
+	f := MyFloat(89.7)
+	t = f
+	describe(t)
+	t.Tester()
+}
+/*
+*Test 接口只有一个方法 Tester()，而 MyFloat 类型实现了该接口。在第 24 行，我们把变量 f（MyFloat 类型）赋值给了 t（Test 类型）。
+*现在 t 的具体类型为 MyFloat，而 t 的值为 89.7。第 17 行的 describe 函数打印出了接口的具体类型和值
+**/
+</code></pre>
+<pre><code class="language-java">//空接口
+package main
+
+import (  
+    &quot;fmt&quot;
+)
+
+func describe(i interface{}) {  
+    fmt.Printf(&quot;Type = %T, value = %v\n&quot;, i, i)
+}
+
+func main() {  
+    s := &quot;Hello World&quot;
+    describe(s)
+    i := 55
+    describe(i)
+    strt := struct {
+        name string
+    }{
+        name: &quot;Naveen R&quot;,
+    }
+    describe(strt)
+}
+
+</code></pre>
+<pre><code class="language-go">//类型断言
+/*类型断言用于提取接口的底层值（Underlying Value）。
+
+在语法 i.(T) 中，接口 i 的具体类型是 T，该语法用于获得接口的底层值。*/
+package main
+
+import (  
+    &quot;fmt&quot;
+)
+
+func assert(i interface{}) {  
+    s := i.(int) //get the underlying int value from i
+    fmt.Println(s)
+}
+func main() {  
+    var s interface{} = 56
+    assert(s)
+}
+</code></pre>
+<pre><code class="language-go">package main
+
+import (  
+    &quot;fmt&quot;
+)
+
+func assert(i interface{}) {  
+    s := i.(int) 
+    fmt.Println(s)
+}
+func main() {  
+    var s interface{} = &quot;Steven Paul&quot;
+    assert(s)
+}
+/*在上面程序中，我们把具体类型为 string 的 s 传递给了 assert 函数，试图从它提取出 int 值。该程序会报错：panic: interface conversion: interface {} is string, not int.*/
+
+v, ok := i.(T)
+
+/*如果 i 的具体类型是 T，那么 v 赋值为 i 的底层值，而 ok 赋值为 true。
+
+如果 i 的具体类型不是 T，那么 ok 赋值为 false，v 赋值为 T 类型的零值，此时程序不会报错。*/
+
+package main
+
+import (
+	&quot;fmt&quot;
+)
+
+func assert(i interface{}) {
+	v, ok := i.(int)
+	fmt.Println(v, ok)
+}
+func main() {
+	var s interface{} = 56
+	assert(s)
+	var i interface{} = &quot;Steven Paul&quot;
+	assert(i)
+}
+
+//输出结果
+/*56 true
+0 false
+*/
+</code></pre>
+<pre><code class="language-go">//类型和接口相比较
+package main
+
+import &quot;fmt&quot;
+
+type Describer interface {  
+    Describe()
+}
+type Person struct {  
+    name string
+    age  int
+}
+
+func (p Person) Describe() {  
+    fmt.Printf(&quot;%s is %d years old&quot;, p.name, p.age)
+}
+
+func findType(i interface{}) {  
+    switch v := i.(type) {
+    case Describer:
+        v.Describe()
+    default:
+        fmt.Printf(&quot;unknown type\n&quot;)
+    }
+}
+
+func main() {  
+    findType(&quot;Naveen&quot;)
+    p := Person{
+        name: &quot;Naveen R&quot;,
+        age:  25,
+    }
+    findType(p)
+}
+
+//输出结果
+/*Sam is 25 years old  
+James is 32 years old  
+State Washington Country USA*/
+</code></pre>
+<pre><code class="language-go">//实现多个接口
+package main
+
+import (  
+    &quot;fmt&quot;
+)
+
+type SalaryCalculator interface {  
+    DisplaySalary()
+}
+
+type LeaveCalculator interface {  
+    CalculateLeavesLeft() int
+}
+
+type Employee struct {  
+    firstName string
+    lastName string
+    basicPay int
+    pf int
+    totalLeaves int
+    leavesTaken int
+}
+
+func (e Employee) DisplaySalary() {  
+    fmt.Printf(&quot;%s %s has salary $%d&quot;, e.firstName, e.lastName, (e.basicPay + e.pf))
+}
+
+func (e Employee) CalculateLeavesLeft() int {  
+    return e.totalLeaves - e.leavesTaken
+}
+
+func main() {  
+    e := Employee {
+        firstName: &quot;Naveen&quot;,
+        lastName: &quot;Ramanathan&quot;,
+        basicPay: 5000,
+        pf: 200,
+        totalLeaves: 30,
+        leavesTaken: 5,
+    }
+    var s SalaryCalculator = e
+    s.DisplaySalary()
+    var l LeaveCalculator = e
+    fmt.Println(&quot;\nLeaves left =&quot;, l.CalculateLeavesLeft())
+}
+</code></pre>
+<pre><code class="language-go">//接口的嵌套
+package main
+
+import (  
+    &quot;fmt&quot;
+)
+
+type SalaryCalculator interface {  
+    DisplaySalary()
+}
+
+type LeaveCalculator interface {  
+    CalculateLeavesLeft() int
+}
+
+type EmployeeOperations interface {  
+    SalaryCalculator
+    LeaveCalculator
+}
+
+type Employee struct {  
+    firstName string
+    lastName string
+    basicPay int
+    pf int
+    totalLeaves int
+    leavesTaken int
+}
+
+func (e Employee) DisplaySalary() {  
+    fmt.Printf(&quot;%s %s has salary $%d&quot;, e.firstName, e.lastName, (e.basicPay + e.pf))
+}
+
+func (e Employee) CalculateLeavesLeft() int {  
+    return e.totalLeaves - e.leavesTaken
+}
+
+func main() {  
+    e := Employee {
+        firstName: &quot;Naveen&quot;,
+        lastName: &quot;Ramanathan&quot;,
+        basicPay: 5000,
+        pf: 200,
+        totalLeaves: 30,
+        leavesTaken: 5,
+    }
+    var empOp EmployeeOperations = e
+    empOp.DisplaySalary()
+    fmt.Println(&quot;\nLeaves left =&quot;, empOp.CalculateLeavesLeft())
+}
+</code></pre>
+<p>一个小tips</p>
+<p>接口的零值是 <code>nil</code>。对于值为 <code>nil</code> 的接口，其底层值（Underlying Value）和具体类型（Concrete Type）都为 <code>nil</code></p>
+<p>小结:这些大概就是我认为的一些go语言基础了。后面会总结下并发编程和网络编程的一些东西，再发出来。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#golang-study">Golang study</a>
+<ul>
+<li><a href="#%E8%AF%AD%E8%A8%80%E7%BB%93%E6%9E%84">语言结构</a></li>
+<li><a href="#%E5%8F%98%E9%87%8F">变量</a><br>
+*
+<ul>
+<li><a href="#%E5%B8%83%E5%B0%94%E6%95%B0%E5%AD%97%E5%AD%97%E7%AC%A6%E4%B8%B2">布尔&amp;数字&amp;字符串</a></li>
+<li><a href="#%E6%95%B0%E7%BB%84">数组</a></li>
+<li><a href="#%E5%88%87%E7%89%87">切片</a></li>
+<li><a href="#%E6%8C%87%E9%92%88">指针</a></li>
+<li><a href="#%E7%BB%93%E6%9E%84%E4%BD%93">结构体</a></li>
+<li><a href="#map">map</a></li>
+<li></li>
+</ul>
+</li>
+<li><a href="#%E5%B8%B8%E9%87%8F">常量</a><br>
+*
+<ul>
+<li><a href="#%E6%9E%9A%E4%B8%BE">枚举</a></li>
+<li><a href="#iota">iota</a></li>
+</ul>
+</li>
+<li><a href="#%E6%9D%A1%E4%BB%B6%E5%88%86%E6%94%AF">条件分支</a><br>
+*
+<ul>
+<li><a href="#if">if</a></li>
+<li><a href="#switch">switch</a></li>
+<li><a href="#for">for</a></li>
+<li><a href="#%E5%BE%AA%E7%8E%AF%E6%8E%A7%E5%88%B6">循环控制</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BD%9C%E7%94%A8%E5%9F%9F">作用域</a></li>
+<li><a href="#%E5%87%BD%E6%95%B0">函数</a></li>
+<li><a href="#%E6%96%B9%E6%B3%95">方法</a></li>
+<li><a href="#%E6%8E%A5%E5%8F%A3">接口</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/python-ji-chu-xue-xi/">
+              <h3 class="post-title">
+                Python学习笔记
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

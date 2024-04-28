@@ -1,0 +1,256 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>阿里云服务器食用指北 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="阿里云服务器食用指北 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="前言：
+现在云服务器已经基本上是作为计算机学子 的基础装备了。尤其是做安全的，需要使用docker在上面搭建ARL灯塔 shuize这些资产收集工具。 后面使用 CS MSF  这些神器。也需要用到云服务器，无论你是做内网穿透还是 直接在上..." />
+    <meta name="keywords" content="环境搭建" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              阿里云服务器食用指北
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-02-06
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/mm5K0k53Q/" class="post-tag">
+                  # 环境搭建
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>前言：</p>
+<p>现在云服务器已经基本上是作为计算机学子 的基础装备了。尤其是做安全的，需要使用docker在上面搭建ARL灯塔 shuize这些资产收集工具。 后面使用 CS MSF  这些神器。也需要用到云服务器，无论你是做内网穿透还是 直接在上面搭建。</p>
+<h5 id="领取云服务器">领取云服务器</h5>
+<p>首先感谢 阿里云的飞天计划 送了学生们7个月的云服务器。</p>
+<p>https://developer.aliyun.com/plan/student 去这个链接 注册并登录完成学生认证获取。</p>
+<p>获取一个月的后，再完成实验与认证后，到续费那里 点击六个月就可以实现0元续费。</p>
+<p>云服务选择的话 我个人比较喜欢用ubuntu的，相对来说感觉比较稳定。这个看个人喜好选择就可以了。</p>
+<h5 id="配置云服务器">配置云服务器</h5>
+<p>首先我们需要修改下链接密码</p>
+<p>阿里云官方文档</p>
+<p>https://developer.aliyun.com/article/768228</p>
+<h5 id="下载第三方ssh客户端">下载第三方SSH客户端</h5>
+<p>https://www.v1tx.com/post/best-ssh-client/</p>
+<p>链接里面的都不错。</p>
+<p>个人比较推荐 Xshell或者 finashell</p>
+<p>我用的是finashell</p>
+<p>下载地址 http://www.hostbuf.com/downloads/finalshell_install.exe</p>
+<p>下载好后正常安装就可以了 没有其他多余的配置。</p>
+<h5 id="ssh链接云服务器">SSH链接云服务器</h5>
+<p>这里是以finashell举例的，其他工具操作也差不多</p>
+<p>打开finashell 点击文件夹 符号</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230206231502813.png" alt="image-20230206231502813" loading="lazy"></figure>
+<p>然后连接 文件夹右键</p>
+<p>选择 新建 -&gt; SSH连接</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230206231643109.png" alt="image-20230206231643109" loading="lazy"></figure>
+<p>名称：个人喜好 随便写</p>
+<p>主机：填写公网IP 注意一定要是公网IP 不是你去 VNC里面 ifconfig的值。是在控制台直接写出来的</p>
+<p>备注：个人喜好</p>
+<p>用户名：直接root就可以了</p>
+<p>密码：前面第二步重新设置的密码</p>
+<p>最后点击确定就可以了。</p>
+<p>然后双击刚才添加的，进去后可能需要输入密码，重新输入一次就可以了。</p>
+<p>出现下面的界面就是成功了</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230206232357000.png" alt="image-20230206232357000" loading="lazy"></figure>
+<p>接下来 你就可以在上面搞个CS 到处射击。或者用来搭建 个人网盘 博客 使用docker搭建公网靶场。以及实现内网穿透都是可以的。这些网上都有各种各样的文章。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E9%A2%86%E5%8F%96%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8">领取云服务器</a></li>
+<li><a href="#%E9%85%8D%E7%BD%AE%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8">配置云服务器</a></li>
+<li><a href="#%E4%B8%8B%E8%BD%BD%E7%AC%AC%E4%B8%89%E6%96%B9ssh%E5%AE%A2%E6%88%B7%E7%AB%AF">下载第三方SSH客户端</a></li>
+<li><a href="#ssh%E9%93%BE%E6%8E%A5%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8">SSH链接云服务器</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/burpsuite-zhong-an-zhuang-jython-huan-jing-ji-cha-jian/">
+              <h3 class="post-title">
+                BurpSuite中安装Jython环境及插件
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

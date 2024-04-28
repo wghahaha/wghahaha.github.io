@@ -1,0 +1,296 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GetShell方式小结 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="GetShell方式小结 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="前言
+前端时间学基础漏洞的时候没有太注意如何通过漏洞GETSHELL,前几天在实战中发现了一个sql注入，当时就想可不可以getshell 扩大危害。虽然最后还是没有getshell但是在这个过程中还是学到了新的姿势。以前我基本上只会 通过..." />
+    <meta name="keywords" content="GetShell,web安全" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              GetShell方式小结
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-04-10
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/j61Lbao2j/" class="post-tag">
+                  # GetShell
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/uaBWtnrdZ/" class="post-tag">
+                  # web安全
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="前言">前言</h4>
+<p>前端时间学基础漏洞的时候没有太注意如何通过漏洞GETSHELL,前几天在实战中发现了一个sql注入，当时就想可不可以getshell 扩大危害。虽然最后还是没有getshell但是在这个过程中还是学到了新的姿势。以前我基本上只会 通过文件上传漏洞得到shell。今天去网上看了一些师傅的文章然后学习下。</p>
+<h4 id="文件上传getshell">文件上传GetShell</h4>
+<p>这个就不用多说了就是直接上传webshell就可以了。过程中大概会遇到许多绕过 但是大体可以分为下面的几种情况。</p>
+<ul>
+<li>直接上传木马文件到目标服务器；</li>
+<li>绕过防护（黑名单 白名单）限制上传木马文件；</li>
+<li>CMS等的通用任意文件上传漏洞。在对目标进行渗透测试时，可从前后台头像修改、文件导入、图片上传等处寻找文件上传接口。此外，还需要根据识别的站点指纹寻找是否存在文件上传漏洞</li>
+</ul>
+<p>具体一些常见的绕过我在文件上传总结中说到过了。</p>
+<h4 id="解析漏洞getshell">解析漏洞GetShell</h4>
+<p>这个需要文件上传和文件包含配合使用。利用解析漏洞将图片马等文件解析为恶意脚本文件从而GetShell</p>
+<ul>
+<li>
+<p>IIS解析漏洞</p>
+<ul>
+<li>IIS 5.x/6.0解析漏洞，其中文件名解析漏洞利用形式为*.asp;.jpg；目录解析漏洞利用形式为/asp/1.jpg。</li>
+<li>IIS 7.0/7.5解析漏洞。其实该漏洞为cgi.fix_pathinfo的配置不当引起的解析漏洞，利用形式为x.jpg%20\0.php。</li>
+</ul>
+</li>
+<li>
+<p>Nginx解析漏洞</p>
+<ul>
+<li>Nginx漏洞版本0.8.41 ~ 1.4.3 / 1.5.0 ~ 1.5.7默认配置导致解析漏洞，利用形式为x.jpg/.php。</li>
+<li>Nginx漏洞版本0.5.、0.6.、0.7 &lt;= 0.7.65、0.8 &lt;= 0.8.37，利用形式为x.jpg%00.php。</li>
+<li>CVE-2013-4547，利用形式为x.jpg[非空编码]\0.php</li>
+<li>PHPStudy v8.1.0.7默认Nginx配置解析漏洞，利用形式为x.jpg/.php。</li>
+</ul>
+</li>
+<li>
+<p>Apache解析漏洞</p>
+<ul>
+<li>文件后缀x.php.ss.ss2会被解析为php文件</li>
+<li>利用配置文件。上传.htaccess配置文件，就会将.jpg解析为PHP文件，内容如下</li>
+</ul>
+<pre><code>AddType application/x-httpd-php xxx
+</code></pre>
+<p>或者</p>
+<pre><code>SetHandler application/x-httpd-php
+</code></pre>
+</li>
+</ul>
+<p>这个其实我在文件上传总结中也提到过。当时没有这么细。中间件的复现可以到vulhub中复现 直接docker起个环境就可以了 挺方便的。</p>
+<h4 id="文件包含漏洞getshell">文件包含漏洞GetShell</h4>
+<p>利用文件包含漏洞GetShell，由于面比较大，主要介绍PHP文件包含，其分为本地文件包含和远程文件包含。</p>
+<ul>
+<li>本地文件包含中，需要PHP的配置文件项allow_url_include和allow_url_fopen均设置为On。一般配合文件上传等漏洞GetShell，最常见的如先传图片马，再包含之。</li>
+<li>远程文件包含中，需要PHP的配置文件项allow_url_fopen设置为On，利用方式是在远程服务器上存在shell.txt，内容为webshell，然后远程包含这个文件即可。</li>
+</ul>
+<p>其实我觉得上面者三种有很多相似的地方。</p>
+<h4 id="sql注入getshell">SQL注入GetShell</h4>
+<p>目前了解到的有利用outfile函数，另外一种是利用--os-shell。</p>
+<p>第二种是利用的sqlmap得到shell。这两种方式我在靶场都没有复现成功。师傅们可以自己研究下。</p>
+<p>https://blog.csdn.net/qq_44159028/article/details/116274542</p>
+<h4 id="命令执行漏洞getshell">命令执行漏洞GetShell</h4>
+<p>利用命令（代码）执行漏洞写入WebShell文件从而GetShell。在此列举了以下四种常见情况作为说明。</p>
+<ul>
+<li>利用CMS、框架通用漏洞，如thinkPHP命令执行漏洞，影响范围较广，如鲶鱼CMS、ThinkCMF、yunCMS等。Struts2远程命令（代码）执行漏洞，如S2-059、S2-057……</li>
+<li>中间件、架构通用漏洞，如：Jboss远程命令执行、weblogic未授权命令执行CVE-2020-14882……</li>
+<li>应用程序命令执行漏洞，如Redis 4.x/5.x命令执行漏洞、Zabbix远程命令执行CVE-2020-11800……</li>
+<li>命令注入漏洞写入WebShell，根据Linux和Windows的不同采用不同的注入方式</li>
+</ul>
+<h4 id="其他方式getshell">其他方式GetShell</h4>
+<p>PHPmyadmin GetShell</p>
+<p>弱口令进入后台后 尝试在网站配置 数据库备份等地方写入webshell</p>
+<p>0day、nday GetShell       0day自己挖，如一些cms黑白盒渗透、代码审计等；Nday靠收集  （我只会nday,目前没挖到0day）</p>
+<p>组合漏洞GetShell  如DedeCMS CSRF + 任意文件写入</p>
+<p>后台修改文件上传类型 添加上传文件类型，如白名单中添加PHP。</p>
+<h4 id="参考链接">参考链接</h4>
+<p>https://www.mumsec.com/?p=46</p>
+<p>https://zhuanlan.zhihu.com/p/358651680</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0getshell">文件上传GetShell</a></li>
+<li><a href="#%E8%A7%A3%E6%9E%90%E6%BC%8F%E6%B4%9Egetshell">解析漏洞GetShell</a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%BC%8F%E6%B4%9Egetshell">文件包含漏洞GetShell</a></li>
+<li><a href="#sql%E6%B3%A8%E5%85%A5getshell">SQL注入GetShell</a></li>
+<li><a href="#%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9Egetshell">命令执行漏洞GetShell</a></li>
+<li><a href="#%E5%85%B6%E4%BB%96%E6%96%B9%E5%BC%8Fgetshell">其他方式GetShell</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/java-fan-she/">
+              <h3 class="post-title">
+                Java反射
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

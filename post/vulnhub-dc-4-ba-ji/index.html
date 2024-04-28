@@ -1,0 +1,291 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vulnhub DC-4 靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="vulnhub DC-4 靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="DC-4 靶机
+前言：
+这个靶机的难度相对于前面总体靶机的难度是更低的，但是这个靶机的提权方式确实比较特别。和前面的有点不一样。
+过关条件：得到root权限获取flag
+攻击机：kali                      192.1..." />
+    <meta name="keywords" content="vulnhub" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              vulnhub DC-4 靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-03-06
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/gd7wNOhQ5/" class="post-tag">
+                  # vulnhub
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="dc-4-靶机">DC-4 靶机</h4>
+<p>前言：</p>
+<p>这个靶机的难度相对于前面总体靶机的难度是更低的，但是这个靶机的提权方式确实比较特别。和前面的有点不一样。</p>
+<p>过关条件：得到root权限获取flag</p>
+<p>攻击机：kali                      192.168.56.132</p>
+<p>受害机：DC-4                    192.168.56.145</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<pre><code class="language-shell">arp-scan -l  //通过mac地址得到靶机ip为 192.168.56.145
+nmap -A -p1-65535 -T4 192.168.56.145  //扫描开放端口
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306192216993.png" alt="image-20230306192216993" loading="lazy"></figure>
+<p>上面的操作过后得到开放端口为22（ssh） 80（网页）</p>
+<p>浏览器访问 靶机地址</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306192601198.png" alt="image-20230306192601198" loading="lazy"></figure>
+<h5 id="账号密码暴破">账号密码暴破</h5>
+<p>一个登录口，使用插件得到中间件的类型和版本号。我本来是想通过中间件的nday去打的，但是找了一圈没发现什么合适的。于是直接用 burp弱口令暴破登录口了。其实我的字典最开始是没有爆出来的，（我这什么垃圾字典）通过网上的师傅的WP得到账号密码为 admin/happpy</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306192913525.png" alt="image-20230306192913525" loading="lazy"></figure>
+<h5 id="任意命令执行漏洞">任意命令执行漏洞</h5>
+<p>然后使用burp抓包操作，发现存在任意命令执行漏洞。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306193018259.png" alt="image-20230306193018259" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306193043959.png" alt="image-20230306193043959" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306193124575.png" alt="image-20230306193124575" loading="lazy"></figure>
+<p>发现可以得到这三个用户的密码。</p>
+<p>为什么确定这三个是用户呢？</p>
+<p>因为这三个路径和其他的都不一样，存在home路径。经验感觉这就是三个用户。</p>
+<p>兜兜转转执行下面这个命令得到jim下的密码文件。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306193507290.png" alt="image-20230306193507290" loading="lazy"></figure>
+<p>咋个发现的？</p>
+<p>网上wp copy的。这又不是实战，谁一个一个找啊。再说实战是这样玩的吗？</p>
+<h5 id="ssh连接">ssh连接</h5>
+<p>将上面得到的密码文件直接啊copy下来，然后放到kali中去。使用hydra暴破</p>
+<pre><code class="language-shell">hydra -l jim -P /root/3.txt ssh://192.168.56.145
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306194107764.png" alt="image-20230306194107764" loading="lazy"></figure>
+<p>得到账号密码为</p>
+<pre><code class="language-shell">jim/jibril04
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306194224590.png" alt="image-20230306194224590" loading="lazy"></figure>
+<p>成功连接。</p>
+<h5 id="权限提升">权限提升</h5>
+<p>目前还是普通用户的权限，无法得到flag，需要进行提取操作。前面的很多命令尝试后，无法正常执行。</p>
+<p>网上有些博客是通过这个账号下的一些信息，登录到其他的ssh账号，进行提权。那种我尝试了一下，发现得到的效果还是不太好。</p>
+<pre><code class="language-shell">find / -perm /4000  //查看可以使用的命令
+</code></pre>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306194643715.png" alt="image-20230306194643715" loading="lazy"></figure>
+<p>发现exim 在特定的版本条件下 exim可以进行提权操作。查看exim的版本</p>
+<pre><code class="language-shell">/usr/sbin/exim4 --version
+</code></pre>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306195007605.png" alt="image-20230306195007605" loading="lazy"></figure>
+<p>版本号为4.89</p>
+<p>searchsploit一下</p>
+<pre><code class="language-shell">searchsploit exim 
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306195308541.png" alt="image-20230306195308541" loading="lazy"></figure>
+<p>存在可提权漏洞。直接scp过去打就饿OK了</p>
+<pre><code class="language-shell">scp /usr/share/exploitdb/exploits/linux/local/46996.sh jim@192.168.56.145:/home/jim //输入下前面得到的密码就OK了
+</code></pre>
+<p>然后回到ssh连接终端，执行发送过去的文件。（需要注意的是，需要切换到根目录下。）</p>
+<pre><code class="language-shell">cd ~
+./46996.sh
+</code></pre>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230306195711100.png" alt="image-20230306195711100" loading="lazy"></figure>
+<p>成功提权并得到flag。</p>
+<h5 id="总结">总结</h5>
+<p>靶机总体的操作难度确实不高，但是又很多骚操作。比如在获取ssh密码的地方，如果你没有cat 那个路径，那么就无法找到。后面的操作也就无法执行了。还有就是 需要你了解过 Linux中的exim提权相关的知识。这两个是我认为这两个靶机比较重要的地方，其他地方思路还是差不多，kali找exp打。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#dc-4-%E9%9D%B6%E6%9C%BA">DC-4 靶机</a>
+<ul>
+<li><a href="#%E5%86%85%E7%BD%91%E4%BF%A1%E6%81%AF%E6%8E%A2%E6%B5%8B">内网信息探测</a></li>
+<li><a href="#%E8%B4%A6%E5%8F%B7%E5%AF%86%E7%A0%81%E6%9A%B4%E7%A0%B4">账号密码暴破</a></li>
+<li><a href="#%E4%BB%BB%E6%84%8F%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E">任意命令执行漏洞</a></li>
+<li><a href="#ssh%E8%BF%9E%E6%8E%A5">ssh连接</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/vulnhub-dc-3-ba-ji/">
+              <h3 class="post-title">
+                vulnhub DC-3 靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

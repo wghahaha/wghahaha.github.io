@@ -1,0 +1,252 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>浅谈业务逻辑漏洞之越权 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="浅谈业务逻辑漏洞之越权 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="水一篇博客
+概念
+越权漏洞分为 水平越权和和垂直越权两个类型
+水平越权：相同权限的用户之间可以进行访问。
+垂直越权：低权限的用户可以向高权限的用户访问。
+水平越权测试方法：主要通过看看能否通过A用户操作影响到B用户
+垂直越权测试思路：看看低..." />
+    <meta name="keywords" content="业务逻辑,web安全" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              浅谈业务逻辑漏洞之越权
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-04
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/aVf8rTCCB/" class="post-tag">
+                  # 业务逻辑
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/uaBWtnrdZ/" class="post-tag">
+                  # web安全
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>水一篇博客</p>
+<h4 id="概念">概念</h4>
+<p>越权漏洞分为 水平越权和和垂直越权两个类型</p>
+<p>水平越权：相同权限的用户之间可以进行访问。<br>
+垂直越权：低权限的用户可以向高权限的用户访问。<br>
+水平越权测试方法：主要通过看看能否通过A用户操作影响到B用户<br>
+垂直越权测试思路：看看低权限用户是否能越权使用高权限用户的功能，比如普通用户可以使用管理员的功能。</p>
+<h4 id="测试">测试</h4>
+<p>自己注册一个用户A<br>
+登录用户A时，正常更改或者是查看A的用户信息，然后抓取数据包，将传参ID修改为其他用户，如果成功查看或者修改了同权限其他用户信息就属于水平越权测试（如果可以影响到高权限用户就是垂直越权）</p>
+<p>传参ID检测 （uid id username ）然后用burp暴破<br>
+传参可能在get post cookie</p>
+<h4 id="可以实现的一些效果">可以实现的一些效果</h4>
+<p>不需要输入原密码的修改密码<br>
+抓包改用户名或者用户id修改他人密码<br>
+修改资料的时候修改用户id</p>
+<h4 id="修复建议">修复建议</h4>
+<p>1、前后端同时对用户输入信息进行校验，双重验证机制<br>
+2、 执行关键操作前必须验证用户身份，验证用户是否具备操作数据的权限<br>
+3、特别敏感操作可以让用户再次输入密码或其他的验证信息。<br>
+4、可以从用户的加密认证 cookie 中获取当前用户 id，防止攻击者对其修改。 或在 session、cookie 中加入不可预测、不可猜解的 user 信息。<br>
+5、直接对象引用的加密资源ID，防止攻击者枚举ID，敏感数据特殊化处理<br>
+6、永远不要相信来自用户的输入，对于可控参数进行严格的检查与过滤</p>
+<h4 id="结语">结语</h4>
+<p>这个文章是看到了一篇博客，突然想写的，所以内容也只写了个大概，也没有什么靶场的复现操作，我感觉这个漏洞本身的知识点也比较单一，在靶场复现感觉也没有什么意义。等我哪天实战成功了再搞一篇实战的博客吧。。😬😬😬😬</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E6%A6%82%E5%BF%B5">概念</a></li>
+<li><a href="#%E6%B5%8B%E8%AF%95">测试</a></li>
+<li><a href="#%E5%8F%AF%E4%BB%A5%E5%AE%9E%E7%8E%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E6%95%88%E6%9E%9C">可以实现的一些效果</a></li>
+<li><a href="#%E4%BF%AE%E5%A4%8D%E5%BB%BA%E8%AE%AE">修复建议</a></li>
+<li><a href="#%E7%BB%93%E8%AF%AD">结语</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/yi-xie-chang-jian-de-sql-zhu-ru-fang-shi/">
+              <h3 class="post-title">
+                一些常见的sql注入手段
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

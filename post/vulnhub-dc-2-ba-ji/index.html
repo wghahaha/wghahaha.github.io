@@ -1,0 +1,305 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vulnhub DC-2靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="vulnhub DC-2靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="DC-2
+过关条件：和DC-1一样需要找到5个flag。
+攻击机：kali           192.168.56.132
+靶机    ：DC-2        192.168.56.141
+内网信息探测
+还是一样使用扫描器确定一下靶机的..." />
+    <meta name="keywords" content="vulnhub" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              vulnhub DC-2靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-03-02
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/gd7wNOhQ5/" class="post-tag">
+                  # vulnhub
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="dc-2">DC-2</h4>
+<p>过关条件：和DC-1一样需要找到5个flag。</p>
+<p>攻击机：kali           192.168.56.132</p>
+<p>靶机    ：DC-2        192.168.56.141</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<p>还是一样使用扫描器确定一下靶机的IP和开放端口的情况。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302171501994.png" alt="image-20230302171501994" loading="lazy"></figure>
+<pre><code class="language-shell">通过mac地址确定IP地址为192.168.56.141
+靶机开放的端口为80（web网页） 和 7744（ssh）
+</code></pre>
+<p>我们访问一下靶机的web页面。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302171928514.png" alt="image-20230302171928514" loading="lazy"></figure>
+<h5 id="hosts绕过">hosts绕过</h5>
+<pre><code class="language-shell">返回301，页面做了一个永久的重定向。无法访问web页面。尝试通过修改本地的hosts文件达到访问的目的
+</code></pre>
+<pre><code class="language-shell">sudo vim /etc/hosts
+192.168.56.141    dc-2
+</code></pre>
+<p>修改hosts文件后可以正常访问且访问后可以看到flag1。同时我们发现这是一款基于wordpress搭建网站，猜测后续会使用到wpscan</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302172239387.png" alt="image-20230302172239387" loading="lazy"></figure>
+<pre><code class="language-shelll">得到flag1 得到一大串英文看不懂，丢给谷歌翻译了。
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302172425678.png" alt="image-20230302172425678" loading="lazy"></figure>
+<p>需要cewl？https://www.freebuf.com/articles/network/190128.html</p>
+<h5 id="暴破登录">暴破登录</h5>
+<p>尝试通过cewl生成一个密码字典。</p>
+<pre><code class="language-shell">cewl http://dc-2/ &gt;password.txt
+cat password.txt
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302172917270.png" alt="image-20230302172917270" loading="lazy"></figure>
+<p>只有密码但是没有用户名就无法正常登录，通过wpscan进行用户名枚举(很多src这种洞据说也是收的)</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302174248625.png" alt="image-20230302174248625" loading="lazy"></figure>
+<pre><code class="language-shell">得到三个用户名 admin jerry tom
+</code></pre>
+<p>使用vim 将这三个用户名写入一个新的字典当中。并将生成的密码字典与用户名字典联合进行遍历操作。</p>
+<pre><code class="language-shell">wpscan --url http://dc-2/ -U username.txt -P password.txt
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302174737297.png" alt="image-20230302174737297" loading="lazy"></figure>
+<pre><code class="language-shell">得到两组账号密码
+jerry     adipiscing
+tom       parturient
+</code></pre>
+<p>登录word press后台。通过信息收集得到 后台地址为 /wp-admin</p>
+<p>用jerry账号登录后到处点一点得到flag2，</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302175147416.png" alt="image-20230302175147416" loading="lazy"></figure>
+<p>丢给谷歌翻译</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302175305253.png" alt="image-20230302175305253" loading="lazy"></figure>
+<p>另外一个切入点？？？尝试登录了tom账号发现并不能得到什么有用的信息。</p>
+<p>我们最开始扫描端口的时候就找到了两个端口 分别是 80和7744</p>
+<h5 id="ssh连接">SSH连接</h5>
+<p>另外一个切入点就是从7744入手了，刚好77444是ssh连接的端口。我们就进行ssh连接操作。需要注意的是ssh连接默认的是22号端口，但是这里22号端口并没有开放，我们需要在后面加上 -p 7744</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302175852076.png" alt="image-20230302175852076" loading="lazy"></figure>
+<pre><code class="language-shell">尝试对两个账号都进行了连接，jerry无法进行正常登录 tom账号可以登陆。
+</code></pre>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302180200669.png" alt="image-20230302180200669" loading="lazy"></figure>
+<p>登录进去以后查看下当前目录下有什么文件，发现flag3.txt但是通过cat 命令无法查看，尝试使用vi查看。</p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302180215807.png" alt="image-20230302180215807" loading="lazy"></figure>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302180316477.png" alt="image-20230302180316477" loading="lazy"></figure>
+<h5 id="内网横向移动">内网横向移动</h5>
+<p>这翻译看的我一脸懵逼，提到了jerry感觉可能是需要切换到jerry账号下。进行横向移动操作。</p>
+<p>su 命令无法正常使用所以我们需要绕过rbash（受限的bash）</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302181013381.png" alt="image-20230302181013381" loading="lazy"></figure>
+<p>通过上面命令成功横向移动到jerry账号。找了一圈需要切换到根目录下才可以看到flag，</p>
+<pre><code class="language-shell">cd ~
+</code></pre>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302181244965.png" alt="image-20230302181244965" loading="lazy"></figure>
+<p>提示还要进行深度操作，大概率就是进行提权为root了。</p>
+<h5 id="权限提升">权限提升</h5>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302181801103.png" alt="image-20230302181801103" loading="lazy"></figure>
+<pre><code class="language-shell">直接 sudo -l 发现有个git提示nopassword满足git提权的条件。于是就进行git提权，网上找的方法。很简单两端命令就OK了
+</code></pre>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302181920406.png" alt="image-20230302181920406" loading="lazy"></figure>
+<p>我两个方法都尝试了一下，第一次第二种是可以的，不知道为什么第二次复现的时候就要报错了</p>
+<p>使用第一种方法 成功提权</p>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230302182333048.png" alt="image-20230302182333048" loading="lazy"></figure>
+<h5 id="总结">总结</h5>
+<p>当我们通过扫描发现对方80端口是打开的后，但是却无法正常访问后，可以尝试修改本地的hosts文件达到绕过的目的。还有就是需要注意网站采用的是什么cms搭建的，以及ssh连接也不是只可以在22端口才可以开放。然后就是发现正常的命令没办法用了以后尝试切换到其他可以达到相同效果的命令。横向移动的方法也要注意，提权还是要首先执行 sudo -l看下有没有什么可以直接提权的命令。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#dc-2">DC-2</a>
+<ul>
+<li><a href="#%E5%86%85%E7%BD%91%E4%BF%A1%E6%81%AF%E6%8E%A2%E6%B5%8B">内网信息探测</a></li>
+<li><a href="#hosts%E7%BB%95%E8%BF%87">hosts绕过</a></li>
+<li><a href="#%E6%9A%B4%E7%A0%B4%E7%99%BB%E5%BD%95">暴破登录</a></li>
+<li><a href="#ssh%E8%BF%9E%E6%8E%A5">SSH连接</a></li>
+<li><a href="#%E5%86%85%E7%BD%91%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8">内网横向移动</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/vulnhub-dc-1-ba-ji/">
+              <h3 class="post-title">
+                vulnhub DC-1靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

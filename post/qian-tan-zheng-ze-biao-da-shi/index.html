@@ -1,0 +1,490 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>浅谈正则表达式 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="浅谈正则表达式 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="这个东西很多程序员在开发中，会用到。我当时学习这个主要是看一些源码的时候思考如何绕过。。
+简单操作
+字符组（[]）允许匹配一组可能出现的字符。
+使用字符组匹配Java和 java
+[Jj]ava
+
+请你使用字符组匹配Ruby、Rube、ru..." />
+    <meta name="keywords" content="编程语言" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              浅谈正则表达式
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-01-14
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/As8VNLUIb/" class="post-tag">
+                  # 编程语言
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>这个东西很多程序员在开发中，会用到。我当时学习这个主要是看一些源码的时候思考如何绕过。。</p>
+<h3 id="简单操作">简单操作</h3>
+<h4 id="字符组允许匹配一组可能出现的字符">字符组（<code>[]</code>）允许匹配一组可能出现的字符。</h4>
+<p>使用字符组匹配<code>Java</code>和 <code>java</code></p>
+<pre><code>[Jj]ava
+</code></pre>
+<p>请你使用字符组匹配<code>Ruby</code>、<code>Rube</code>、<code>ruby</code>、<code>rube</code></p>
+<pre><code>[Rr]ub[ey]
+</code></pre>
+<h4 id="区间">区间</h4>
+<p>正则表达式引擎在字符组中使用<strong>连字符<code>(-)</code>代表区间</strong></p>
+<ol>
+<li>要匹配任意数字可以使用<code>[0-9]</code>；</li>
+<li>如果想要匹配所有小写字母，可以写成<code>[a-z]</code>；</li>
+<li>想要匹配所有大写字母可以写成<code>[A-Z]</code></li>
+</ol>
+<p>匹配数据所有的<strong>数字</strong>、<strong>小写字母</strong>和<strong>大写字母</strong></p>
+<pre><code>[0-9a-zA-Z]
+</code></pre>
+<h4 id="匹配特殊字符">匹配特殊字符</h4>
+<p>正则表达使用了 <code>-</code> 号代表了<strong>区间</strong>，但是我们有时候需要匹配的符号就是 <code>-</code>号，该怎么办呢？</p>
+<p>这个时候我们需要对<code>-</code>号进行<strong>转义</strong>操作，即 <code>\-</code></p>
+<p><strong>请你编写正则表达式匹配下列符号。</strong></p>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015110933152.png" alt="image-20221015110933152" style="zoom:67%;" />
+<pre><code>\W
+</code></pre>
+<h4 id="取反">取反</h4>
+<p>可以通过在字符数组开头使用 <code>^</code> 字符实现取反操作，从而可以反转一个字符组（意味着会匹配任何指定字符之外的所有字符）。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015111116977.png" alt="image-20221015111116977" loading="lazy"></figure>
+<p>这里的 <code>n[^e]</code> 的意思就是<code>n</code>后面的字母不能为 <code>e</code>。</p>
+<h3 id="快捷键">快捷键</h3>
+<h4 id="w">\w</h4>
+<p>与任意单词字符匹配，任意单词字符表示 <code>[A-Z]</code>、 <code>[a-z]</code>、<code>[0-9]</code>、<code>_</code></p>
+<h4 id="d">\d</h4>
+<p>与任意数字匹配</p>
+<h4 id="s">\s</h4>
+<p><code>\s</code>快捷方式可以<strong>匹配空白字符</strong>，比如空格，tab、换行等。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015111405710.png" alt="image-20221015111405710" loading="lazy"></figure>
+<h4 id="b">\b</h4>
+<p><code>\b</code> 匹配的是单词的边界，例如</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015111455629.png" alt="image-20221015111455629" loading="lazy"></figure>
+<p><strong><code>\bmaster\b</code> 就仅匹配有边界的<mark>master</mark>单词</strong></p>
+<h4 id="快捷方式取反">快捷方式取反</h4>
+<p>快捷方式也可以取反，例如对于<code>\w</code>的取反为<code>\W</code>，将小写改写成大写即可，</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015111621588.png" alt="image-20221015111621588" loading="lazy"></figure>
+<h4 id="开始和结束">开始和结束</h4>
+<p>正则表达式中 <code>^</code>指定的是一个字符串的开始，<code>$</code>指定的是一个字符串的结束。</p>
+<p><strong>请编写正则表达式匹配以<code>OS</code>结尾的字符串。</strong></p>
+<pre><code>OS$
+</code></pre>
+<h4 id="任意字符">任意字符</h4>
+<p><code>.</code>字符代表匹配任何单个字符，它<strong>只能出现在方括号以外</strong>。</p>
+<p><strong>值得注意的是：</strong> <code>.</code>字符只有一个不能匹配的字符，也就是换行符（<code>\n</code>）</p>
+<p><strong>匹配任意字母之后是<code>ar</code>的字符串。</strong></p>
+<pre><code>.ar
+</code></pre>
+<h4 id="可选字符">可选字符</h4>
+<p>有时，我们可能想要匹配一个单词的不同写法，比如<code>color</code>和<code>colour</code>，或者<code>honor</code>与<code>honour</code>。</p>
+<p>这个时候我们可以使用 <code>?</code> 符号指定一个字符、字符组或其他基本单元可选，这意味着正则表达式引擎将会期望该字符出现**<mark>零次或一次</mark>**。</p>
+<p><strong>使用正则来匹配 <code>favorite</code>和<code>favourite</code>这两种写法。</strong></p>
+<pre><code>favou?rite
+</code></pre>
+<p><strong>使用正则来匹配<code>codejiaonang</code>的不同写法</strong></p>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015112156397.png" alt="image-20221015112156397" style="zoom:67%;" />
+<pre><code>code.?jiaonang
+</code></pre>
+<h3 id="匹配多个数据">匹配多个数据</h3>
+<h4 id="重复">重复</h4>
+<p>在一个字符组后加上<code>{N}</code> 就可以表示在它之前的字符组出现<code>N</code>次</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015112302765.png" alt="image-20221015112302765" loading="lazy"></figure>
+<p><strong>编写正则匹配所有的电话号码。</strong></p>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015112409610.png" alt="image-20221015112409610" style="zoom:67%;" />
+<pre><code>\d{3}-\d{5}
+</code></pre>
+<h4 id="重复区间">重复区间</h4>
+<p>可能有时候，我们不知道具体要匹配字符组要重复的次数，比如身份证有<code>15</code>位也有<code>18</code>位的。</p>
+<p>这里重复区间就可以出场了，语法：<code>{M,N}</code>，<code>M</code>是下界而<code>N</code>是上界。</p>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015112756407.png" alt="image-20221015112756407" style="zoom: 67%;" />
+<p><code>\d{3,4}</code> 既可以匹配<code>3</code>个数字也可以匹配<code>4</code>个数字，不过当有<code>4</code>个数字的时候，优先匹配的是<code>4</code>个数字，这是因为正则表达式默认是<strong>贪婪模式</strong>，即尽可能的匹配更多字符，而要使用<strong>非贪婪模式</strong>，我们要在<strong>表达式后面加上 <code>?</code>号</strong>。</p>
+<p><strong>使用正则表达式提取电话号码，假设电话号码有两种规则：</strong></p>
+<ul>
+<li>以<mark>3</mark>个数字开头，后面<code>7</code>个数字，例如：<code>020-7281333</code></li>
+<li>以<mark>4</mark>个数字开头，后面<code>7</code>个数字，例如：<code>0731-8283431</code></li>
+</ul>
+<pre><code>\d{3,4}-\d{7}
+</code></pre>
+<h4 id="开闭区间">开闭区间</h4>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015113100371.png" alt="image-20221015113100371" style="zoom:67%;" />
+<p><strong>闭区间不写即可表示匹配一个或无数个。</strong></p>
+<p>可以使用两个速写字符指定常见的重复情况，可以使用 <code>+</code> 匹配<code>1</code>个到无数个，使用 <code>*</code>代表<code>0</code>个到无数个</p>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015113142477.png" alt="image-20221015113142477" style="zoom:67%;" />
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015113157847.png" alt="image-20221015113157847" style="zoom:67%;" />
+<p><strong>正则表达式匹配以<code>f</code>开头的数据。</strong></p>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015113239694.png" alt="image-20221015113239694" style="zoom:67%;" />
+<pre><code>f\w+
+</code></pre>
+<p><strong>使用正则表达式匹配手机号码，假设手机号码规则如下：</strong></p>
+<ul>
+<li>必须是<code>11</code>位的数字；</li>
+<li>第一位数字必须以<code>1</code>开头，第二位数字可以是<code>[3,4,5,7,8]</code>中的任意一个，后面<code>9</code>个数是<code>[0-9]</code>中的任意一个数字。</li>
+</ul>
+<pre><code>1[34578][0-9]{9}
+</code></pre>
+<p><strong>匹配以 <code>http</code>开头，以<code>/</code>结尾的所有数据</strong></p>
+<img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015113436219.png" alt="image-20221015113436219" style="zoom:67%;" />
+<pre><code>http.*/$
+</code></pre>
+<h3 id="小结">小结</h3>
+<table>
+<thead>
+<tr>
+<th>实例</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[Pp]ython</code></td>
+<td>匹配 “Python” 或 “python”。</td>
+</tr>
+<tr>
+<td><code>rub[ye]</code></td>
+<td>匹配 “ruby” 或 “rube”。</td>
+</tr>
+<tr>
+<td><code>[abcdef]</code></td>
+<td>匹配中括号内的任意一个字母。</td>
+</tr>
+<tr>
+<td><code>[0-9]</code></td>
+<td>匹配任何数字。类似于 [0123456789]。</td>
+</tr>
+<tr>
+<td><code>[a-z]</code></td>
+<td>匹配任何小写字母。</td>
+</tr>
+<tr>
+<td><code>[A-Z]</code></td>
+<td>匹配任何大写字母。</td>
+</tr>
+<tr>
+<td><code>[a-zA-Z0-9]</code></td>
+<td>匹配任何字母及数字。</td>
+</tr>
+<tr>
+<td><code>[^au]</code></td>
+<td>除了au字母以外的所有字符。</td>
+</tr>
+<tr>
+<td><code>[^0-9]</code></td>
+<td>匹配除了数字外的字符。</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>实例</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.</code></td>
+<td>匹配除 “\n” 之外的任何单个字符。要匹配包括 ‘\n’ 在内的任何字符，请使用象 ‘[.\n]’ 的模式。</td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>匹配一个字符零次或一次，另一个作用是非贪婪模式</td>
+</tr>
+<tr>
+<td><code>+</code></td>
+<td>匹配1次或多次</td>
+</tr>
+<tr>
+<td><code>*</code></td>
+<td>匹配0次或多次</td>
+</tr>
+<tr>
+<td><code>\b</code></td>
+<td>匹配一个长度为<code>0</code>的子串</td>
+</tr>
+<tr>
+<td><code>\d</code></td>
+<td>匹配一个数字字符。等价于 [0-9]。</td>
+</tr>
+<tr>
+<td><code>\D</code></td>
+<td>匹配一个非数字字符。等价于 [^0-9]。</td>
+</tr>
+<tr>
+<td><code>\s</code></td>
+<td>匹配任何空白字符，包括空格、制表符、换页符等等。等价于 [ \f\n\r\t\v]。</td>
+</tr>
+<tr>
+<td><code>\S</code></td>
+<td>匹配任何非空白字符。等价于 [^ \f\n\r\t\v]。</td>
+</tr>
+<tr>
+<td><code>\w</code></td>
+<td>匹配包括下划线的任何单词字符。等价于’[A-Za-z0-9_]’。</td>
+</tr>
+<tr>
+<td><code>\W</code></td>
+<td>匹配任何非单词字符。等价于 ‘[^A-Za-z0-9_]‘。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="分组">分组</h3>
+<p>在正则表达式中还提供了一种将表达式<strong>分组</strong>的机制，当使用分组时，除了获得整个匹配。还能够在匹配中选择每一个分组。</p>
+<p>要实现分组很简单，使用<code>()</code>即可。</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015224434527.png" alt="image-20221015224434527" loading="lazy"></figure>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20221015224502564.png" alt="image-20221015224502564" loading="lazy"></figure>
+<pre><code>&lt;div&gt;(.*?)&lt;/div&gt;
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230114135750041.png" alt="image-20230114135750041" loading="lazy"></figure>
+<pre><code>(\d{4})[\- ]?(\d{4})[\- ]?(\d{2})
+</code></pre>
+<h3 id="或者条件">或者条件</h3>
+<p>使用分组的同时还可以使用 <strong>或者</strong>（<code>or</code>）条件。</p>
+<p>例如要提取所有图片文件的后缀名，可以在各个后缀名之间加上一个 <code>|</code>符号：</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230114135742581.png" alt="image-20230114135742581" loading="lazy"></figure>
+<h4 id="提取所有视频文件">提取所有视频文件</h4>
+<p>视频文件的后缀名有 <code>.mp4</code>、<code>.avi</code>、<code>.wmv</code>、<code>.rmvb</code></p>
+<p>请编写正则表达式提取所有的视频文件的后缀</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230114135726205.png" alt="image-20230114135726205" loading="lazy"></figure>
+<pre><code>.*(.mp4|.avi|.wmv|.rmvb)
+</code></pre>
+<h3 id="非捕获分组">非捕获分组</h3>
+<p>有时候，我们并不需要捕获某个分组的内容，但是又想使用分组的特性。</p>
+<p>这个时候就可以使用非捕获组<code>(?:表达式)</code>，从而<strong>不捕获数据</strong>，还能使用分组的功能。</p>
+<p>例如想要匹配<strong>两个字母组成的单词</strong>或者<strong>四个字母组成的单词</strong>就可以使用<strong>非捕获分组</strong>：</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230114135731799.png" alt="image-20230114135731799" loading="lazy"></figure>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230114135700532.png" alt="image-20230114135700532" loading="lazy"></figure>
+<pre><code>(75855)
+</code></pre>
+<h3 id="匹配标签">匹配标签</h3>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230114135602291.png" alt="image-20230114135602291" loading="lazy"></figure>
+<pre><code>(?!&lt;p&gt;|&lt;/p&gt;)&lt;.*
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E7%AE%80%E5%8D%95%E6%93%8D%E4%BD%9C">简单操作</a>
+<ul>
+<li><a href="#%E5%AD%97%E7%AC%A6%E7%BB%84%E5%85%81%E8%AE%B8%E5%8C%B9%E9%85%8D%E4%B8%80%E7%BB%84%E5%8F%AF%E8%83%BD%E5%87%BA%E7%8E%B0%E7%9A%84%E5%AD%97%E7%AC%A6">字符组（<code>[]</code>）允许匹配一组可能出现的字符。</a></li>
+<li><a href="#%E5%8C%BA%E9%97%B4">区间</a></li>
+<li><a href="#%E5%8C%B9%E9%85%8D%E7%89%B9%E6%AE%8A%E5%AD%97%E7%AC%A6">匹配特殊字符</a></li>
+<li><a href="#%E5%8F%96%E5%8F%8D">取反</a></li>
+</ul>
+</li>
+<li><a href="#%E5%BF%AB%E6%8D%B7%E9%94%AE">快捷键</a>
+<ul>
+<li><a href="#w">\w</a></li>
+<li><a href="#d">\d</a></li>
+<li><a href="#s">\s</a></li>
+<li><a href="#b">\b</a></li>
+<li><a href="#%E5%BF%AB%E6%8D%B7%E6%96%B9%E5%BC%8F%E5%8F%96%E5%8F%8D">快捷方式取反</a></li>
+<li><a href="#%E5%BC%80%E5%A7%8B%E5%92%8C%E7%BB%93%E6%9D%9F">开始和结束</a></li>
+<li><a href="#%E4%BB%BB%E6%84%8F%E5%AD%97%E7%AC%A6">任意字符</a></li>
+<li><a href="#%E5%8F%AF%E9%80%89%E5%AD%97%E7%AC%A6">可选字符</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8C%B9%E9%85%8D%E5%A4%9A%E4%B8%AA%E6%95%B0%E6%8D%AE">匹配多个数据</a>
+<ul>
+<li><a href="#%E9%87%8D%E5%A4%8D">重复</a></li>
+<li><a href="#%E9%87%8D%E5%A4%8D%E5%8C%BA%E9%97%B4">重复区间</a></li>
+<li><a href="#%E5%BC%80%E9%97%AD%E5%8C%BA%E9%97%B4">开闭区间</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B0%8F%E7%BB%93">小结</a></li>
+<li><a href="#%E5%88%86%E7%BB%84">分组</a></li>
+<li><a href="#%E6%88%96%E8%80%85%E6%9D%A1%E4%BB%B6">或者条件</a>
+<ul>
+<li><a href="#%E6%8F%90%E5%8F%96%E6%89%80%E6%9C%89%E8%A7%86%E9%A2%91%E6%96%87%E4%BB%B6">提取所有视频文件</a></li>
+</ul>
+</li>
+<li><a href="#%E9%9D%9E%E6%8D%95%E8%8E%B7%E5%88%86%E7%BB%84">非捕获分组</a></li>
+<li><a href="#%E5%8C%B9%E9%85%8D%E6%A0%87%E7%AD%BE">匹配标签</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/php-fan-xu-lie-hua/">
+              <h3 class="post-title">
+                初探PHP反序列化
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

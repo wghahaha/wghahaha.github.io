@@ -1,0 +1,349 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>域内攻防之委派攻击 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="域内攻防之委派攻击 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="概念
+委派是大型网络中经常部署的应用模式，给多跳认证带来了很大的便利，与此同时也带来了很大的安全隐患。利用委派，攻击者可结合其他漏洞进行组合攻击，导致攻击者可以获取本地管理员甚至域管理员权限，还可以制作深度隐藏的后门。
+委派是指将域内用户的..." />
+    <meta name="keywords" content="委派,AD域,Kerberos" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              域内攻防之委派攻击
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-12-11
+              </span>
+              <span>
+                11 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/PRyeAKoMI/" class="post-tag">
+                  # 委派
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/ggcS95uZq/" class="post-tag">
+                  # AD域
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/K6sVHZhVa/" class="post-tag">
+                  # Kerberos
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="概念">概念</h2>
+<p>委派是大型网络中经常部署的应用模式，给多跳认证带来了很大的便利，与此同时也带来了很大的安全隐患。利用委派，攻击者可结合其他漏洞进行组合攻击，导致攻击者可以获取本地管理员甚至域管理员权限，还可以制作深度隐藏的后门。</p>
+<p>委派是指将域内用户的权限委派给其他服务账号，使得服务账号能以用户权限访问域内的其他服务。<strong>简言之：当A访问服务B时，服务B拿着A用户的凭证去访问服务C，这个过程称为委派。</strong></p>
+<p>如图所示 用户white0123\test以Kerberos身份验证访问 Web服务器请求下载文件 但是真正的文件在后台的文件服务器上。于是，web服务器的服务账号模拟域用户white0123\test 以Kerberos协议继续认证到后台文件服务器。后台服务器将文件返回给web服务器，web服务器将文件返回给域用户white0123\test。这样就完成了一个委派的流程。</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231207135833290.png" alt="image-20231207135833290" loading="lazy"></figure>
+<p>在域中，只有主机账户和服务账户才具有委派属性。</p>
+<ul>
+<li>
+<p>主机账户就是活动目录Computers中的计算机，也可以称为机器账户。</p>
+</li>
+<li>
+<p>服务账户就是域内用户账户的一种类型，是将服务运行起来并加入域时所用的账户。</p>
+<p>例如：SQLServer在安装时会在域内自动注册服务账户SQLServiceAccount,也可以将域用户通过注册SPN变为服务账户。</p>
+</li>
+</ul>
+<h2 id="委派的分类">委派的分类</h2>
+<p>委派的主要有三个分类</p>
+<ul>
+<li>非约束性委派</li>
+<li>约束性委派</li>
+<li>基于资源的约束性委派</li>
+</ul>
+<h3 id="非约束性委派">非约束性委派</h3>
+<p>在Windows Server2000首次发布Active Directory时，Microsoft就提供了一种简单的机制来支持用户通过Kerberos向Web Server进 行身份验证并需要代表该用户更新后端数据库服务器上的记录的方案，这就是最早的非约束性委派。对于非约束性委派 （Unconstrained Delegation），<strong>服务账号可以获取被委派用户的TGT，并将TGT缓存到LSASS进程中，从而服务账号可使用该TGT， 模拟该用户访问任意服务</strong>。非约束委派的设置需要SeEnableDelegation 特权，该特权通常仅授予域管理员 。</p>
+<ul>
+<li>配置了非约束性委派属性的机器账号的userAccountControl 属性有个Flag位 WORKSTATION_TRUST_ACCOUNT | TRUSTED_FOR_DELEGATION，其对应的数是0x81000=528384。</li>
+<li>配置了非约束性委派属性的服务账号的userAccountControl 属性有个Flag位 NORMAL_ACCOUNT | TRUSTED_FOR_DELEGATION， 其对应的数是0x80200=524800。</li>
+</ul>
+<p>查找非约束委派的主机或服务账号（域控默认配置非约束委派属性）</p>
+<p>1、 利用powersploit中的powerview</p>
+<pre><code class="language-sql">Import-Module .\PowerView.ps1;
+
+查询非约束委派的主机 Get-NetComputer -Unconstrained -Domain yokan.com
+
+查询非约束委派的服务账号 Get-NetUser -Unconstrained -Domain yokan.com | select name
+</code></pre>
+<p>2、 利用ADFind</p>
+<p>查找域中配置非约束委派的用户</p>
+<pre><code class="language-armasm">AdFind.exe -b &quot;DC=yokan,DC=com&quot; -f &quot;(&amp;(samAccountType=805306368)(userAccountControl:1.2.840.113556.1.4.803:=524288))&quot; cn distinguishedName
+</code></pre>
+<p>查找域中配置非约束委派的主机</p>
+<pre><code class="language-armasm">AdFind.exe -b &quot;DC=yokan,DC=com&quot; -f &quot;(&amp;(samAccountType=805306369)(userAccountControl:1.2.840.113556.1.4.803:=524288))&quot; cn distinguishedName
+</code></pre>
+<p>3、 ldapsearch</p>
+<p>非约束性委派<em>大致</em>流程</p>
+<p>user访serverA，于是向DC发起认证，DC会检查serverA的机器账号的属性，<strong>如果是非约束委派的话，会把用户的TGT放在ST票据中并一起发送给serverA</strong>，这样serverA在验证ST票据的同时也获取到了用户的TGT，并<strong>把TGT储存在自己的lsass进程中以备下次重用，从而serverA就可以使用这个TGT，来模拟这个user访问任何服务</strong>。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1964477-20220419131129863-350299903.jpg" alt="img" loading="lazy"></figure>
+<p>从攻击角度来说：<strong>如果攻击者拿到了一台配置了非约束委派的机器权限，可以诱导管理员来访问该机器，然后可以得到管理员的TGT，从而模拟管理员访问任意服务，相当于拿下了整个域环境</strong>。</p>
+<h4 id="结合打印机漏洞攻击">结合打印机漏洞攻击</h4>
+<p>上面的攻击手段 需要域管主动连接配置了非约束性委派的主机，才能从主机上获得域管理员的TGT。实战中有点鸡肋。我们可以结合打印机服务漏洞来强制域控连接配置了非约束性委派的主机，也能从该主机上抓到域控制器账户的TGT，且不需要域管理员进行交互。</p>
+<p>复现文章参考</p>
+<p>https://mp.weixin.qq.com/s/1sR0wTyJFf5UnuPjtJ-DWw</p>
+<h3 id="约束性委派">约束性委派</h3>
+<p>由于非约束性委派的不安全性，微软在Windows Server 2003中发布了约束性委派。同时，为了在Kerberos协议层面对约束性委派的支持，微软扩展了两个子协议 S4u2Self(Service for User to Self) 和 S4u2Proxy (Service for User to Proxy )，这两个扩展都允许服务代表用户从KDC请求票证。<strong>S4U2self可以代表自身请求针对其自身的Kerberos服务票据(ST1)；S4U2proxy可以以用户的名义请求其它服务的ST2，约束委派就是限制了S4U2proxy扩展的范围</strong>, 只能模拟该用户访问特定的服务。配置了约束性委派账户的msDS- AllowedToDelegateTo属性会指定对哪个SPN进行委派。约束委派的设置需要 SeEnableDelegation 特权，该特权通常仅授予域管理员。</p>
+<h4 id="约束性委派的分类">约束性委派的分类</h4>
+<p>约束性委派有两种:一种是仅使用Kerberos，也就是不能进行协议转换；另一种是使用任何身份验证协议，也就是能进行协议转换。</p>
+<h5 id="仅使用kerberos">仅使用Kerberos</h5>
+<p>配置了仅使用Kerberos约束性委派的机器账户和服务账户的userAccountControl属性和正常账户一样，但是其msDS-AllowedToDelegateTo属性会有允许被委派服务的SPN。</p>
+<h5 id="使用任何身份验证协议">使用任何身份验证协议</h5>
+<ul>
+<li>配置了任何身份验证协议约束性委派的机器账户的userAccountControl属性有个FLAG位 WORKSTATION_TRUST_ACCOUNT | TRUETED_TO_AUTHENTICATE_FOR_DELEGATION，其对应的数是0x1001000=16781312</li>
+<li>配置了任何身份验证协议约束性委派的机器账户的userAccountControl属性有个FLAG位 NORMAL_ACCOUNT | TRUETED_TO_AUTHENTICATE_FOR_DELEGATION，其对应的数是0x1001000=16777728</li>
+</ul>
+<p>约束性委派的流程</p>
+<p>user访问serviceA，向DC发起kerberos认证，域控返回user的TGT和ST1票据，user使用ST1票据对serviceA进行访问</p>
+<p>如果配置了serviceA到serviceB的约束委派，则serviceA能使用<strong>S4U2Proxy协议将用户发给自己的可转发的ST1票据以用户的身份发给DC。</strong></p>
+<p><strong>域控返回serviceA一个用来访问serviceB的ST2票据,这样serviceA就能以用户的身份对serviceB发起访问。</strong></p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1964477-20220419131124644-675606978.jpg" alt="img" loading="lazy"></figure>
+<p>由于服务用户<strong>只能获取某个用户（或主机）的服务的ST1而非TGT，所以只能模拟用户访问特定的服务</strong>，但是如果能拿到约束委派用户（或主机）的密码或者Hash，就可以<strong>伪造S4U的请求，伪装成服务用户以任意用户的权限申请访问指定服务的ST2</strong></p>
+<p>约束性委派的攻击流程</p>
+<p>在拿到一台主机的时候 通过抓取到本机用户的账号密码 可以向KDC认证中心申请一个可转发的TGT，然后服务账号可用域管的身份申请一个可转发的ST 服务账号用上一步的可转发的ST以域管身份向KDC申请访问特定服务的ST。导入上一步获得的以域管身份访问的特定服务的ST可成功访问域控。</p>
+<h3 id="基于资源的约束性委派">基于资源的约束性委派</h3>
+<p>传统的委派，在设置的过程中其实都是需要SeEnableDelegation特权，而这个特权需要域管理员才能设置。相对于传统的委派，<strong>基于资源的约束委派它不需要域管理员设置，而是机器本身</strong>。</p>
+<p>基于资源的约束性委派允许资源配置受信任的帐户委派给他们。基于资源的约束性委派只能在运行<strong>Windows Server 2012和Windows Server 2012 R2及以上的域控制器</strong>上配置，但可以在混合模式林中应用。<strong>配置了基于资源的约束性委派账户的msDS-AllowedToActOnBehalfOfOtherIdentity 属性的值为被允许委派账号的SID</strong>，并且委派属性这里没有任何值。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1964477-20220419131119445-1613490976.jpg" alt="img" loading="lazy"></figure>
+<h4 id="约束委派和基于资源的约束委派的区别">约束委派和基于资源的约束委派的区别</h4>
+<p>前者：通过服务A委派到服务B，实际是在服务A上增加TRUSTED_FOR_DELEGATION字段（非约束委派），TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION和msDS-AllowedToDelegateTo （约束委派）字段来达到委派的目的。</p>
+<p>后者：<strong>通过服务B允许服务A委派到服务B，实际是通过服务B自身赋予msDS-AllowedToActOnBehalfOfOtherIdentity字段，从而允许服务A对服务B的基于资源的约束委派</strong>。</p>
+<p>所以当利用到基于资源的约束委派的时候，<strong>服务A的两个字段是没有赋值的</strong>，当这两个字段没有被赋值的时候，通过S4U2Self得到的ST服务票证是<strong>不可被转发</strong>的，而S4U2Proxy的作用就是将可转发的ST票据转发到其他服务进行委派认证的。但是：<strong>在基于资源的约束委派过程中，不可转发的ST仍可以通过S4U2Proxy转发到其他服务进行委派认证，并且最后还会返回一张可转发的ST服务票证</strong>。</p>
+<p>因此，如果能够<strong>在服务B上配置允许服务A的基于资源的约束委派</strong>，那么就可以通过控制服务A使用S4U2Self向域控请求任意用户访问自身的服务票据，最后再使用S4U2Proxy转发此ST票据去请求访问服务B的可转发的ST服务票据，那么我们就可以模拟任意用户访问服务B了。这里可以以普通域用户的身份去创建机器账号作为服务A。</p>
+<h4 id="基于资源的约束性委派的优势">基于资源的约束性委派的优势</h4>
+<p>1、委派的权限授予给了拥有资源的后端，而不再是前端</p>
+<p>2、约束性委派不能跨域进行委派，基于资源的约束性委派<strong>可以跨域和林</strong></p>
+<p>3、不再需要域管理员权限设置委派，只需拥有在计算机对象上编辑msDS-AllowedToActOnBehalfOfOtherIdentity属性的权限，也就是拥有**’将域机器加入域’<strong>的</strong>域用户和机器自身**的权限。</p>
+<h4 id="基于资源的约束性委派利用条件">基于资源的约束性委派利用条件</h4>
+<p>利用基于资源的约束委派(RBCD)需要2个条件：</p>
+<p>1.<strong>拥有将域机器加入域的域用户的权限</strong>。（<strong>将机器B加入域的域用户拥有修改机器B的msDS-AllowedToActOnBehalfOfOtherIdentity属性的权限</strong>。）</p>
+<p>2.一<strong>个任意服务账户或者一个机器账户</strong>（每一个域用户都可以添加10个机器账户）</p>
+<p>补充：</p>
+<p>1.如果导入powerview后执行以下命令后有回显，证明win7主机配置了基于资源的约束性委派。</p>
+<p><em>Get-DomainComputer win7 -Properties msds-allowedtoactonbehalfofotheridentity</em></p>
+<p>2.查找将win主机拉入域内的人的sid，其实就是查找这台主机的mS-DS-CreatorSID值：</p>
+<p><em>AdFind.exe -b &quot;DC=yokan,DC=com&quot; -f &quot;(&amp;(samAccountType=805306369))&quot; cn mS-DS-CreatorSID</em></p>
+<h4 id="基于资源的约束性委派流程">基于资源的约束性委派流程</h4>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1964477-20220419131119144-2121654180.jpg" alt="img" loading="lazy"></figure>
+<h4 id="基于资源的约束性委派利用">基于资源的约束性委派利用</h4>
+<p>这里偷了个懒 参考复现过程</p>
+<p>https://forum.butian.net/share/1591</p>
+<h2 id="参考链接">参考链接</h2>
+<p>https://www.cnblogs.com/yokan/p/16164761.html</p>
+<p>https://www.cnblogs.com/xiaozi/p/17072605.html</p>
+<p>https://mp.weixin.qq.com/s/1sR0wTyJFf5UnuPjtJ-DWw</p>
+<p>https://www.bilibili.com/video/BV1564y1Y7HF/?spm_id_from=333.337.search-card.all.click</p>
+<p>https://forum.butian.net/share/1591</p>
+<p>https://mp.weixin.qq.com/s/GdmnlsKJJXhElA4GuwxTKQ</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E6%A6%82%E5%BF%B5">概念</a></li>
+<li><a href="#%E5%A7%94%E6%B4%BE%E7%9A%84%E5%88%86%E7%B1%BB">委派的分类</a>
+<ul>
+<li><a href="#%E9%9D%9E%E7%BA%A6%E6%9D%9F%E6%80%A7%E5%A7%94%E6%B4%BE">非约束性委派</a>
+<ul>
+<li><a href="#%E7%BB%93%E5%90%88%E6%89%93%E5%8D%B0%E6%9C%BA%E6%BC%8F%E6%B4%9E%E6%94%BB%E5%87%BB">结合打印机漏洞攻击</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BA%A6%E6%9D%9F%E6%80%A7%E5%A7%94%E6%B4%BE">约束性委派</a>
+<ul>
+<li><a href="#%E7%BA%A6%E6%9D%9F%E6%80%A7%E5%A7%94%E6%B4%BE%E7%9A%84%E5%88%86%E7%B1%BB">约束性委派的分类</a>
+<ul>
+<li><a href="#%E4%BB%85%E4%BD%BF%E7%94%A8kerberos">仅使用Kerberos</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E4%BB%BB%E4%BD%95%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81%E5%8D%8F%E8%AE%AE">使用任何身份验证协议</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%9F%BA%E4%BA%8E%E8%B5%84%E6%BA%90%E7%9A%84%E7%BA%A6%E6%9D%9F%E6%80%A7%E5%A7%94%E6%B4%BE">基于资源的约束性委派</a>
+<ul>
+<li><a href="#%E7%BA%A6%E6%9D%9F%E5%A7%94%E6%B4%BE%E5%92%8C%E5%9F%BA%E4%BA%8E%E8%B5%84%E6%BA%90%E7%9A%84%E7%BA%A6%E6%9D%9F%E5%A7%94%E6%B4%BE%E7%9A%84%E5%8C%BA%E5%88%AB">约束委派和基于资源的约束委派的区别</a></li>
+<li><a href="#%E5%9F%BA%E4%BA%8E%E8%B5%84%E6%BA%90%E7%9A%84%E7%BA%A6%E6%9D%9F%E6%80%A7%E5%A7%94%E6%B4%BE%E7%9A%84%E4%BC%98%E5%8A%BF">基于资源的约束性委派的优势</a></li>
+<li><a href="#%E5%9F%BA%E4%BA%8E%E8%B5%84%E6%BA%90%E7%9A%84%E7%BA%A6%E6%9D%9F%E6%80%A7%E5%A7%94%E6%B4%BE%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6">基于资源的约束性委派利用条件</a></li>
+<li><a href="#%E5%9F%BA%E4%BA%8E%E8%B5%84%E6%BA%90%E7%9A%84%E7%BA%A6%E6%9D%9F%E6%80%A7%E5%A7%94%E6%B4%BE%E6%B5%81%E7%A8%8B">基于资源的约束性委派流程</a></li>
+<li><a href="#%E5%9F%BA%E4%BA%8E%E8%B5%84%E6%BA%90%E7%9A%84%E7%BA%A6%E6%9D%9F%E6%80%A7%E5%A7%94%E6%B4%BE%E5%88%A9%E7%94%A8">基于资源的约束性委派利用</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/yu-shen-tou-ji-chu-zhi-lan-yong-dcsync/">
+              <h3 class="post-title">
+                域渗透基础之滥用DCSync
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

